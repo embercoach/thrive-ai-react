@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+/* ============================================================
+   DESIGN TOKENS
+   Single source of truth for the whole app. Every color, radius,
+   shadow, and font declared here becomes a Tailwind utility
+   automatically (e.g. --color-brand → bg-brand, text-brand,
+   border-brand, and bg-brand/20 for opacity variants).
+
+   Spacing intentionally has no custom scale here — Tailwind v4's
+   default spacing scale is itself token-driven (every p-*, gap-*,
+   m-* derives from a single --spacing base unit), so it already
+   satisfies "no hardcoded spacing" without redeclaring it.
+   ============================================================ */
+@theme {
+  /* Canvas & surfaces */
+  --color-canvas: #0e1013;
+  --color-surface: #1a1d22;
+  --color-surface-sunken: #14161a;
+  --color-overlay: rgb(0 0 0 / 0.65);
+
+  /* Ink (text) */
+  --color-ink: #f2f3f4;
+  --color-ink-secondary: #9da3ac;
+  --color-ink-muted: #6e747c;
+  --color-ink-on-brand: #0b1410;
+
+  /* Borders */
+  --color-border: #262a30;
+  --color-border-strong: #343a42;
+
+  /* Brand — bronze/green accent, used for interactive & brand
+     moments only. Never reused as a positive/negative signal. */
+  --color-brand: #33c46f;
+  --color-brand-strong: #279a57;
+
+  /* Semantic — the only place these colors carry meaning */
+  --color-positive: #33c46f;
+  --color-negative: #f2545c;
+  --color-warning: #f0a63c;
+  --color-info: #4c8dff;
+
+  /* Category accents (transactions, categories, chart segments) */
+  --color-cat-housing: #33c46f;
+  --color-cat-food: #f2545c;
+  --color-cat-transport: #4c8dff;
+  --color-cat-entertainment: #a78bfa;
+  --color-cat-shopping: #f2545c;
+  --color-cat-health: #ec4899;
+  --color-cat-income: #33c46f;
+  --color-cat-other: #9da3ac;
+
+  /* Typography */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-voice: "Lora", Georgia, serif;
+
+  /* Radius */
+  --radius-sm: 9px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
+
+  /* Shadows — pure black at varying opacity; light-mode shadow
+     colors are invisible against this canvas, so depth here comes
+     from opacity against black, not from a tinted ink shadow. */
+  --shadow-card: 0 2px 14px rgb(0 0 0 / 0.35);
+  --shadow-elevated: 0 12px 32px rgb(0 0 0 / 0.5);
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+  }
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}
+
+@layer utilities {
+  .font-voice {
+    font-family: var(--font-voice);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+}
+
+@keyframes slide-up-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes sheet-up-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-slide-up {
+    animation: slide-up-in 0.4s var(--ease-standard) both;
+  }
+  .animate-sheet-up {
+    animation: sheet-up-in 0.3s var(--ease-standard) both;
+  }
+  .animate-fade-in {
+    animation: fade-in 0.25s ease both;
+  }
+}
