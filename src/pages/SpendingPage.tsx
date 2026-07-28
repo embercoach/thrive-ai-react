@@ -9,16 +9,23 @@ import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { DonutChart } from "@/components/charts/DonutChart";
 import { CategoryRow } from "@/components/transactions/CategoryRow";
 import { TransactionRow } from "@/components/transactions/TransactionRow";
+import { BillRow } from "@/components/transactions/BillRow";
 import { AddTransactionModal } from "@/components/transactions/AddTransactionModal";
+import { ManageBudgetsModal } from "@/components/transactions/ManageBudgetsModal";
+import { ManageRecurringModal } from "@/components/transactions/ManageRecurringModal";
 import { formatMoney } from "@/lib/currency";
 
 export function SpendingPage() {
   const navigate = useNavigate();
-  const { transactions, budgets, currency } = useAppData();
+  const { transactions, budgets, recurring, currency } = useAppData();
   const { period, setPeriod, shownTotal, trendPct, breakdown, budgetRows } = useSpendingData(transactions, budgets);
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [budgetsOpen, setBudgetsOpen] = useState(false);
+  const [recurringOpen, setRecurringOpen] = useState(false);
+
+  const upcomingRecurring = [...recurring].sort((a, b) => a.next_date.localeCompare(b.next_date));
 
   const filteredTxns = search
     ? transactions.filter(
@@ -94,7 +101,16 @@ export function SpendingPage() {
       )}
 
       <Card>
-        <CardHeader title="Categories" action="Set budgets" />
+        <CardHeader title="Recurring" action="Manage" onActionClick={() => setRecurringOpen(true)} />
+        {upcomingRecurring.length === 0 ? (
+          <p className="text-sm text-ink-muted">No recurring bills or income yet ›</p>
+        ) : (
+          upcomingRecurring.map((item) => <BillRow key={item.id} bill={item} currency={currency} />)
+        )}
+      </Card>
+
+      <Card>
+        <CardHeader title="Categories" action="Set budgets" onActionClick={() => setBudgetsOpen(true)} />
         {budgetRows.length === 0 ? (
           <p className="text-sm text-ink-muted text-center py-2">Add transactions to see categories</p>
         ) : (
@@ -130,6 +146,8 @@ export function SpendingPage() {
       </p>
 
       <AddTransactionModal open={addOpen} onClose={() => setAddOpen(false)} />
+      <ManageBudgetsModal open={budgetsOpen} onClose={() => setBudgetsOpen(false)} budgetRows={budgetRows} />
+      <ManageRecurringModal open={recurringOpen} onClose={() => setRecurringOpen(false)} />
     </div>
   );
 }
