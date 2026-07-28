@@ -111,14 +111,13 @@ export function ManageRecurringModal({ open, onClose }: ManageRecurringModalProp
                   onClick={() => handleToggleActive(item)}
                   disabled={busyId === item.id}
                   aria-label={item.active ? "Pause" : "Resume"}
-                  className={`w-8 h-4.5 rounded-full flex-shrink-0 relative transition-colors cursor-pointer ${
+                  className={`w-9 h-5 rounded-full flex-shrink-0 relative transition-colors cursor-pointer ${
                     item.active ? "bg-brand" : "bg-surface-sunken border border-border-strong"
                   }`}
-                  style={{ height: 18 }}
                 >
                   <span
-                    className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform ${
-                      item.active ? "translate-x-4" : "translate-x-0.5"
+                    className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                      item.active ? "translate-x-4" : "translate-x-0"
                     }`}
                   />
                 </button>
