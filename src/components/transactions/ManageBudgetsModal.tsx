@@ -12,12 +12,16 @@ interface ManageBudgetsModalProps {
   open: boolean;
   onClose: () => void;
   budgetRows: CategoryBudgetRow[];
+  onNeedUpgrade: () => void;
 }
 
-export function ManageBudgetsModal({ open, onClose, budgetRows }: ManageBudgetsModalProps) {
+const FREE_BUDGET_LIMIT = 2;
+
+export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }: ManageBudgetsModalProps) {
   const { user } = useAuth();
-  const { currency, refetch } = useAppData();
+  const { currency, budgets, isPro, refetch } = useAppData();
   const symbol = currencyConfig(currency).symbol;
+  const activeBudgetCount = budgets.length;
 
   const initialDrafts = useMemo(() => {
     const drafts: Record<string, string> = {};
@@ -40,13 +44,19 @@ export function ManageBudgetsModal({ open, onClose, budgetRows }: ManageBudgetsM
   async function handleSaveRow(category: string) {
     if (!user) return;
     const raw = drafts[category] ?? "";
+    const amt = parseFloat(raw);
+    const clearing = raw.trim() === "" || isNaN(amt) || amt <= 0;
+    const alreadyBudgeted = budgets.some((b) => b.category === category);
+    if (!clearing && !alreadyBudgeted && !isPro && activeBudgetCount >= FREE_BUDGET_LIMIT) {
+      onClose();
+      onNeedUpgrade();
+      return;
+    }
     setSaving(true);
     setError("");
-    const amt = parseFloat(raw);
-    const result =
-      raw.trim() === "" || isNaN(amt) || amt <= 0
-        ? await api.deleteBudget(user.id, category)
-        : await api.upsertBudget(user.id, category, amt);
+    const result = clearing
+      ? await api.deleteBudget(user.id, category)
+      : await api.upsertBudget(user.id, category, amt);
     setSaving(false);
     if (result.error) {
       setError(result.error.message);
@@ -60,6 +70,11 @@ export function ManageBudgetsModal({ open, onClose, budgetRows }: ManageBudgetsM
     const amt = parseFloat(newAmount);
     if (!newCategory.trim() || !amt || amt <= 0) {
       setError("Enter a category and an amount greater than 0.");
+      return;
+    }
+    if (!isPro && activeBudgetCount >= FREE_BUDGET_LIMIT) {
+      onClose();
+      onNeedUpgrade();
       return;
     }
     setSaving(true);
@@ -135,6 +150,11 @@ export function ManageBudgetsModal({ open, onClose, budgetRows }: ManageBudgetsM
         <Button fullWidth onClick={handleAddNew} disabled={saving} className="mt-3">
           {saving ? "Saving..." : "Add Budget"}
         </Button>
+        {!isPro && (
+          <p className="text-xs text-ink-muted text-center mt-2">
+            Free plan: {activeBudgetCount} of {FREE_BUDGET_LIMIT} budgets used
+          </p>
+        )}
       </div>
 
       <p className="text-xs text-ink-muted text-center mt-4">Clear an amount to remove that category's budget.</p>

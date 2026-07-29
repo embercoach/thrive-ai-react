@@ -13,11 +13,14 @@ import type { RecurringItem } from "@/types";
 interface ManageRecurringModalProps {
   open: boolean;
   onClose: () => void;
+  onNeedUpgrade: () => void;
 }
 
-export function ManageRecurringModal({ open, onClose }: ManageRecurringModalProps) {
+const FREE_RECURRING_LIMIT = 2;
+
+export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRecurringModalProps) {
   const { user } = useAuth();
-  const { recurring, currency, refetch } = useAppData();
+  const { recurring, currency, isPro, refetch } = useAppData();
   const [showAdd, setShowAdd] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -68,6 +71,11 @@ export function ManageRecurringModal({ open, onClose }: ManageRecurringModalProp
     const amt = parseFloat(amount);
     if (!name.trim() || !amt) {
       setError("Please fill in name and amount.");
+      return;
+    }
+    if (!isPro && recurring.length >= FREE_RECURRING_LIMIT) {
+      onClose();
+      onNeedUpgrade();
       return;
     }
     setSaving(true);
@@ -206,9 +214,16 @@ export function ManageRecurringModal({ open, onClose }: ManageRecurringModalProp
           </div>
         </div>
       ) : (
-        <Button variant="outline" fullWidth onClick={() => setShowAdd(true)}>
-          <Plus size={15} /> Add Recurring
-        </Button>
+        <>
+          <Button variant="outline" fullWidth onClick={() => setShowAdd(true)}>
+            <Plus size={15} /> Add Recurring
+          </Button>
+          {!isPro && (
+            <p className="text-xs text-ink-muted text-center mt-2">
+              Free plan: {recurring.length} of {FREE_RECURRING_LIMIT} recurring items used
+            </p>
+          )}
+        </>
       )}
     </Modal>
   );

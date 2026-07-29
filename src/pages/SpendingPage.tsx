@@ -146,8 +146,17 @@ export function SpendingPage() {
       </p>
 
       <AddTransactionModal open={addOpen} onClose={() => setAddOpen(false)} />
-      <ManageBudgetsModal open={budgetsOpen} onClose={() => setBudgetsOpen(false)} budgetRows={budgetRows} />
-      <ManageRecurringModal open={recurringOpen} onClose={() => setRecurringOpen(false)} />
+      <ManageBudgetsModal
+        open={budgetsOpen}
+        onClose={() => setBudgetsOpen(false)}
+        budgetRows={budgetRows}
+        onNeedUpgrade={() => navigate("/profile")}
+      />
+      <ManageRecurringModal
+        open={recurringOpen}
+        onClose={() => setRecurringOpen(false)}
+        onNeedUpgrade={() => navigate("/profile")}
+      />
     </div>
   );
 }
