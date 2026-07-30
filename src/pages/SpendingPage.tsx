@@ -13,6 +13,7 @@ import { BillRow } from "@/components/transactions/BillRow";
 import { AddTransactionModal } from "@/components/transactions/AddTransactionModal";
 import { ManageBudgetsModal } from "@/components/transactions/ManageBudgetsModal";
 import { ManageRecurringModal } from "@/components/transactions/ManageRecurringModal";
+import UpgradeModal from "@/components/profile/UpgradeModal";
 import { formatMoney } from "@/lib/currency";
 
 export function SpendingPage() {
@@ -24,6 +25,8 @@ export function SpendingPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [budgetsOpen, setBudgetsOpen] = useState(false);
   const [recurringOpen, setRecurringOpen] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeTrigger, setUpgradeTrigger] = useState<string | undefined>(undefined);
 
   const upcomingRecurring = [...recurring].sort((a, b) => a.next_date.localeCompare(b.next_date));
 
@@ -34,6 +37,11 @@ export function SpendingPage() {
           (t.category || "").toLowerCase().includes(search.toLowerCase())
       )
     : transactions;
+
+  function handleNeedUpgrade(trigger: string) {
+    setUpgradeTrigger(trigger);
+    setShowUpgradeModal(true);
+  }
 
   return (
     <div className="px-4 pt-5 pb-4 flex flex-col gap-4">
@@ -150,12 +158,17 @@ export function SpendingPage() {
         open={budgetsOpen}
         onClose={() => setBudgetsOpen(false)}
         budgetRows={budgetRows}
-        onNeedUpgrade={() => navigate("/profile")}
+        onNeedUpgrade={() => handleNeedUpgrade("budget categories")}
       />
       <ManageRecurringModal
         open={recurringOpen}
         onClose={() => setRecurringOpen(false)}
-        onNeedUpgrade={() => navigate("/profile")}
+        onNeedUpgrade={() => handleNeedUpgrade("recurring transactions")}
+      />
+      <UpgradeModal
+        open={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        triggeredBy={upgradeTrigger}
       />
     </div>
   );
