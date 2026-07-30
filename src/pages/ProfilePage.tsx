@@ -21,6 +21,7 @@ import { CURRENCIES } from "@/lib/currency";
 import { supabase } from "@/services/supabase";
 import * as api from "@/services/api";
 import type { CurrencyCode } from "@/types";
+import UpgradeModal from "@/components/profile/UpgradeModal";
 
 function ComingSoonRow({ icon: Icon, label }: { icon: typeof Bell; label: string }) {
   return (
@@ -41,6 +42,7 @@ export function ProfilePage() {
   const [savingIncome, setSavingIncome] = useState(false);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [savingCurrency, setSavingCurrency] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const initial = (profile?.name || profile?.email || "?").charAt(0).toUpperCase();
 
@@ -85,7 +87,7 @@ export function ProfilePage() {
             <span className="text-sm font-bold text-ink">{isPro ? "Pro Plan" : "Free Plan"}</span>
           </div>
           {!isPro && (
-            <Button size="sm" variant="primary">
+            <Button size="sm" variant="primary" onClick={() => setShowUpgradeModal(true)}>
               Upgrade
             </Button>
           )}
@@ -162,6 +164,11 @@ export function ProfilePage() {
       <p className="text-center text-[10.5px] text-ink-muted uppercase tracking-wide pt-1 pb-2">
         Educational purposes only · Not financial advice
       </p>
+
+      <UpgradeModal
+        open={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+      />
     </div>
   );
 }
