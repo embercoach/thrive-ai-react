@@ -7,6 +7,7 @@ import { AddGoalModal } from "@/components/goals/AddGoalModal";
 import { ContributeGoalModal } from "@/components/goals/ContributeGoalModal";
 import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
+import UpgradeModal from "@/components/profile/UpgradeModal";
 import * as api from "@/services/api";
 import type { Goal } from "@/types";
 
@@ -15,6 +16,7 @@ export function GoalsPage() {
   const { goals, currency, refetch } = useAppData();
   const [addOpen, setAddOpen] = useState(false);
   const [contributeGoal, setContributeGoal] = useState<Goal | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const sorted = [...goals].sort((a, b) => b.current / b.target - a.current / a.target);
   const featured = sorted[0];
@@ -87,8 +89,13 @@ export function GoalsPage() {
         Educational purposes only · Not financial advice
       </p>
 
-      <AddGoalModal open={addOpen} onClose={() => setAddOpen(false)} onNeedUpgrade={() => navigate("/profile")} />
+      <AddGoalModal open={addOpen} onClose={() => setAddOpen(false)} onNeedUpgrade={() => setShowUpgradeModal(true)} />
       <ContributeGoalModal goal={contributeGoal} onClose={() => setContributeGoal(null)} />
+      <UpgradeModal
+        open={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        triggeredBy="goals"
+      />
     </div>
   );
 }
