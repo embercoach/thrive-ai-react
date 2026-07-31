@@ -67,14 +67,14 @@ export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }:
 
   async function handleAddNew() {
     if (!user) return;
-    const amt = parseFloat(newAmount);
-    if (!newCategory.trim() || !amt || amt <= 0) {
-      setError("Enter a category and an amount greater than 0.");
-      return;
-    }
     if (!isPro && activeBudgetCount >= FREE_BUDGET_LIMIT) {
       onClose();
       onNeedUpgrade();
+      return;
+    }
+    const amt = parseFloat(newAmount);
+    if (!newCategory.trim() || !amt || amt <= 0) {
+      setError("Enter a category and an amount greater than 0.");
       return;
     }
     setSaving(true);
