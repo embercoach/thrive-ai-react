@@ -68,14 +68,14 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
 
   async function handleAdd() {
     if (!user) return;
-    const amt = parseFloat(amount);
-    if (!name.trim() || !amt) {
-      setError("Please fill in name and amount.");
-      return;
-    }
     if (!isPro && recurring.length >= FREE_RECURRING_LIMIT) {
       onClose();
       onNeedUpgrade();
+      return;
+    }
+    const amt = parseFloat(amount);
+    if (!name.trim() || !amt) {
+      setError("Please fill in name and amount.");
       return;
     }
     setSaving(true);
@@ -136,8 +136,8 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
                     {item.frequency === "monthly" ? "Monthly" : "Weekly"} · next {item.next_date}
                   </div>
                 </div>
-                <span className={`text-sm font-bold flex-shrink-0 ${item.amount < 0 ? "text-ink" : "text-positive"}`}>
-                  {item.amount < 0 ? "-" : "+"}
+                <span className={`text-sm font-bold flex-shrink-0 ${item.amount < 0  ? "text-ink" : "text-positive"}`}>
+                  {item.amount < 0  ? "-" : "+"}
                   {formatMoney(item.amount, currency)}
                 </span>
                 <button
