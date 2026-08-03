@@ -6,6 +6,7 @@ import { PromptCard } from "@/components/ai/PromptCard";
 import { BreakdownCard } from "@/components/ai/BreakdownCard";
 import { useAppData } from "@/hooks/useAppData";
 import { useNavigate } from "react-router-dom";
+import UpgradeModal from "@/components/profile/UpgradeModal";
 
 const SUGGESTIONS = [
   { text: "Where did I spend the most this month?", icon: TrendingDown, color: "var(--color-cat-shopping)" },
@@ -28,6 +29,7 @@ export function AdvisorPage() {
   const { messages, loadingHistory, sending, error, send, clear, questionsUsedThisMonth, limitReached, freeLimit, isPro, profileName } =
     useChat();
   const [input, setInput] = useState("");
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -107,7 +109,7 @@ export function AdvisorPage() {
         </div>
       )}
 
-      {!isPro && (
+      {!isPro && !limitReached && (
         <div className="px-5 pb-1 flex-shrink-0">
           <p className="text-[10px] text-ink-muted text-center uppercase tracking-wide">
             {freeLimit - questionsUsedThisMonth} of {freeLimit} free questions left this month
@@ -116,25 +118,40 @@ export function AdvisorPage() {
       )}
 
       <div className="px-5 pb-5 pt-1 flex-shrink-0">
-        <div className="flex items-center gap-2 bg-surface border border-border-strong rounded-full pl-4 pr-1.5 py-1.5">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
-            placeholder={limitReached ? "Upgrade to keep chatting…" : "Ask me anything about your money…"}
-            disabled={limitReached || sending}
-            className="flex-1 bg-transparent text-ink text-sm outline-none placeholder:text-ink-muted min-w-0"
-          />
+        {limitReached ? (
           <button
-            onClick={() => handleSend(input)}
-            disabled={!input.trim() || sending || limitReached}
-            aria-label="Send"
-            className="w-8 h-8 rounded-full bg-brand text-ink-on-brand flex items-center justify-center flex-shrink-0 disabled:opacity-40 cursor-pointer"
+            onClick={() => setShowUpgradeModal(true)}
+            className="w-full bg-[#9C7440] hover:bg-[#8a6537] text-white font-medium py-3 rounded-full transition-colors"
           >
-            <Send size={14} />
+            Upgrade to keep chatting
           </button>
-        </div>
+        ) : (
+          <div className="flex items-center gap-2 bg-surface border border-border-strong rounded-full pl-4 pr-1.5 py-1.5">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
+              placeholder="Ask me anything about your money…"
+              disabled={sending}
+              className="flex-1 bg-transparent text-ink text-sm outline-none placeholder:text-ink-muted min-w-0"
+            />
+            <button
+              onClick={() => handleSend(input)}
+              disabled={!input.trim() || sending}
+              aria-label="Send"
+              className="w-8 h-8 rounded-full bg-brand text-ink-on-brand flex items-center justify-center flex-shrink-0 disabled:opacity-40 cursor-pointer"
+            >
+              <Send size={14} />
+            </button>
+          </div>
+        )}
       </div>
+
+      <UpgradeModal
+        open={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        triggeredBy="AI questions"
+      />
     </div>
   );
 }
