@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Check,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
 import { Card } from "@/components/ui/Card";
@@ -35,7 +36,21 @@ function ComingSoonRow({ icon: Icon, label }: { icon: typeof Bell; label: string
   );
 }
 
+function NavRow({ icon: Icon, label, onClick }: { icon: typeof Bell; label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 py-3 border-b border-border last:border-0 cursor-pointer text-left"
+    >
+      <Icon size={17} className="text-ink-secondary flex-shrink-0" />
+      <span className="flex-1 text-sm text-ink">{label}</span>
+      <ChevronRight size={15} className="text-ink-muted" />
+    </button>
+  );
+}
+
 export function ProfilePage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { profile, isPro, refetch } = useAppData();
   const [income, setIncome] = useState(String(profile?.monthly_income ?? ""));
@@ -154,7 +169,7 @@ export function ProfilePage() {
 
       <Card padding="lg">
         <ComingSoonRow icon={HelpCircle} label="Help & Feedback" />
-        <ComingSoonRow icon={Info} label="About Thrive AI" />
+        <NavRow icon={Info} label="About Thrive AI" onClick={() => navigate("/about")} />
       </Card>
 
       <Button variant="danger" fullWidth onClick={handleSignOut}>

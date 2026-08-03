@@ -8,6 +8,7 @@ import { CategoryDetailPage } from "@/pages/CategoryDetailPage";
 import { GoalsPage } from "@/pages/GoalsPage";
 import { AdvisorPage } from "@/pages/AdvisorPage";
 import { ProfilePage } from "@/pages/ProfilePage";
+import { AboutPage } from "@/pages/AboutPage";
 import { LoginPage } from "@/pages/LoginPage";
 import type { ReactNode } from "react";
 
@@ -38,6 +39,7 @@ function App() {
                 <Route path="/ai" element={<AdvisorPage />} />
                 <Route path="/goals" element={<GoalsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/about" element={<AboutPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
