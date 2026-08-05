@@ -168,7 +168,7 @@ export function ProfilePage() {
       </Card>
 
       <Card padding="lg">
-        <ComingSoonRow icon={HelpCircle} label="Help & Feedback" />
+        <NavRow icon={HelpCircle} label="Help & Feedback" onClick={() => navigate("/help")} />
         <NavRow icon={Info} label="About Thrive AI" onClick={() => navigate("/about")} />
       </Card>
 

@@ -9,6 +9,7 @@ import { GoalsPage } from "@/pages/GoalsPage";
 import { AdvisorPage } from "@/pages/AdvisorPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { AboutPage } from "@/pages/AboutPage";
+import { HelpFeedbackPage } from "@/pages/HelpFeedbackPage";
 import { LoginPage } from "@/pages/LoginPage";
 import type { ReactNode } from "react";
 
@@ -40,6 +41,7 @@ function App() {
                 <Route path="/goals" element={<GoalsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/about" element={<AboutPage />} />
+                <Route path="/help" element={<HelpFeedbackPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
