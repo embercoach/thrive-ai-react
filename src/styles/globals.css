@@ -72,6 +72,30 @@
   --duration-base: 250ms;
 }
 
+/* ============================================================
+   LIGHT MODE
+   Overrides the dark-mode defaults above when `.light` is
+   present on <html>. Brand, semantic, and category colors stay
+   the same in both modes — only canvas/surface/ink/border shift.
+   ============================================================ */
+.light {
+  --color-canvas: #f7f8f6;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #eef0ec;
+  --color-overlay: rgb(0 0 0 / 0.35);
+
+  --color-ink: #14161a;
+  --color-ink-secondary: #565c62;
+  --color-ink-muted: #8b9096;
+  --color-ink-on-brand: #0b1410;
+
+  --color-border: #e2e4de;
+  --color-border-strong: #cbcec5;
+
+  --shadow-card: 0 2px 14px rgb(0 0 0 / 0.08);
+  --shadow-elevated: 0 12px 32px rgb(0 0 0 / 0.12);
+}
+
 @layer base {
   * {
     @apply border-border;

@@ -11,10 +11,13 @@ import {
   Info,
   ChevronRight,
   Check,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
+import { useTheme } from "@/hooks/useTheme";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -46,6 +49,37 @@ function NavRow({ icon: Icon, label, onClick }: { icon: typeof Bell; label: stri
       <span className="flex-1 text-sm text-ink">{label}</span>
       <ChevronRight size={15} className="text-ink-muted" />
     </button>
+  );
+}
+
+function AppearanceRow() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <div className="flex items-center gap-3 py-3 border-b border-border last:border-0">
+      <Palette size={17} className="text-ink-secondary flex-shrink-0" />
+      <span className="flex-1 text-sm text-ink">Appearance</span>
+      <div className="flex items-center gap-1 bg-surface-sunken rounded-lg p-0.5">
+        <button
+          onClick={() => setTheme("light")}
+          aria-label="Light mode"
+          className={`flex items-center justify-center w-7 h-7 rounded-md cursor-pointer transition-colors ${
+            theme === "light" ? "bg-brand text-ink-on-brand" : "text-ink-muted"
+          }`}
+        >
+          <Sun size={14} />
+        </button>
+        <button
+          onClick={() => setTheme("dark")}
+          aria-label="Dark mode"
+          className={`flex items-center justify-center w-7 h-7 rounded-md cursor-pointer transition-colors ${
+            theme === "dark" ? "bg-brand text-ink-on-brand" : "text-ink-muted"
+          }`}
+        >
+          <Moon size={14} />
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -163,7 +197,7 @@ export function ProfilePage() {
         <ComingSoonRow icon={User} label="Connected Banks" />
         <ComingSoonRow icon={Bell} label="Notifications" />
         <ComingSoonRow icon={Shield} label="Security" />
-        <ComingSoonRow icon={Palette} label="Appearance" />
+        <AppearanceRow />
         <ComingSoonRow icon={Globe} label="Language" />
       </Card>
 
