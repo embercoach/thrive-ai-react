@@ -81,6 +81,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!response.ok) {
       const errText = await response.text();
+      console.error("Anthropic API error:", response.status, errText);
       res.status(response.status).json({ error: "Claude API error", detail: errText });
       return;
     }
