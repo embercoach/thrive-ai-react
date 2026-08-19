@@ -78,6 +78,11 @@ export function useSpendingData(transactions: Transaction[], budgets: Budget[]) 
       const cat = t.category || "Other";
       byCat[cat] = (byCat[cat] || 0) + Math.abs(t.amount);
     });
+    budgets.forEach((b) => {
+      if (!(b.category in byCat)) {
+        byCat[b.category] = 0;
+      }
+    });
     return Object.entries(byCat)
       .sort((a, b) => b[1] - a[1])
       .map(([category, amount]) => {
