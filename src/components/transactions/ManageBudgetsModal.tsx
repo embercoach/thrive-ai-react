@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,9 +37,12 @@ export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }:
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  if (open && Object.keys(drafts).length === 0 && Object.keys(initialDrafts).length > 0) {
+  // Keep the editable draft values in sync with the real budget data
+  // whenever it changes (e.g. right after adding a new budget via
+  // handleAddNew and refetching) — not just on the very first render.
+  useEffect(() => {
     setDrafts(initialDrafts);
-  }
+  }, [initialDrafts]);
 
   async function handleSaveRow(category: string) {
     if (!user) return;
