@@ -32,12 +32,9 @@ export function LoginPage() {
       if (error) {
         setError(error.message);
       } else if (data.user && !data.session) {
-        // Email confirmation is required before a session is created.
         setInfo("Check your email to confirm your account, then sign in.");
         setMode("signin");
       }
-      // If data.session exists, Supabase auto-confirmed and the user is
-      // now signed in — the app will redirect via the auth state listener.
     }
 
     setLoading(false);
@@ -50,49 +47,121 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-canvas flex items-center justify-center px-6">
-      <div className="w-full max-w-[380px]">
-        <h1 className="text-2xl font-bold text-ink text-center mb-1">Thrive AI</h1>
-        <p className="text-ink-secondary text-sm text-center mb-6">
-          {mode === "signin" ? "Welcome back" : "Create your account"}
-        </p>
-        {error && <p className="text-negative text-sm mb-3 text-center">{error}</p>}
-        {info && <p className="text-brand text-sm mb-3 text-center">{info}</p>}
-        <form onSubmit={handleSubmit}>
-          <Input
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-          />
-          <Input
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Your password"
-          />
-          <Button type="submit" fullWidth disabled={loading} className="mt-2">
-            {loading
-              ? mode === "signin"
-                ? "Signing in…"
-                : "Creating account…"
-              : mode === "signin"
-                ? "Sign in"
-                : "Create account"}
-          </Button>
-        </form>
-        <p className="text-sm text-ink-secondary text-center mt-4">
-          {mode === "signin" ? "Don't have an account?" : "Already have an account?"}{" "}
+    <div className="min-h-screen bg-canvas relative overflow-hidden flex items-center justify-center px-6">
+      {/* Ambient brand glow — quiet, not decorative noise */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-32 -left-24 w-80 h-80 rounded-full opacity-[0.15] blur-3xl"
+        style={{ background: "var(--color-brand)" }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-32 -right-24 w-96 h-96 rounded-full opacity-[0.10] blur-3xl"
+        style={{ background: "var(--color-brand)" }}
+      />
+
+      <div
+        className="w-full max-w-[380px] relative z-10"
+        style={{ animation: "thrive-fade-in 0.5s ease-out" }}
+      >
+        <style>{`
+          @keyframes thrive-fade-in {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+
+        <div className="bg-surface border border-border rounded-3xl p-8 shadow-xl shadow-black/5">
+          {/* Signature mark: an ascending sparkline in a badge — a visual
+              shorthand for "thriving" rather than a generic app icon. */}
+          <div className="flex justify-center mb-5">
+            <div
+              className="w-11 h-11 rounded-2xl flex items-center justify-center"
+              style={{ background: "var(--color-brand)" }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M3 16L9 10L13 14L21 6"
+                  stroke="white"
+                  strokeWidth="2.25"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M15 6H21V12"
+                  stroke="white"
+                  strokeWidth="2.25"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle cx="3" cy="16" r="1.6" fill="white" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center gap-2 mb-1.5">
+            <h1 className="text-2xl font-bold text-ink tracking-tight">Thrive</h1>
+            <span className="text-[11px] font-bold tracking-wide bg-brand/10 text-brand px-2 py-0.5 rounded-full">
+              AI
+            </span>
+          </div>
+          <p className="text-ink-secondary text-sm text-center mb-7">
+            {mode === "signin" ? "Welcome back" : "Let's get your money sorted"}
+          </p>
+
+          {error && (
+            <p className="text-negative text-sm mb-4 text-center bg-negative/5 border border-negative/20 rounded-xl py-2 px-3">
+              {error}
+            </p>
+          )}
+          {info && (
+            <p className="text-brand text-sm mb-4 text-center bg-brand/5 border border-brand/20 rounded-xl py-2 px-3">
+              {info}
+            </p>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <Input
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+            />
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Your password"
+            />
+            <Button type="submit" fullWidth disabled={loading} className="mt-3">
+              {loading
+                ? mode === "signin"
+                  ? "Signing in…"
+                  : "Creating account…"
+                : mode === "signin"
+                  ? "Sign in"
+                  : "Create account"}
+            </Button>
+          </form>
+
+          <div className="flex items-center gap-3 my-6">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-[11px] uppercase tracking-wide text-ink-muted">
+              {mode === "signin" ? "New here" : "Have an account"}
+            </span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+
           <button
             type="button"
             onClick={toggleMode}
-            className="text-brand font-semibold hover:underline"
+            className="w-full text-center text-sm font-semibold text-brand hover:opacity-80 transition-opacity"
           >
-            {mode === "signin" ? "Sign up" : "Sign in"}
+            {mode === "signin" ? "Create an account" : "Sign in instead"}
           </button>
-        </p>
+        </div>
       </div>
     </div>
   );
