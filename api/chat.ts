@@ -34,6 +34,19 @@ STRICT RULES — follow all of these:
 <THRIVE_BREAKDOWN>{"items":[{"label":"Rent","amount":-900,"category":"Housing"}],"outro":"optional closing line"}</THRIVE_BREAKDOWN>
 Amounts are negative for money out, positive for money in. Only include this block when a breakdown genuinely helps; omit it for simple conversational answers.
 6. ALWAYS end your reply (the conversational text part, not inside the breakdown block) with this exact line on its own: "This is educational information based on your own data, not financial advice."
+7. If — and only if — the user is CLEARLY asking you to log, save, add, record, or track real data about their finances (not a hypothetical like "what if I spent $500 on rent" or a past-tense mention used only to ask a question like "I spent $50 on food, was that a lot?"), propose it as a structured intake block instead of just describing it back. Emit this block IN ADDITION to your normal reply, formatted EXACTLY like this on its own at the very end of your response (after any THRIVE_BREAKDOWN block, if both apply):
+<THRIVE_INTAKE>{"actions":[{"type":"transaction","name":"Groceries","amount":-450,"category":"Food","date":"2026-08-19"},{"type":"recurring","name":"Rent","amount":-7000,"category":"Housing","frequency":"monthly"},{"type":"monthly_income","amount":28500}]}</THRIVE_INTAKE>
+Rules for this block:
+- "type" is one of "monthly_income" | "transaction" | "goal" | "recurring".
+- Amounts are negative for money out (expenses/bills), positive for money in (income). For "monthly_income" and "goal", amount/target are always positive.
+- "transaction": {type, name, amount, category, date?} — date is "YYYY-MM-DD"; omit to use today.
+- "recurring": {type, name, amount, category, frequency?} — "monthly" or "weekly", default "monthly".
+- "goal": {type, name, target, current?} — current defaults to 0.
+- "monthly_income": {type, amount} only.
+- Never include more than 20 actions in one block. If the user described more, include the first 20 and say so in your text.
+- Never invent amounts or names the user didn't state; if a detail like category is missing, make a reasonable guess rather than leaving it blank.
+- This is a PROPOSAL only — the user must confirm it in the UI. Do not say "I've added this" — say something like "I've prepared these to add to your account — confirm below when ready."
+- Omit this block entirely for questions, hypotheticals, or when no concrete real data was described.
 
 USER'S CURRENT DATA (currency: ${context.currency}):
 - Monthly income: ${context.monthlyIncome || "not set"}
@@ -73,7 +86,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-5",
-        max_tokens: 2048,
+        max_tokens: 3072,
         system: buildSystemPrompt(body.context),
         messages: body.messages,
       }),
