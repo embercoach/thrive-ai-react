@@ -4,6 +4,7 @@ import { useChat } from "@/hooks/useChat";
 import { UserBubble, AssistantBubble } from "@/components/ai/ChatBubble";
 import { PromptCard } from "@/components/ai/PromptCard";
 import { BreakdownCard } from "@/components/ai/BreakdownCard";
+import { IntakePreviewCard } from "@/components/ai/IntakePreviewCard";
 import { useAppData } from "@/hooks/useAppData";
 import { useNavigate } from "react-router-dom";
 import UpgradeModal from "@/components/profile/UpgradeModal";
@@ -26,10 +27,24 @@ function greeting(name?: string) {
 export function AdvisorPage() {
   const navigate = useNavigate();
   const { currency } = useAppData();
-  const { messages, loadingHistory, sending, error, send, clear, questionsUsedThisMonth, limitReached, freeLimit, isPro, profileName } =
-    useChat();
+  const {
+    messages,
+    loadingHistory,
+    sending,
+    error,
+    send,
+    clear,
+    confirmIntake,
+    dismissIntake,
+    questionsUsedThisMonth,
+    limitReached,
+    freeLimit,
+    isPro,
+    profileName,
+  } = useChat();
   const [input, setInput] = useState("");
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeTrigger, setUpgradeTrigger] = useState("AI questions");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -75,22 +90,33 @@ export function AdvisorPage() {
             {messages.map((m) =>
               m.role === "user" ? (
                 <UserBubble key={m.id}>{m.text}</UserBubble>
-              ) : m.breakdown ? (
-                <div key={m.id}>
-                  {m.text && (
-                    <div className="mb-2">
-                      <AssistantBubble text={m.text} />
-                    </div>
-                  )}
-                  <BreakdownCard
-                    breakdown={m.breakdown}
-                    currency={currency}
-                    onViewTransactions={() => navigate("/spending")}
-                    onSeeFullAnalysis={() => navigate("/spending")}
-                  />
-                </div>
               ) : (
-                <AssistantBubble key={m.id} text={m.text} />
+                <div key={m.id} className="flex flex-col gap-2">
+                  {m.text && <AssistantBubble text={m.text} />}
+                  {m.breakdown && (
+                    <BreakdownCard
+                      breakdown={m.breakdown}
+                      currency={currency}
+                      onViewTransactions={() => navigate("/spending")}
+                      onSeeFullAnalysis={() => navigate("/spending")}
+                    />
+                  )}
+                  {m.intake && m.intakeStatus !== "dismissed" && (
+                    <IntakePreviewCard
+                      actions={m.intake}
+                      status={m.intakeStatus ?? "pending"}
+                      note={m.intakeNote}
+                      currency={currency}
+                      onConfirm={() =>
+                        confirmIntake(m.id, (reason) => {
+                          setUpgradeTrigger(reason);
+                          setShowUpgradeModal(true);
+                        })
+                      }
+                      onDismiss={() => dismissIntake(m.id)}
+                    />
+                  )}
+                </div>
               )
             )}
             {sending && (
@@ -120,7 +146,10 @@ export function AdvisorPage() {
       <div className="px-5 pb-5 pt-1 flex-shrink-0">
         {limitReached ? (
           <button
-            onClick={() => setShowUpgradeModal(true)}
+            onClick={() => {
+              setUpgradeTrigger("AI questions");
+              setShowUpgradeModal(true);
+            }}
             className="w-full bg-[#9C7440] hover:bg-[#8a6537] text-white font-medium py-3 rounded-full transition-colors"
           >
             Upgrade to keep chatting
@@ -150,7 +179,7 @@ export function AdvisorPage() {
       <UpgradeModal
         open={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
-        triggeredBy="AI questions"
+        triggeredBy={upgradeTrigger}
       />
     </div>
   );
