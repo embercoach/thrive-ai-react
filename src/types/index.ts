@@ -88,7 +88,8 @@ export interface IntakeAction {
   amount?: number;
   target?: number;
   current?: number;
-  kind?: "income" | "expense";
   category?: string;
   frequency?: "monthly" | "weekly";
+  date?: string; // transaction only, YYYY-MM-DD
+  next_date?: string; // recurring only, YYYY-MM-DD
 }
