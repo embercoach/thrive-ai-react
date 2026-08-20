@@ -9,6 +9,7 @@ import { categoryIcon } from "@/lib/categories";
 import { formatMoney } from "@/lib/currency";
 import * as api from "@/services/api";
 import type { RecurringItem } from "@/types";
+import { todayLocalStr } from "@/utils/dates";
 
 interface ManageRecurringModalProps {
   open: boolean;
@@ -30,7 +31,7 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
   const [type, setType] = useState<"expense" | "income">("expense");
   const [category, setCategory] = useState("");
   const [frequency, setFrequency] = useState<"monthly" | "weekly">("monthly");
-  const [nextDate, setNextDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [nextDate, setNextDate] = useState(todayLocalStr);
   const [saving, setSaving] = useState(false);
 
   async function handleToggleActive(item: RecurringItem) {
@@ -63,7 +64,7 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
     setType("expense");
     setCategory("");
     setFrequency("monthly");
-    setNextDate(new Date().toISOString().split("T")[0]);
+    setNextDate(todayLocalStr());
   }
 
   async function handleAdd() {
