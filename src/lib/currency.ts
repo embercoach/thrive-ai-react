@@ -27,6 +27,17 @@ export function formatMoney(amount: number, currency: string = "USD"): string {
   );
 }
 
+/**
+ * Like formatMoney, but keeps a leading "−" for negative values. Use this
+ * wherever a figure can legitimately go below zero and the sign is the whole
+ * point — a balance, a net total — since plain formatMoney is absolute and
+ * would render an overdrawn −$1,070 as a healthy-looking "$1,070.00".
+ */
+export function formatMoneySigned(amount: number, currency: string = "USD"): string {
+  const n = Number(amount) || 0;
+  return (n < 0 ? "−" : "") + formatMoney(n, currency);
+}
+
 /** Compact formatted amount for axis labels, e.g. "$2.4k". */
 export function formatMoneyCompact(amount: number, currency: string = "USD"): string {
   const c = currencyConfig(currency);
