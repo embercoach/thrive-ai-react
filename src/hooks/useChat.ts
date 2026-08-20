@@ -6,7 +6,7 @@ import { parseBreakdown } from "@/lib/parseBreakdown";
 import { parseIntake } from "@/lib/parseIntake";
 import * as api from "@/services/api";
 import type { Breakdown, IntakeAction } from "@/types";
-import { parseLocalDate, todayLocal, todayLocalStr, isSameMonth } from "@/utils/dates";
+import { parseLocalDate, todayLocal, todayLocalStr, advanceDate, isSameMonth } from "@/utils/dates";
 
 export type IntakeStatus = "pending" | "confirming" | "confirmed" | "partial" | "dismissed";
 
@@ -253,7 +253,16 @@ export function useChat() {
                 category: action.category?.trim() || "Other",
                 currency,
                 frequency: action.frequency || "monthly",
-                next_date: action.next_date && ISO_DATE_RE.test(action.next_date) ? action.next_date : todayStr,
+                // A recurring rule whose next_date is today gets posted as a
+                // real transaction immediately by processRecurring — so
+                // defaulting to today would make "my rent is $700/month"
+                // instantly charge $700 of spending the user never made.
+                // Default to the next cycle instead; only an explicit date
+                // from the user is honoured as-is.
+                next_date:
+                  action.next_date && ISO_DATE_RE.test(action.next_date)
+                    ? action.next_date
+                    : advanceDate(todayStr, action.frequency || "monthly"),
                 active: true,
               });
               if (error) {
