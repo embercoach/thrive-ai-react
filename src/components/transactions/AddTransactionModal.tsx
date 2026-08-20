@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
 import * as api from "@/services/api";
+import { todayLocalStr } from "@/utils/dates";
 
 interface AddTransactionModalProps {
   open: boolean;
@@ -18,7 +19,7 @@ export function AddTransactionModal({ open, onClose }: AddTransactionModalProps)
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"expense" | "income">("expense");
   const [category, setCategory] = useState("");
-  const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(todayLocalStr);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
