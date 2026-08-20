@@ -15,7 +15,7 @@ import { Sparkline } from "@/components/charts/Sparkline";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { TransactionRow } from "@/components/transactions/TransactionRow";
 import { BillRow } from "@/components/transactions/BillRow";
-import { formatMoney } from "@/lib/currency";
+import { formatMoney, formatMoneySigned } from "@/lib/currency";
 import type { Goal } from "@/types";
 
 function greeting(name?: string) {
@@ -70,7 +70,7 @@ export function HomePage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-sans text-[40px] font-extrabold text-ink tracking-tight leading-none">
-                  {hidden ? "••••••" : formatMoney(availableToSpend, currency)}
+                  {hidden ? "••••••" : formatMoneySigned(availableToSpend, currency)}
                 </span>
                 <button onClick={toggle} aria-label="Toggle balance visibility" className="text-ink-muted cursor-pointer">
                   {hidden ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -85,7 +85,7 @@ export function HomePage() {
               Total balance
             </div>
             <div className="font-sans text-[22px] font-extrabold text-ink tracking-tight">
-              {hidden ? "••••" : formatMoney(netWorth, currency)}
+              {hidden ? "••••" : formatMoneySigned(netWorth, currency)}
             </div>
             {trendPct !== null && (
               <span
