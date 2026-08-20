@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Eye, EyeOff, ArrowUp, ArrowDown, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppData } from "@/hooks/useAppData";
@@ -14,9 +15,10 @@ import { CardHeader } from "@/components/ui/CardHeader";
 import { Sparkline } from "@/components/charts/Sparkline";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { TransactionRow } from "@/components/transactions/TransactionRow";
+import { EditTransactionModal } from "@/components/transactions/EditTransactionModal";
 import { BillRow } from "@/components/transactions/BillRow";
 import { formatMoney, formatMoneySigned } from "@/lib/currency";
-import type { Goal } from "@/types";
+import type { Goal, Transaction } from "@/types";
 
 function greeting(name?: string) {
   const h = new Date().getHours();
@@ -32,6 +34,7 @@ export function HomePage() {
   const sparkPoints = useSparklinePoints(transactions);
   const brief = useHomeBrief(transactions, goals, recurring, budgets, monthlyIncome, isPro, currency);
   const { hidden, toggle } = useBalanceVisibility();
+  const [editing, setEditing] = useState<Transaction | null>(null);
 
   const trendUp = sparkPoints.length >= 2 ? sparkPoints[sparkPoints.length - 1] >= sparkPoints[0] : null;
   const trendPct =
@@ -152,7 +155,9 @@ export function HomePage() {
           {recentTxns.length === 0 ? (
             <p className="text-sm text-ink-muted text-center py-2">No transactions yet</p>
           ) : (
-            recentTxns.map((t) => <TransactionRow key={t.id} transaction={t} currency={currency} />)
+            recentTxns.map((t) => (
+              <TransactionRow key={t.id} transaction={t} currency={currency} onClick={() => setEditing(t)} />
+            ))
           )}
         </Card>
 
@@ -167,6 +172,8 @@ export function HomePage() {
           Educational purposes only · Not financial advice
         </p>
       </div>
+
+      <EditTransactionModal transaction={editing} onClose={() => setEditing(null)} />
     </div>
   );
 }

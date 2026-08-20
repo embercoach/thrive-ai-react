@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { Transaction } from "@/types";
 import { Search, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppData } from "@/hooks/useAppData";
@@ -11,6 +12,7 @@ import { CategoryRow } from "@/components/transactions/CategoryRow";
 import { TransactionRow } from "@/components/transactions/TransactionRow";
 import { BillRow } from "@/components/transactions/BillRow";
 import { AddTransactionModal } from "@/components/transactions/AddTransactionModal";
+import { EditTransactionModal } from "@/components/transactions/EditTransactionModal";
 import { ManageBudgetsModal } from "@/components/transactions/ManageBudgetsModal";
 import { ManageRecurringModal } from "@/components/transactions/ManageRecurringModal";
 import UpgradeModal from "@/components/profile/UpgradeModal";
@@ -23,6 +25,7 @@ export function SpendingPage() {
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [editing, setEditing] = useState<Transaction | null>(null);
   const [budgetsOpen, setBudgetsOpen] = useState(false);
   const [recurringOpen, setRecurringOpen] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -151,7 +154,9 @@ export function SpendingPage() {
         {filteredTxns.length === 0 ? (
           <p className="text-sm text-ink-muted text-center py-2">No transactions found</p>
         ) : (
-          filteredTxns.map((t) => <TransactionRow key={t.id} transaction={t} currency={currency} />)
+          filteredTxns.map((t) => (
+            <TransactionRow key={t.id} transaction={t} currency={currency} onClick={() => setEditing(t)} />
+          ))
         )}
       </Card>
 
@@ -160,6 +165,7 @@ export function SpendingPage() {
       </p>
 
       <AddTransactionModal open={addOpen} onClose={() => setAddOpen(false)} />
+      <EditTransactionModal transaction={editing} onClose={() => setEditing(null)} />
       <ManageBudgetsModal
         open={budgetsOpen}
         onClose={() => setBudgetsOpen(false)}

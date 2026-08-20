@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useAppData } from "@/hooks/useAppData";
@@ -7,6 +8,8 @@ import { CardHeader } from "@/components/ui/CardHeader";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { TrendLine } from "@/components/charts/TrendLine";
 import { TransactionRow } from "@/components/transactions/TransactionRow";
+import { EditTransactionModal } from "@/components/transactions/EditTransactionModal";
+import type { Transaction } from "@/types";
 import { formatMoney } from "@/lib/currency";
 import { categoryIcon } from "@/lib/categories";
 import { parseLocalDate, todayLocal, normCategory, isSameMonth } from "@/utils/dates";
@@ -16,6 +19,7 @@ export function CategoryDetailPage() {
   const decodedCategory = decodeURIComponent(category);
   const navigate = useNavigate();
   const { transactions, budgets, currency } = useAppData();
+  const [editing, setEditing] = useState<Transaction | null>(null);
   const Icon = categoryIcon(decodedCategory);
 
   const today = todayLocal();
@@ -80,7 +84,9 @@ export function CategoryDetailPage() {
           {shown.length === 0 ? (
             <p className="text-sm text-ink-muted text-center py-2">No transactions this month</p>
           ) : (
-            shown.map((t) => <TransactionRow key={t.id} transaction={t} currency={currency} showDate />)
+            shown.map((t) => (
+              <TransactionRow key={t.id} transaction={t} currency={currency} showDate onClick={() => setEditing(t)} />
+            ))
           )}
         </Card>
         {remaining > 0 && (
@@ -103,6 +109,8 @@ export function CategoryDetailPage() {
           Educational purposes only · Not financial advice
         </p>
       </div>
+
+      <EditTransactionModal transaction={editing} onClose={() => setEditing(null)} />
     </div>
   );
 }
