@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   User,
   LogOut,
@@ -93,6 +93,16 @@ export function ProfilePage() {
   const [savingCurrency, setSavingCurrency] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
+  // `profile` is null on the first render while useAppData fetches, so the
+  // useState initialiser above always ran with an empty value and never
+  // caught up. That left the field blank even when an income WAS saved —
+  // and because an empty field saves as `parseFloat("") || 0`, the next
+  // Save silently wiped the stored income and broke every savings-rate
+  // insight that depends on it. Re-sync whenever the stored value changes.
+  useEffect(() => {
+    setIncome(profile?.monthly_income ? String(profile.monthly_income) : "");
+  }, [profile?.monthly_income]);
+
   const initial = (profile?.name || profile?.email || "?").charAt(0).toUpperCase();
 
   async function handleSaveIncome() {
@@ -143,7 +153,7 @@ export function ProfilePage() {
         </div>
         {!isPro && (
           <p className="text-xs text-ink-muted mt-2">
-            Free plan includes 2 goals and 3 AI questions per month. Upgrade for unlimited access.
+            Free plan includes 2 goals, 2 recurring items, 2 budgets and 3 AI questions per month. Upgrade for unlimited access.
           </p>
         )}
       </Card>
