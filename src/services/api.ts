@@ -1,6 +1,6 @@
 import { supabase } from "@/services/supabase";
 import type { Transaction, Goal, Budget, RecurringItem, Profile, ChatMessage } from "@/types";
-import { advanceDate } from "@/utils/dates";
+import { advanceDate, todayLocalStr } from "@/utils/dates";
 
 export async function fetchProfile(userId: string): Promise<Profile | null> {
   const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
@@ -110,7 +110,9 @@ export async function processRecurring(userId: string, currency: string) {
       .eq("active", true);
     if (!rules || !rules.length) return;
 
-    const today = new Date().toISOString().split("T")[0];
+    // Local, not UTC — a UTC "today" is still yesterday for anyone east of
+    // UTC in the small hours, which would defer a bill that is in fact due.
+    const today = todayLocalStr();
     for (const r of rules as RecurringItem[]) {
       let next = r.next_date;
       let guard = 0;
