@@ -14,6 +14,20 @@ export function todayLocal(): Date {
   return d;
 }
 
+/**
+ * Today as "YYYY-MM-DD" in the user's LOCAL timezone.
+ *
+ * Deliberately not `new Date().toISOString().split("T")[0]` — that returns the
+ * UTC date, which is already the *previous* day for anyone east of UTC late in
+ * the evening (and the next day for anyone west of it early in the morning).
+ * Anything user-facing that means "today" must go through here.
+ */
+export function todayLocalStr(): string {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 export function daysBetween(a: Date, b: Date): number {
   return Math.round((b.getTime() - a.getTime()) / 86400000);
 }
