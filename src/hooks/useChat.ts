@@ -6,7 +6,7 @@ import { parseBreakdown } from "@/lib/parseBreakdown";
 import { parseIntake } from "@/lib/parseIntake";
 import * as api from "@/services/api";
 import type { Breakdown, IntakeAction } from "@/types";
-import { parseLocalDate, todayLocal, isSameMonth } from "@/utils/dates";
+import { parseLocalDate, todayLocal, todayLocalStr, isSameMonth } from "@/utils/dates";
 
 export type IntakeStatus = "pending" | "confirming" | "confirmed" | "partial" | "dismissed";
 
@@ -21,6 +21,22 @@ export interface DisplayMessage {
 }
 
 const FREE_MONTHLY_QUESTIONS = 3;
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Last-line defense on any date the model proposed. Even told today's date,
+ * a model can still emit a malformed or future-dated value, and a bad date
+ * silently files the row under the wrong month — which then quietly skews
+ * every "this month" total in the app. Anything not a real, non-future
+ * calendar date falls back to today.
+ */
+function safeIntakeDate(proposed: string | undefined, todayStr: string): string {
+  if (!proposed || !ISO_DATE_RE.test(proposed)) return todayStr;
+  const parsed = parseLocalDate(proposed);
+  if (Number.isNaN(parsed.getTime())) return todayStr;
+  return proposed > todayStr ? todayStr : proposed;
+}
+
 const MAX_INTAKE_ACTIONS_PER_TURN = 20;
 const FREE_RECURRING_LIMIT = 2;
 const FREE_GOAL_LIMIT = 2;
@@ -43,7 +59,12 @@ export function useChat() {
       .then((history) => {
         setMessages(
           history.map((m, i) => {
-            const { text, breakdown } = parseBreakdown(m.content);
+            const { text: textAfterBreakdown, breakdown } = parseBreakdown(m.content);
+            // Intake actions are deliberately NOT restored — confirmation
+            // state is session-local, so a reloaded conversation must never
+            // re-offer an already-answered card. But the tag still has to be
+            // stripped here, or the raw JSON leaks into the visible bubble.
+            const { text } = parseIntake(textAfterBreakdown);
             return { id: m.id ?? `hist-${i}`, role: m.role, text, breakdown };
           })
         );
@@ -78,6 +99,9 @@ export function useChat() {
     }));
 
     return {
+      // The model can't know the real date on its own, and the API route runs
+      // in UTC — send the user's own local date so dated writes land right.
+      today: todayLocalStr(),
       currency,
       monthlyIncome,
       netWorth,
@@ -183,7 +207,7 @@ export function useChat() {
 
       setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, intakeStatus: "confirming" } : m)));
 
-      const todayStr = new Date().toISOString().split("T")[0];
+      const todayStr = todayLocalStr();
       let recurringCount = recurring.length;
       let goalCount = goals.length;
       let savedCount = 0;
@@ -205,7 +229,7 @@ export function useChat() {
                 name: action.name,
                 amount: action.amount,
                 category: action.category?.trim() || "Other",
-                date: action.date || todayStr,
+                date: safeIntakeDate(action.date, todayStr),
                 currency,
               });
               if (error) failedCount++;
@@ -229,7 +253,7 @@ export function useChat() {
                 category: action.category?.trim() || "Other",
                 currency,
                 frequency: action.frequency || "monthly",
-                next_date: action.next_date || todayStr,
+                next_date: action.next_date && ISO_DATE_RE.test(action.next_date) ? action.next_date : todayStr,
                 active: true,
               });
               if (error) {
