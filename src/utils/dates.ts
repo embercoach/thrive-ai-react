@@ -23,7 +23,11 @@ export function todayLocal(): Date {
  * Anything user-facing that means "today" must go through here.
  */
 export function todayLocalStr(): string {
-  const d = new Date();
+  return formatLocalDate(new Date());
+}
+
+/** Formats a Date as "YYYY-MM-DD" using its LOCAL calendar fields. */
+export function formatLocalDate(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
@@ -65,5 +69,9 @@ export function advanceDate(dateStr: string, frequency: "monthly" | "weekly"): s
     const lastDayOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
     d.setDate(Math.min(origDay, lastDayOfMonth));
   }
-  return d.toISOString().split("T")[0];
+  // `d` is LOCAL midnight, so toISOString() would convert it to the previous
+  // day for anyone east of UTC — making every recurring bill creep a day
+  // earlier on each cycle (a monthly bill on the 20th walks to the 19th,
+  // 18th, 17th...). Format from the local fields instead.
+  return formatLocalDate(d);
 }
