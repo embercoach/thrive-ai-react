@@ -25,6 +25,11 @@ async function getRawBody(req: VercelRequest): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
+// Paddle's signature stays valid forever on its own, so a captured
+// "subscription.activated" body could be replayed after a cancellation to
+// silently re-grant Pro. Reject anything older than this.
+const MAX_SIGNATURE_AGE_SECONDS = 5 * 60;
+
 function verifyPaddleSignature(rawBody: Buffer, signatureHeader: string, secret: string): boolean {
   // Header format: "ts=1234567890;h1=abcdef..."
   const parts = Object.fromEntries(
@@ -33,6 +38,11 @@ function verifyPaddleSignature(rawBody: Buffer, signatureHeader: string, secret:
   const ts = parts.ts;
   const h1 = parts.h1;
   if (!ts || !h1) return false;
+
+  const tsSeconds = Number(ts);
+  if (!Number.isFinite(tsSeconds)) return false;
+  const ageSeconds = Math.abs(Date.now() / 1000 - tsSeconds);
+  if (ageSeconds > MAX_SIGNATURE_AGE_SECONDS) return false;
 
   const signedPayload = `${ts}:${rawBody.toString("utf8")}`;
   const expected = crypto.createHmac("sha256", secret).update(signedPayload).digest("hex");

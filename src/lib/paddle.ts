@@ -10,8 +10,22 @@ declare global {
       Environment: { set: (env: "sandbox" | "production") => void };
       Initialize: (opts: { token: string }) => void;
       Checkout: { open: (opts: Record<string, unknown>) => void };
+      PricePreview: (opts: {
+        items: { priceId: string; quantity: number }[];
+      }) => Promise<PaddlePricePreviewResponse>;
     };
   }
+}
+
+interface PaddlePricePreviewResponse {
+  data?: {
+    details?: {
+      lineItems?: {
+        price?: { id?: string };
+        formattedTotals?: { total?: string };
+      }[];
+    };
+  };
 }
 
 let initialized = false;
@@ -47,4 +61,39 @@ export function openPaddleCheckout(priceId: string, userId: string, email?: stri
     customer: email ? { email } : undefined,
     customData: { user_id: userId },
   });
+}
+
+/**
+ * Asks Paddle what these prices actually cost, in the viewer's own currency.
+ *
+ * The upgrade modal used to show no price at all — people were asked to click
+ * a payment button with no idea of the amount. Reading it from Paddle rather
+ * than hardcoding it means the figure can never drift out of sync with what
+ * the checkout will actually charge, and it localises for free.
+ *
+ * Returns a priceId -> formatted string map ("$4.99"), or an empty map if
+ * anything goes wrong — callers must render fine without prices, since a
+ * missing price is far better than a wrong one next to a Pay button.
+ */
+export async function fetchPriceLabels(priceIds: string[]): Promise<Record<string, string>> {
+  const ids = priceIds.filter(Boolean);
+  if (!ids.length) return {};
+  ensurePaddleInitialized();
+  if (!window.Paddle?.PricePreview) return {};
+
+  try {
+    const res = await window.Paddle.PricePreview({
+      items: ids.map((priceId) => ({ priceId, quantity: 1 })),
+    });
+    const out: Record<string, string> = {};
+    for (const item of res?.data?.details?.lineItems ?? []) {
+      const id = item?.price?.id;
+      const total = item?.formattedTotals?.total;
+      if (id && total) out[id] = total;
+    }
+    return out;
+  } catch (err) {
+    console.error("Paddle PricePreview failed — showing the modal without prices.", err);
+    return {};
+  }
 }

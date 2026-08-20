@@ -19,7 +19,7 @@ import { formatMoney } from "@/lib/currency";
 export function SpendingPage() {
   const navigate = useNavigate();
   const { transactions, budgets, recurring, currency } = useAppData();
-  const { period, setPeriod, shownTotal, trendPct, breakdown, budgetRows } = useSpendingData(transactions, budgets);
+  const { period, setPeriod, shownTxns, shownTotal, trendPct, breakdown, budgetRows } = useSpendingData(transactions, budgets);
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
@@ -30,13 +30,19 @@ export function SpendingPage() {
 
   const upcomingRecurring = [...recurring].sort((a, b) => a.next_date.localeCompare(b.next_date));
 
+  // With no search active the list follows the period toggle above — showing
+  // "No spending recorded this period" over a list of this month's rows read
+  // as a bug. Searching deliberately escapes the period and spans all time,
+  // so history is still reachable; the heading below says which you're seeing.
   const filteredTxns = search
     ? transactions.filter(
         (t) =>
           t.name.toLowerCase().includes(search.toLowerCase()) ||
           (t.category || "").toLowerCase().includes(search.toLowerCase())
       )
-    : transactions;
+    : shownTxns;
+
+  const txnListTitle = search ? "Search results" : period === "this" ? "This Month" : "Last Month";
 
   function handleNeedUpgrade(trigger: string) {
     setUpgradeTrigger(trigger);
@@ -141,7 +147,7 @@ export function SpendingPage() {
       </button>
 
       <Card padding="lg">
-        <CardHeader title="All Transactions" />
+        <CardHeader title={txnListTitle} />
         {filteredTxns.length === 0 ? (
           <p className="text-sm text-ink-muted text-center py-2">No transactions found</p>
         ) : (

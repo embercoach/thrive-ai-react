@@ -18,6 +18,9 @@ export interface DisplayMessage {
   intake?: IntakeAction[] | null;
   intakeStatus?: IntakeStatus;
   intakeNote?: string;
+  /** Message came back from history and had an intake block that can no
+   *  longer be acted on (confirmation state is session-local). */
+  intakeExpired?: boolean;
 }
 
 const FREE_MONTHLY_QUESTIONS = 3;
@@ -64,8 +67,8 @@ export function useChat() {
             // state is session-local, so a reloaded conversation must never
             // re-offer an already-answered card. But the tag still has to be
             // stripped here, or the raw JSON leaks into the visible bubble.
-            const { text } = parseIntake(textAfterBreakdown);
-            return { id: m.id ?? `hist-${i}`, role: m.role, text, breakdown };
+            const { text, hadIntake } = parseIntake(textAfterBreakdown);
+            return { id: m.id ?? `hist-${i}`, role: m.role, text, breakdown, intakeExpired: hadIntake };
           })
         );
       })

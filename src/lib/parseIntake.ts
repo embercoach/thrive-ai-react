@@ -9,26 +9,26 @@ export interface ParsedIntake {
   actions: IntakeAction[];
 }
 
-export function parseIntake(text: string): { text: string; intake: ParsedIntake | null } {
+export function parseIntake(text: string): { text: string; intake: ParsedIntake | null; hadIntake: boolean } {
   const match = text.match(INTAKE_RE);
   if (match) {
     const cleanedText = text.replace(INTAKE_RE, "").trim();
     try {
       const parsed = JSON.parse(match[1]);
       if (Array.isArray(parsed.actions) && parsed.actions.length > 0) {
-        return { text: cleanedText, intake: { actions: parsed.actions as IntakeAction[] } };
+        return { text: cleanedText, intake: { actions: parsed.actions as IntakeAction[] }, hadIntake: true };
       }
     } catch {
       // Malformed block from the model — fall through and just show the text.
     }
-    return { text: cleanedText, intake: null };
+    return { text: cleanedText, intake: null, hadIntake: true };
   }
 
   // No closing tag at all — most likely a truncated response. Never show the
   // raw/partial tag or JSON to the user; strip it and fall back to plain text.
   if (/<THRIVE_INTAKE>/.test(text)) {
-    return { text: text.replace(UNTERMINATED_INTAKE_RE, "").trim(), intake: null };
+    return { text: text.replace(UNTERMINATED_INTAKE_RE, "").trim(), intake: null, hadIntake: true };
   }
 
-  return { text: text.trim(), intake: null };
+  return { text: text.trim(), intake: null, hadIntake: false };
 }

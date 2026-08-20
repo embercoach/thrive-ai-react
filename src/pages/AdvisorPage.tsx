@@ -101,6 +101,11 @@ export function AdvisorPage() {
                       onSeeFullAnalysis={() => navigate("/spending")}
                     />
                   )}
+                  {m.intakeExpired && (
+                    <p className="text-[11px] text-ink-muted pl-8 -mt-1">
+                      Add-to-account suggestion from an earlier session — ask again to add it.
+                    </p>
+                  )}
                   {m.intake && m.intakeStatus !== "dismissed" && (
                     <IntakePreviewCard
                       actions={m.intake}
