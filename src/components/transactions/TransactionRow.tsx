@@ -1,4 +1,4 @@
-import { Repeat } from "lucide-react";
+import { Repeat, SplitSquareHorizontal, StickyNote } from "lucide-react";
 import type { Transaction } from "@/types";
 import { categoryIcon, categoryColor } from "@/lib/categories";
 import { formatMoney } from "@/lib/currency";
@@ -30,10 +30,17 @@ export function TransactionRow({ transaction, currency = "USD", showDate = true,
         <div className="text-sm font-semibold text-ink truncate flex items-center gap-1">
           {transaction.name}
           {transaction.recurring_id && <Repeat size={10} className="text-ink-muted flex-shrink-0" />}
+          {transaction.split_group_id && (
+            <SplitSquareHorizontal size={10} className="text-ink-muted flex-shrink-0" aria-label="Part of a split" />
+          )}
+          {transaction.notes && (
+            <StickyNote size={10} className="text-ink-muted flex-shrink-0" aria-label="Has notes" />
+          )}
         </div>
         {showDate && (
-          <div className="text-xs text-ink-muted">
+          <div className="text-xs text-ink-muted truncate">
             {parseLocalDate(transaction.date).toLocaleDateString()} · {transaction.category || "Other"}
+            {transaction.account ? ` · ${transaction.account}` : ""}
           </div>
         )}
       </div>

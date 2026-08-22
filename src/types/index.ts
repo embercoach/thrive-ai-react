@@ -8,6 +8,18 @@ export interface Transaction {
   currency?: string;
   recurring_id?: string | null;
   created_at?: string;
+  /** Which account or card this came out of. Free text for now. */
+  account?: string | null;
+  notes?: string | null;
+  /**
+   * Splits are stored as ordinary sibling rows sharing one id, NOT as a
+   * separate splits table. A R1 000 shop split R600 groceries / R400
+   * household is two real transactions. That means every existing
+   * calculation — category totals, budgets, spending charts, the AI's
+   * context — keeps working untouched, because they all already sum
+   * transaction rows by category. Only the UI needs to know to group them.
+   */
+  split_group_id?: string | null;
 }
 
 export interface Goal {

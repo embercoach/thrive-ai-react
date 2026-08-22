@@ -23,11 +23,32 @@ export function AddTransactionModal({ open, onClose }: AddTransactionModalProps)
     if (!user) return;
     setSaving(true);
     setError("");
-    const { error: dbError } = await api.addTransaction({
-      user_id: user.id,
-      ...values,
-      currency,
-    });
+
+    const { splits, ...base } = values;
+    let dbError;
+
+    if (splits && splits.length > 1) {
+      // One insert, so a half-written split can never exist — the legs of a
+      // shop must always add up to what was actually spent.
+      const groupId = crypto.randomUUID();
+      ({ error: dbError } = await api.addTransactionSplit(
+        splits.map((leg) => ({
+          user_id: user.id,
+          ...base,
+          category: leg.category,
+          amount: leg.amount,
+          split_group_id: groupId,
+          currency,
+        }))
+      ));
+    } else {
+      ({ error: dbError } = await api.addTransaction({
+        user_id: user.id,
+        ...base,
+        currency,
+      }));
+    }
+
     setSaving(false);
     if (dbError) {
       setError(dbError.message);
@@ -45,6 +66,8 @@ export function AddTransactionModal({ open, onClose }: AddTransactionModalProps)
         submitLabel="Add Transaction"
         saving={saving}
         error={error}
+        currency={currency}
+        allowSplit
         onSubmit={handleSave}
       />
     </Modal>

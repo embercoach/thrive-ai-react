@@ -25,6 +25,35 @@ export async function addTransaction(t: Omit<Transaction, "id">) {
   return supabase.from("transactions").insert(t);
 }
 
+/**
+ * Writes the legs of a split purchase as one insert, so a partial failure
+ * can't leave half a split behind — you'd get a shop whose parts no longer
+ * add up to what was actually spent.
+ */
+export async function addTransactionSplit(legs: Omit<Transaction, "id">[]) {
+  return supabase.from("transactions").insert(legs);
+}
+
+/** Every leg of a split, oldest first, for showing a purchase as a whole. */
+export async function fetchSplitGroup(userId: string, splitGroupId: string): Promise<Transaction[]> {
+  const { data } = await supabase
+    .from("transactions")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("split_group_id", splitGroupId)
+    .order("created_at", { ascending: true });
+  return data ?? [];
+}
+
+/** Deletes a whole split at once — deleting one leg of a shop rarely makes sense. */
+export async function deleteSplitGroup(userId: string, splitGroupId: string) {
+  return supabase
+    .from("transactions")
+    .delete()
+    .eq("user_id", userId)
+    .eq("split_group_id", splitGroupId);
+}
+
 export async function updateTransaction(id: string, patch: Partial<Transaction>) {
   return supabase.from("transactions").update(patch).eq("id", id);
 }
