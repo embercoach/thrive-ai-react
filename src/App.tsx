@@ -11,10 +11,11 @@ import { ProfilePage } from "@/pages/ProfilePage";
 import { AboutPage } from "@/pages/AboutPage";
 import { HelpFeedbackPage } from "@/pages/HelpFeedbackPage";
 import { LoginPage } from "@/pages/LoginPage";
+import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import type { ReactNode } from "react";
 
 function Gate({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, recovering } = useAuth();
   if (loading) {
     return (
       <div className="min-h-screen bg-canvas flex items-center justify-center text-ink-muted text-sm">
@@ -22,6 +23,10 @@ function Gate({ children }: { children: ReactNode }) {
       </div>
     );
   }
+  // Recovery takes priority over everything: a reset link creates a session,
+  // so `user` is set here — without this the user would slip past into the app
+  // without ever setting the new password they came to set.
+  if (recovering) return <ResetPasswordPage />;
   if (!user) return <LoginPage />;
   return <>{children}</>;
 }

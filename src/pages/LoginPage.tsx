@@ -3,7 +3,7 @@ import { supabase } from "@/services/supabase";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 
-type Mode = "signin" | "signup";
+type Mode = "signin" | "signup" | "forgot";
 
 export function LoginPage() {
   const [mode, setMode] = useState<Mode>("signin");
@@ -18,6 +18,20 @@ export function LoginPage() {
     setError("");
     setInfo("");
     setLoading(true);
+
+    if (mode === "forgot") {
+      // redirectTo must be listed under Supabase Auth > URL Configuration >
+      // Redirect URLs, or the link in the email is rejected. We send them
+      // back to the app root; Supabase appends the recovery token, which
+      // AuthProvider picks up as a PASSWORD_RECOVERY event.
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      });
+      if (error) setError(error.message);
+      else setInfo("Check your email for a link to reset your password.");
+      setLoading(false);
+      return;
+    }
 
     if (mode === "signin") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -41,7 +55,19 @@ export function LoginPage() {
   }
 
   function toggleMode() {
-    setMode((m) => (m === "signin" ? "signup" : "signin"));
+    setMode((m) => (m === "signup" ? "signin" : m === "signin" ? "signup" : "signin"));
+    setError("");
+    setInfo("");
+  }
+
+  function showForgot() {
+    setMode("forgot");
+    setError("");
+    setInfo("");
+  }
+
+  function backToSignIn() {
+    setMode("signin");
     setError("");
     setInfo("");
   }
@@ -106,7 +132,11 @@ export function LoginPage() {
             </span>
           </div>
           <p className="text-ink-secondary text-sm text-center mb-7">
-            {mode === "signin" ? "Welcome back" : "Let's get your money sorted"}
+            {mode === "signin"
+              ? "Welcome back"
+              : mode === "signup"
+                ? "Let's get your money sorted"
+                : "We'll email you a reset link"}
           </p>
 
           {error && (
@@ -128,39 +158,68 @@ export function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
             />
-            <Input
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Your password"
-            />
+            {mode !== "forgot" && (
+              <Input
+                label="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Your password"
+              />
+            )}
+            {mode === "signin" && (
+              <div className="text-right -mt-1 mb-1">
+                <button
+                  type="button"
+                  onClick={showForgot}
+                  className="text-xs font-semibold text-ink-secondary hover:text-brand transition-colors"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
             <Button type="submit" fullWidth disabled={loading} className="mt-3">
               {loading
                 ? mode === "signin"
                   ? "Signing in…"
-                  : "Creating account…"
+                  : mode === "signup"
+                    ? "Creating account…"
+                    : "Sending…"
                 : mode === "signin"
                   ? "Sign in"
-                  : "Create account"}
+                  : mode === "signup"
+                    ? "Create account"
+                    : "Send reset link"}
             </Button>
           </form>
 
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-border" />
-            <span className="text-[11px] uppercase tracking-wide text-ink-muted">
-              {mode === "signin" ? "New here" : "Have an account"}
-            </span>
-            <div className="flex-1 h-px bg-border" />
-          </div>
+          {mode === "forgot" ? (
+            <button
+              type="button"
+              onClick={backToSignIn}
+              className="w-full text-center text-sm font-semibold text-brand hover:opacity-80 transition-opacity mt-6"
+            >
+              Back to sign in
+            </button>
+          ) : (
+            <>
+              <div className="flex items-center gap-3 my-6">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-[11px] uppercase tracking-wide text-ink-muted">
+                  {mode === "signin" ? "New here" : "Have an account"}
+                </span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
 
-          <button
-            type="button"
-            onClick={toggleMode}
-            className="w-full text-center text-sm font-semibold text-brand hover:opacity-80 transition-opacity"
-          >
-            {mode === "signin" ? "Create an account" : "Sign in instead"}
-          </button>
+              <button
+                type="button"
+                onClick={toggleMode}
+                className="w-full text-center text-sm font-semibold text-brand hover:opacity-80 transition-opacity"
+              >
+                {mode === "signin" ? "Create an account" : "Sign in instead"}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
