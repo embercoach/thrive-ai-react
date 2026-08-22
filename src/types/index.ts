@@ -46,6 +46,10 @@ export interface Profile {
   is_pro?: boolean;
   ai_questions_count?: number;
   ai_questions_month?: string;
+  /** Set once the user finishes (or skips through) first-run setup. A flag
+   *  rather than inferring from whether data exists — inference would re-show
+   *  onboarding forever to anyone who skipped every step. */
+  onboarded?: boolean;
 }
 
 export type CurrencyCode =

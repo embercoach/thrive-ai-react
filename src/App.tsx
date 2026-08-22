@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { AppDataProvider } from "@/hooks/useAppData";
+import { AppDataProvider, useAppData } from "@/hooks/useAppData";
 import { AppLayout } from "@/layouts/AppLayout";
 import { HomePage } from "@/pages/HomePage";
 import { SpendingPage } from "@/pages/SpendingPage";
@@ -12,6 +12,7 @@ import { AboutPage } from "@/pages/AboutPage";
 import { HelpFeedbackPage } from "@/pages/HelpFeedbackPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
+import { OnboardingPage } from "@/pages/OnboardingPage";
 import type { ReactNode } from "react";
 
 function Gate({ children }: { children: ReactNode }) {
@@ -31,11 +32,27 @@ function Gate({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+/** Sits inside AppDataProvider because it needs the loaded profile to know
+ *  whether first-run setup is still outstanding. */
+function OnboardingGate({ children }: { children: ReactNode }) {
+  const { profile, loading } = useAppData();
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-canvas flex items-center justify-center text-ink-muted text-sm">
+        Loading…
+      </div>
+    );
+  }
+  if (profile && !profile.onboarded) return <OnboardingPage />;
+  return <>{children}</>;
+}
+
 function App() {
   return (
     <AuthProvider>
       <Gate>
         <AppDataProvider>
+          <OnboardingGate>
           <BrowserRouter>
             <Routes>
               <Route element={<AppLayout />}>
@@ -51,6 +68,7 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
+          </OnboardingGate>
         </AppDataProvider>
       </Gate>
     </AuthProvider>
