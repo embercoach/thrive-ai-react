@@ -1,4 +1,14 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { createClient } from "@supabase/supabase-js";
+
+// Verifies the caller's Supabase session server-side before spending a call
+// against the paid Anthropic API key. Uses the service-role key (same
+// pattern as api/paddle-webhook.ts) purely to validate the bearer token via
+// auth.getUser() — this client never reads or writes app data.
+const supabaseAdmin = createClient(
+  process.env.VITE_SUPABASE_URL as string,
+  process.env.SUPABASE_SERVICE_ROLE_KEY as string
+);
 
 interface ChatRequestBody {
   messages: { role: "user" | "assistant"; content: string }[];
@@ -71,6 +81,23 @@ USER'S CURRENT DATA (currency: ${context.currency}, today: ${today}):
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  // This route previously had NO identity check at all — anyone who found
+  // the URL, signed in or not, could call it directly (bypassing the app's
+  // own free-question UI entirely) and consume the app's own paid Anthropic
+  // API budget with no limit. Every caller must now present a valid
+  // Supabase session for a real account before a single token is spent.
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  if (!token) {
+    res.status(401).json({ error: "Missing or invalid authorization" });
+    return;
+  }
+  const { data: authData, error: authError } = await supabaseAdmin.auth.getUser(token);
+  if (authError || !authData?.user) {
+    res.status(401).json({ error: "Invalid or expired session" });
     return;
   }
 

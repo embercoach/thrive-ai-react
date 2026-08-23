@@ -5,6 +5,7 @@ import { useAvailableToSpend, useNetWorth } from "@/hooks/useHomeMetrics";
 import { parseBreakdown } from "@/lib/parseBreakdown";
 import { parseIntake } from "@/lib/parseIntake";
 import * as api from "@/services/api";
+import { supabase } from "@/services/supabase";
 import type { Breakdown, IntakeAction } from "@/types";
 import { parseLocalDate, todayLocal, todayLocalStr, advanceDate, isSameMonth } from "@/utils/dates";
 
@@ -143,17 +144,36 @@ export function useChat() {
       await api.saveChatMessage(user.id, "user", userText.trim());
 
       try {
+        // The API route now requires a valid Supabase session (it's a
+        // publicly reachable URL that spends the app's own paid Anthropic
+        // API budget per call, so it can no longer be called unauthenticated
+        // — see api/chat.ts). getSession() reads the current, auto-refreshed
+        // token rather than caching one from an earlier render.
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) {
+          setError("Your session has expired. Please sign in again.");
+          return;
+        }
+
         const history = [...messages, userMsg].map((m) => ({
           role: m.role,
           content: m.text,
         }));
         const res = await fetch("/api/chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
           body: JSON.stringify({ messages: history, context }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Something went wrong");
+        if (!res.ok) {
+          if (res.status === 401) throw new Error("Your session has expired. Please sign in again.");
+          throw new Error(data.error || "Something went wrong");
+        }
 
         const { text: textAfterBreakdown, breakdown } = parseBreakdown(data.text as string);
         const { text, intake } = parseIntake(textAfterBreakdown);
