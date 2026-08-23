@@ -29,7 +29,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   const refetch = useCallback(async () => {
     if (!user) return;
-    setLoading(true);
+    // `loading` is intentionally NOT set here — it starts true and this is
+    // the only place that ever sets it false, so it naturally means "no data
+    // yet at all", not "a fetch is in flight". Setting it true on every call
+    // used to make each refetch (after saving a transaction, a goal, etc.)
+    // blank the whole screen back to the initial loading gate — jarring
+    // mid-interaction, and the actual bug behind "loading skeletons": what
+    // needed fixing wasn't a missing skeleton, it was this state being shown
+    // far more often than it should have been. Screens now keep rendering
+    // their current data uninterrupted while a refetch resolves in the
+    // background, since the underlying values just update in place.
+    //
     // Recurring bills are materialized into real transactions before anything
     // else loads, so every screen sees today's occurrences immediately.
     await api.processRecurring(user.id, profile?.currency || "USD");

@@ -17,6 +17,7 @@ import { ProgressRing } from "@/components/ui/ProgressRing";
 import { TransactionRow } from "@/components/transactions/TransactionRow";
 import { EditTransactionModal } from "@/components/transactions/EditTransactionModal";
 import { BillRow } from "@/components/transactions/BillRow";
+import { HomeSkeleton } from "@/components/ui/HomeSkeleton";
 import { formatMoney, formatMoneySigned } from "@/lib/currency";
 import type { Goal, Transaction } from "@/types";
 
@@ -51,12 +52,12 @@ export function HomePage() {
     .slice(0, 3);
   const recentTxns = transactions.slice(0, 4);
 
+  // In practice App.tsx's OnboardingGate already blocks rendering until the
+  // first load completes, so this never fires in normal use — kept as a
+  // defensive fallback (e.g. if HomePage is ever rendered standalone) rather
+  // than assuming that gate is always present upstream.
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-ink-muted text-sm">
-        Loading…
-      </div>
-    );
+    return <HomeSkeleton />;
   }
 
   return (
