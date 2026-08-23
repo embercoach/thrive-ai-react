@@ -21,6 +21,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { CURRENCIES } from "@/lib/currency";
 import { supabase } from "@/services/supabase";
 import * as api from "@/services/api";
@@ -92,6 +93,8 @@ export function ProfilePage() {
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [savingCurrency, setSavingCurrency] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [confirmingSignOut, setConfirmingSignOut] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   // `profile` is null on the first render while useAppData fetches, so the
   // useState initialiser above always ran with an empty value and never
@@ -123,8 +126,10 @@ export function ProfilePage() {
   }
 
   async function handleSignOut() {
-    if (!confirm("Sign out of Thrive AI?")) return;
+    setSigningOut(true);
     await supabase.auth.signOut();
+    // No need to clear signingOut/confirmingSignOut on success — a
+    // successful sign-out unmounts this whole page via the auth gate.
   }
 
   return (
@@ -216,7 +221,7 @@ export function ProfilePage() {
         <NavRow icon={Info} label="About Thrive AI" onClick={() => navigate("/about")} />
       </Card>
 
-      <Button variant="danger" fullWidth onClick={handleSignOut}>
+      <Button variant="danger" fullWidth onClick={() => setConfirmingSignOut(true)}>
         <LogOut size={15} /> Sign Out
       </Button>
 
@@ -224,6 +229,15 @@ export function ProfilePage() {
         Educational purposes only · Not financial advice
       </p>
 
+      <ConfirmModal
+        open={confirmingSignOut}
+        title="Sign Out"
+        message="Sign out of Thrive AI?"
+        confirmLabel="Sign Out"
+        loading={signingOut}
+        onConfirm={handleSignOut}
+        onCancel={() => setConfirmingSignOut(false)}
+      />
       <UpgradeModal
         open={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}

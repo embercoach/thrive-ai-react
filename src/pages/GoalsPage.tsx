@@ -7,6 +7,7 @@ import { AddGoalModal } from "@/components/goals/AddGoalModal";
 import { ContributeGoalModal } from "@/components/goals/ContributeGoalModal";
 import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import UpgradeModal from "@/components/profile/UpgradeModal";
 import * as api from "@/services/api";
 import type { Goal } from "@/types";
@@ -17,14 +18,30 @@ export function GoalsPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [contributeGoal, setContributeGoal] = useState<Goal | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Goal | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const sorted = [...goals].sort((a, b) => b.current / b.target - a.current / a.target);
   const featured = sorted[0];
   const rest = sorted.slice(1);
 
-  async function handleDelete(goal: Goal) {
-    if (!confirm(`Delete "${goal.name}"?`)) return;
-    await api.deleteGoal(goal.id);
+  function closeDeleteModal() {
+    setDeleteTarget(null);
+    setDeleteError("");
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setDeleteError("");
+    const { error } = await api.deleteGoal(deleteTarget.id);
+    setDeleting(false);
+    if (error) {
+      setDeleteError(error.message);
+      return;
+    }
+    closeDeleteModal();
     await refetch();
   }
 
@@ -54,7 +71,7 @@ export function GoalsPage() {
             currency={currency}
             onAddSavings={() => setContributeGoal(featured)}
             onAskAI={() => navigate("/ai")}
-            onDelete={() => handleDelete(featured)}
+            onDelete={() => setDeleteTarget(featured)}
           />
         </Card>
       )}
@@ -67,7 +84,7 @@ export function GoalsPage() {
               key={g.id}
               goal={g}
               onClick={() => setContributeGoal(g)}
-              onDelete={() => handleDelete(g)}
+              onDelete={() => setDeleteTarget(g)}
             />
           ))}
         </Card>
@@ -91,6 +108,16 @@ export function GoalsPage() {
 
       <AddGoalModal open={addOpen} onClose={() => setAddOpen(false)} onNeedUpgrade={() => setShowUpgradeModal(true)} />
       <ContributeGoalModal goal={contributeGoal} onClose={() => setContributeGoal(null)} />
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Delete Goal"
+        message={`"${deleteTarget?.name}" will be removed. This can't be undone.`}
+        confirmLabel="Delete"
+        loading={deleting}
+        error={deleteError}
+        onConfirm={handleDelete}
+        onCancel={closeDeleteModal}
+      />
       <UpgradeModal
         open={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
