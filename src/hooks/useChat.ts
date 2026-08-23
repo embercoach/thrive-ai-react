@@ -172,6 +172,13 @@ export function useChat() {
         const data = await res.json();
         if (!res.ok) {
           if (res.status === 401) throw new Error("Your session has expired. Please sign in again.");
+          if (res.status === 402) {
+            // The server's own count is the source of truth and may have
+            // moved since this tab last loaded it (e.g. the limit was hit
+            // in another tab) — refresh so "X of 3 left" reflects reality
+            // rather than staying stuck on a stale, too-generous number.
+            await refetch();
+          }
           throw new Error(data.error || "Something went wrong");
         }
 
@@ -197,21 +204,21 @@ export function useChat() {
         setMessages((prev) => [...prev, assistantMsg]);
         await api.saveChatMessage(user.id, "assistant", data.text as string);
 
-        if (!isPro) {
-          await api.upsertProfile({
-            id: user.id,
-            ai_questions_month: currentMonthKey,
-            ai_questions_count: questionsUsedThisMonth + 1,
-          });
-          await refetch();
-        }
+        // The free-question counter is now reserved atomically server-side
+        // (see api/chat.ts's use_ai_question call) before this response
+        // ever came back — a database trigger blocks any client write to
+        // ai_questions_count/ai_questions_month directly (see the
+        // lock_down_privileged_profile_columns migration), the same way it
+        // blocks a client from setting is_pro. Refetching just pulls the
+        // now-authoritative count back into this tab's local state.
+        if (!isPro) await refetch();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       } finally {
         setSending(false);
       }
     },
-    [user, sending, limitReached, messages, context, isPro, questionsUsedThisMonth, currentMonthKey, refetch]
+    [user, sending, limitReached, messages, context, isPro, refetch]
   );
 
   const clear = useCallback(async () => {

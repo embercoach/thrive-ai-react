@@ -10,6 +10,28 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY as string
 );
 
+// Must match the free-tier limit shown in the UI (src/hooks/useChat.ts).
+// The client's own copy of this number is only ever used for a fast local
+// pre-check and the "X of 3 left" display — this is the one that's actually
+// enforced, via the use_ai_question() database function (see the
+// lock_down_privileged_profile_columns migration).
+const FREE_MONTHLY_QUESTIONS = 3;
+
+/**
+ * "YYYY-MM" from THIS SERVER's own clock, deliberately not from anything
+ * the client sent. `context.today` further down is fine to trust for the
+ * model's own date-awareness (worst case it writes a wrong date on a
+ * proposed transaction, which the user reviews before confirming) — but
+ * trusting it here, for the free-question quota's reset boundary, would let
+ * any caller simply claim a fresh month on every request and reset their
+ * own counter on demand. UTC rather than the user's local month trades a
+ * few hours of reset-timing looseness near midnight for not trusting client
+ * input on a security-relevant check.
+ */
+function currentMonthKeyUTC(): string {
+  return new Date().toISOString().slice(0, 7);
+}
+
 interface ChatRequestBody {
   messages: { role: "user" | "assistant"; content: string }[];
   context: {
@@ -110,6 +132,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const body = req.body as ChatRequestBody;
   if (!body?.messages?.length) {
     res.status(400).json({ error: "Missing messages" });
+    return;
+  }
+
+  // Atomically checks-and-reserves this question against the free-tier
+  // limit BEFORE spending a call on Anthropic — reserving first (rather
+  // than incrementing only after a successful reply) is what makes this
+  // race-proof: two concurrent requests from two tabs can't both pass a
+  // separate check and then both write "+1" after the fact. The one real
+  // cost is that a request which reserves a slot and then fails on the
+  // Anthropic call below still spends that slot — an acceptable trade for
+  // closing the race, and rare in practice.
+  const { data: quota, error: quotaError } = await supabaseAdmin.rpc("use_ai_question", {
+    p_user_id: authData.user.id,
+    p_month: currentMonthKeyUTC(),
+    p_limit: FREE_MONTHLY_QUESTIONS,
+  });
+  if (quotaError) {
+    console.error("use_ai_question RPC error:", quotaError);
+    res.status(500).json({ error: "Could not verify your question limit. Please try again." });
+    return;
+  }
+  const allowed = Array.isArray(quota) ? quota[0]?.allowed : quota?.allowed;
+  if (!allowed) {
+    res
+      .status(402)
+      .json({ error: `You've used your ${FREE_MONTHLY_QUESTIONS} free questions this month. Upgrade to Pro for unlimited access.` });
     return;
   }
 
