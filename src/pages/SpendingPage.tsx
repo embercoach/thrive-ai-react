@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import type { Transaction } from "@/types";
-import { Search, Plus, X } from "lucide-react";
+import { Search, Plus, X, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppData } from "@/hooks/useAppData";
 import { useSpendingData, matchesTypeFilter, type TxnTypeFilter } from "@/hooks/useSpendingData";
 import { categoryColor } from "@/lib/categories";
+import { transactionsToCsv, downloadCsv } from "@/lib/csv";
+import { todayLocalStr } from "@/utils/dates";
 import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
@@ -95,20 +97,38 @@ export function SpendingPage() {
     setShowUpgradeModal(true);
   }
 
+  // Exports the account's full transaction history, not just what's
+  // currently filtered/on-screen — a data export should be a complete
+  // backup a user can take with them, not a snapshot of one search.
+  function handleExport() {
+    if (transactions.length === 0) return;
+    downloadCsv(`thrive-transactions-${todayLocalStr()}.csv`, transactionsToCsv(transactions));
+  }
+
   return (
     <div className="px-4 pt-5 pb-4 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-ink">Spending</h1>
-        <button
-          onClick={() => setShowSearch((s) => !s)}
-          aria-label="Search and filter transactions"
-          className="relative text-ink-secondary cursor-pointer"
-        >
-          <Search size={19} />
-          {hasActiveFilter && (
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-brand" aria-hidden="true" />
-          )}
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleExport}
+            disabled={transactions.length === 0}
+            aria-label="Export transactions as CSV"
+            className="text-ink-secondary cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Download size={19} />
+          </button>
+          <button
+            onClick={() => setShowSearch((s) => !s)}
+            aria-label="Search and filter transactions"
+            className="relative text-ink-secondary cursor-pointer"
+          >
+            <Search size={19} />
+            {hasActiveFilter && (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-brand" aria-hidden="true" />
+            )}
+          </button>
+        </div>
       </div>
 
       <SegmentedControl
