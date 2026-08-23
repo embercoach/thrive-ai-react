@@ -29,10 +29,10 @@ export function EditTransactionModal({ transaction, onClose }: EditTransactionMo
   }
 
   async function handleSave(values: TransactionFormValues) {
-    if (!transaction) return;
+    if (!transaction || !user) return;
     setSaving(true);
     setError("");
-    const { error: dbError } = await api.updateTransaction(transaction.id, values);
+    const { error: dbError } = await api.updateTransaction(user.id, transaction.id, values);
     setSaving(false);
     if (dbError) {
       setError(dbError.message);
@@ -46,13 +46,13 @@ export function EditTransactionModal({ transaction, onClose }: EditTransactionMo
   }
 
   async function handleDelete(wholeSplit = false) {
-    if (!transaction) return;
+    if (!transaction || !user) return;
     setDeleting(true);
     setError("");
     const { error: dbError } =
-      wholeSplit && transaction.split_group_id && user
+      wholeSplit && transaction.split_group_id
         ? await api.deleteSplitGroup(user.id, transaction.split_group_id)
-        : await api.deleteTransaction(transaction.id);
+        : await api.deleteTransaction(user.id, transaction.id);
     setDeleting(false);
     if (dbError) {
       setError(dbError.message);

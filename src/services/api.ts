@@ -54,12 +54,18 @@ export async function deleteSplitGroup(userId: string, splitGroupId: string) {
     .eq("split_group_id", splitGroupId);
 }
 
-export async function updateTransaction(id: string, patch: Partial<Transaction>) {
-  return supabase.from("transactions").update(patch).eq("id", id);
+// Scoped by user_id in addition to id — belt-and-suspenders alongside RLS.
+// Without it, this function's own signature doesn't rule out being called
+// with an id that belongs to someone else's row; every caller in this app
+// only ever sources ids from that user's own fetched data, but the function
+// itself should never be the only thing standing between "my id" and "an id
+// I supplied."
+export async function updateTransaction(userId: string, id: string, patch: Partial<Transaction>) {
+  return supabase.from("transactions").update(patch).eq("id", id).eq("user_id", userId);
 }
 
-export async function deleteTransaction(id: string) {
-  return supabase.from("transactions").delete().eq("id", id);
+export async function deleteTransaction(userId: string, id: string) {
+  return supabase.from("transactions").delete().eq("id", id).eq("user_id", userId);
 }
 
 export async function fetchGoals(userId: string): Promise<Goal[]> {
@@ -75,12 +81,12 @@ export async function addGoal(g: Omit<Goal, "id">) {
   return supabase.from("goals").insert(g);
 }
 
-export async function updateGoal(id: string, patch: Partial<Goal>) {
-  return supabase.from("goals").update(patch).eq("id", id);
+export async function updateGoal(userId: string, id: string, patch: Partial<Goal>) {
+  return supabase.from("goals").update(patch).eq("id", id).eq("user_id", userId);
 }
 
-export async function deleteGoal(id: string) {
-  return supabase.from("goals").delete().eq("id", id);
+export async function deleteGoal(userId: string, id: string) {
+  return supabase.from("goals").delete().eq("id", id).eq("user_id", userId);
 }
 
 export async function fetchBudgets(userId: string): Promise<Budget[]> {
@@ -111,12 +117,12 @@ export async function addRecurring(r: Omit<RecurringItem, "id">) {
   return supabase.from("recurring").insert(r);
 }
 
-export async function updateRecurring(id: string, patch: Partial<RecurringItem>) {
-  return supabase.from("recurring").update(patch).eq("id", id);
+export async function updateRecurring(userId: string, id: string, patch: Partial<RecurringItem>) {
+  return supabase.from("recurring").update(patch).eq("id", id).eq("user_id", userId);
 }
 
-export async function deleteRecurring(id: string) {
-  return supabase.from("recurring").delete().eq("id", id);
+export async function deleteRecurring(userId: string, id: string) {
+  return supabase.from("recurring").delete().eq("id", id).eq("user_id", userId);
 }
 
 // Guards against two overlapping calls both reading the same stale
@@ -162,7 +168,7 @@ export async function processRecurring(userId: string, currency: string) {
         // the advanced next_date the moment this iteration commits, not
         // after the whole loop finishes.
         if (next !== r.next_date) {
-          await supabase.from("recurring").update({ next_date: next }).eq("id", r.id);
+          await supabase.from("recurring").update({ next_date: next }).eq("id", r.id).eq("user_id", userId);
         }
       }
     }

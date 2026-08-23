@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppData } from "@/hooks/useAppData";
+import { useAuth } from "@/hooks/useAuth";
 import { FeaturedGoalCard, CompactGoalRow } from "@/components/goals/GoalCard";
 import { AddGoalModal } from "@/components/goals/AddGoalModal";
 import { ContributeGoalModal } from "@/components/goals/ContributeGoalModal";
@@ -14,6 +15,7 @@ import type { Goal } from "@/types";
 
 export function GoalsPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { goals, currency, refetch } = useAppData();
   const [addOpen, setAddOpen] = useState(false);
   const [contributeGoal, setContributeGoal] = useState<Goal | null>(null);
@@ -32,10 +34,10 @@ export function GoalsPage() {
   }
 
   async function handleDelete() {
-    if (!deleteTarget) return;
+    if (!deleteTarget || !user) return;
     setDeleting(true);
     setDeleteError("");
-    const { error } = await api.deleteGoal(deleteTarget.id);
+    const { error } = await api.deleteGoal(user.id, deleteTarget.id);
     setDeleting(false);
     if (error) {
       setDeleteError(error.message);

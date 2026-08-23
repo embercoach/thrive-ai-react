@@ -35,9 +35,10 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
   const [saving, setSaving] = useState(false);
 
   async function handleToggleActive(item: RecurringItem) {
+    if (!user) return;
     setBusyId(item.id);
     setError("");
-    const { error: dbError } = await api.updateRecurring(item.id, { active: !item.active });
+    const { error: dbError } = await api.updateRecurring(user.id, item.id, { active: !item.active });
     setBusyId(null);
     if (dbError) {
       setError(dbError.message);
@@ -47,9 +48,10 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
   }
 
   async function handleDelete(item: RecurringItem) {
+    if (!user) return;
     setBusyId(item.id);
     setError("");
-    const { error: dbError } = await api.deleteRecurring(item.id);
+    const { error: dbError } = await api.deleteRecurring(user.id, item.id);
     setBusyId(null);
     if (dbError) {
       setError(dbError.message);

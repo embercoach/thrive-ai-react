@@ -3,6 +3,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useAppData } from "@/hooks/useAppData";
+import { useAuth } from "@/hooks/useAuth";
 import * as api from "@/services/api";
 import type { Goal } from "@/types";
 
@@ -12,13 +13,14 @@ interface ContributeGoalModalProps {
 }
 
 export function ContributeGoalModal({ goal, onClose }: ContributeGoalModalProps) {
+  const { user } = useAuth();
   const { refetch } = useAppData();
   const [amount, setAmount] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   async function handleSave() {
-    if (!goal) return;
+    if (!goal || !user) return;
     const amt = parseFloat(amount);
     if (!amt || amt <= 0) {
       setError("Please enter a valid amount.");
@@ -35,7 +37,7 @@ export function ContributeGoalModal({ goal, onClose }: ContributeGoalModalProps)
     // one contribution. The modal stays open (via Modal's `preventClose`)
     // and refetch() runs before onClose() so the goal data is guaranteed
     // fresh by the time the user can act on this goal again.
-    const { error: dbError } = await api.updateGoal(goal.id, { current: goal.current + amt });
+    const { error: dbError } = await api.updateGoal(user.id, goal.id, { current: goal.current + amt });
     if (dbError) {
       setSaving(false);
       setError(dbError.message);
