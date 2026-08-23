@@ -81,7 +81,11 @@ export function useChat() {
       .finally(() => setLoadingHistory(false));
   }, [user]);
 
-  const currentMonthKey = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+  // Deliberately local, not `new Date().toISOString().slice(0, 7)` — that
+  // reads the UTC month, which rolls over up to ~12 hours off from the
+  // user's own calendar and would let the free-tier question limit reset
+  // early (or stay stuck) purely depending on timezone. See utils/dates.ts.
+  const currentMonthKey = todayLocalStr().slice(0, 7); // "YYYY-MM", local
   const questionsUsedThisMonth =
     profile?.ai_questions_month === currentMonthKey ? profile?.ai_questions_count ?? 0 : 0;
   const limitReached = !isPro && questionsUsedThisMonth >= FREE_MONTHLY_QUESTIONS;
