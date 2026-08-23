@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { IconX, IconCheck, IconLoader2 } from '@tabler/icons-react';
 import { openPaddleCheckout, isPaddleConfigured, fetchPriceLabels } from '@/lib/paddle';
 import { useAuth } from '@/hooks/useAuth';
+import { useAppData } from '@/hooks/useAppData';
 
 const MONTHLY_PRICE_ID = import.meta.env.VITE_PADDLE_PRICE_MONTHLY as string;
 const ANNUAL_PRICE_ID = import.meta.env.VITE_PADDLE_PRICE_ANNUAL as string;
@@ -23,6 +24,7 @@ const FEATURES = [
 
 export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModalProps) {
   const { user } = useAuth();
+  const { refetch } = useAppData();
   const [cycle, setCycle] = useState<BillingCycle>('monthly');
   const [loading, setLoading] = useState(false);
   const [priceLabels, setPriceLabels] = useState<Record<string, string>>({});
@@ -54,7 +56,24 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
       return;
     }
     setLoading(true);
-    openPaddleCheckout(priceId, user.id, user.email ?? undefined);
+    openPaddleCheckout(priceId, user.id, user.email ?? undefined, (event) => {
+      if (event?.name === 'checkout.completed') {
+        // The webhook that flips `is_pro` in Supabase runs server-side and
+        // can lag a moment behind Paddle reporting the checkout as done —
+        // without this, the app kept showing stale free-tier limits (and
+        // could even bounce the user right back to this modal) until a full
+        // page reload. Refetch immediately for the common fast case, and
+        // again after a short delay to pick up a slower webhook.
+        refetch();
+        window.setTimeout(() => refetch(), 3000);
+        setLoading(false);
+        onClose();
+      } else if (event?.name === 'checkout.closed') {
+        setLoading(false);
+      }
+    });
+    // Fallback in case Paddle never fires an event (e.g. the overlay failed
+    // to open) — keeps the button from being stuck showing a spinner.
     window.setTimeout(() => setLoading(false), 1500);
   };
 

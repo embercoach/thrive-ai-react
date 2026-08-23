@@ -28,6 +28,12 @@ interface PaddlePricePreviewResponse {
   };
 }
 
+/** Shape of the object Paddle's `eventCallback` invokes with — we only rely on `name`. */
+export interface PaddleCheckoutEvent {
+  name?: string;
+  [key: string]: unknown;
+}
+
 let initialized = false;
 
 function ensurePaddleInitialized() {
@@ -49,8 +55,18 @@ export function isPaddleConfigured(): boolean {
  * passed through as custom data so the webhook can map the resulting
  * subscription back to a Supabase profile without needing Paddle to know
  * anything about our schema.
+ *
+ * `onEvent`, when given, is wired up as Paddle's `eventCallback` so the
+ * caller can react to `checkout.completed` (e.g. to refetch the profile —
+ * the webhook that actually flips `is_pro` in Supabase runs server-side and
+ * has no other way to reach already-mounted React state).
  */
-export function openPaddleCheckout(priceId: string, userId: string, email?: string) {
+export function openPaddleCheckout(
+  priceId: string,
+  userId: string,
+  email?: string,
+  onEvent?: (event: PaddleCheckoutEvent) => void,
+) {
   ensurePaddleInitialized();
   if (!window.Paddle) {
     console.error("Paddle.js failed to load — check network/ad-blocker.");
@@ -60,6 +76,7 @@ export function openPaddleCheckout(priceId: string, userId: string, email?: stri
     items: [{ priceId, quantity: 1 }],
     customer: email ? { email } : undefined,
     customData: { user_id: userId },
+    eventCallback: onEvent,
   });
 }
 
