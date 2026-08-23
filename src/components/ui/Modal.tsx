@@ -7,15 +7,29 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  /**
+   * Blocks the backdrop click and the X button from closing the modal.
+   * Use while an in-flight save reads-then-writes a value from props (e.g.
+   * "current + amount"): closing mid-save lets the user reopen the modal
+   * before the parent's data has refetched, so the next save computes from
+   * the same stale base value and silently drops the first contribution.
+   * Keeping the modal open until the save (and its refetch) finish closes
+   * that window.
+   */
+  preventClose?: boolean;
 }
 
-export function Modal({ open, onClose, title, children }: ModalProps) {
+export function Modal({ open, onClose, title, children, preventClose }: ModalProps) {
   if (!open) return null;
+
+  const requestClose = () => {
+    if (!preventClose) onClose();
+  };
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-overlay backdrop-blur-sm animate-fade-in"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      onClick={(e) => e.target === e.currentTarget && requestClose()}
     >
       <div
         className={cn(
@@ -25,8 +39,9 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-ink">{title}</h2>
           <button
-            onClick={onClose}
-            className="w-7 h-7 rounded-full bg-surface-sunken flex items-center justify-center text-ink cursor-pointer"
+            onClick={requestClose}
+            disabled={preventClose}
+            className="w-7 h-7 rounded-full bg-surface-sunken flex items-center justify-center text-ink cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label="Close"
           >
             <X size={15} />
