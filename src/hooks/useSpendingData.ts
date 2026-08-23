@@ -4,8 +4,20 @@ import { parseLocalDate, normCategory } from "@/utils/dates";
 import { categoryColor } from "@/lib/categories";
 
 export type SpendPeriod = "this" | "last";
+export type TxnTypeFilter = "expense" | "income" | "all";
 
-function periodTransactions(transactions: Transaction[], period: SpendPeriod): Transaction[] {
+/**
+ * Transactions falling in the given month. `expensesOnly` defaults to true
+ * because every existing caller (totals, breakdown, budgets) is a spending
+ * figure, which by definition excludes income rows. The transaction list at
+ * the bottom of the Spending page is the one place that needs income visible
+ * too (via the type filter), so it opts out explicitly.
+ */
+export function periodTransactions(
+  transactions: Transaction[],
+  period: SpendPeriod,
+  expensesOnly = true
+): Transaction[] {
   const now = new Date();
   let month = now.getMonth();
   let year = now.getFullYear();
@@ -18,8 +30,14 @@ function periodTransactions(transactions: Transaction[], period: SpendPeriod): T
   }
   return transactions.filter((t) => {
     const d = parseLocalDate(t.date);
-    return d.getMonth() === month && d.getFullYear() === year && t.amount < 0;
+    return d.getMonth() === month && d.getFullYear() === year && (!expensesOnly || t.amount < 0);
   });
+}
+
+/** True if a transaction matches a type filter — shared by the Spending page filter row. */
+export function matchesTypeFilter(t: Transaction, typeFilter: TxnTypeFilter): boolean {
+  if (typeFilter === "all") return true;
+  return typeFilter === "income" ? t.amount > 0 : t.amount < 0;
 }
 
 export function budgetFor(budgets: Budget[], category: string): number | undefined {
@@ -45,10 +63,16 @@ export function useSpendingData(transactions: Transaction[], budgets: Budget[]) 
   const thisMonthTxns = useMemo(() => periodTransactions(transactions, "this"), [transactions]);
   const lastMonthTxns = useMemo(() => periodTransactions(transactions, "last"), [transactions]);
 
+  // Same month windows, but income rows included — only the transaction list's
+  // type filter needs these; totals/breakdown/budgets stay expenses-only above.
+  const thisMonthAllTxns = useMemo(() => periodTransactions(transactions, "this", false), [transactions]);
+  const lastMonthAllTxns = useMemo(() => periodTransactions(transactions, "last", false), [transactions]);
+
   const thisTotal = useMemo(() => thisMonthTxns.reduce((a, t) => a + Math.abs(t.amount), 0), [thisMonthTxns]);
   const lastTotal = useMemo(() => lastMonthTxns.reduce((a, t) => a + Math.abs(t.amount), 0), [lastMonthTxns]);
 
   const shownTxns = period === "this" ? thisMonthTxns : lastMonthTxns;
+  const shownAllTxns = period === "this" ? thisMonthAllTxns : lastMonthAllTxns;
   const shownTotal = period === "this" ? thisTotal : lastTotal;
 
   const trendPct =
@@ -100,5 +124,5 @@ export function useSpendingData(transactions: Transaction[], budgets: Budget[]) 
       });
   }, [thisMonthTxns, thisTotal, budgets]);
 
-  return { period, setPeriod, shownTxns, shownTotal, trendPct, breakdown, budgetRows, thisMonthTxns };
+  return { period, setPeriod, shownTxns, shownAllTxns, shownTotal, trendPct, breakdown, budgetRows, thisMonthTxns };
 }

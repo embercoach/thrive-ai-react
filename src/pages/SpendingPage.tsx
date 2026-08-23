@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Transaction } from "@/types";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppData } from "@/hooks/useAppData";
-import { useSpendingData } from "@/hooks/useSpendingData";
+import { useSpendingData, matchesTypeFilter, type TxnTypeFilter } from "@/hooks/useSpendingData";
+import { categoryColor } from "@/lib/categories";
 import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
@@ -21,9 +22,14 @@ import { formatMoney } from "@/lib/currency";
 export function SpendingPage() {
   const navigate = useNavigate();
   const { transactions, budgets, recurring, currency } = useAppData();
-  const { period, setPeriod, shownTxns, shownTotal, trendPct, breakdown, budgetRows } = useSpendingData(transactions, budgets);
+  const { period, setPeriod, shownTxns, shownAllTxns, shownTotal, trendPct, breakdown, budgetRows } = useSpendingData(
+    transactions,
+    budgets
+  );
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<TxnTypeFilter>("expense");
+  const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set());
   const [addOpen, setAddOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
   const [budgetsOpen, setBudgetsOpen] = useState(false);
@@ -33,19 +39,56 @@ export function SpendingPage() {
 
   const upcomingRecurring = [...recurring].sort((a, b) => a.next_date.localeCompare(b.next_date));
 
+  // Every category seen in this account's history, most-used first, so the
+  // chip row is stable and relevant regardless of what's currently filtered.
+  const availableCategories = useMemo(() => {
+    const counts = new Map<string, number>();
+    transactions.forEach((t) => {
+      const cat = t.category || "Other";
+      counts.set(cat, (counts.get(cat) || 0) + 1);
+    });
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([cat]) => cat);
+  }, [transactions]);
+
+  const hasSearch = search.trim().length > 0;
+  const hasCategoryFilter = activeCategories.size > 0;
+  const hasTypeFilter = typeFilter !== "expense";
+  const hasActiveFilter = hasSearch || hasCategoryFilter || hasTypeFilter;
+
   // With no search active the list follows the period toggle above — showing
   // "No spending recorded this period" over a list of this month's rows read
   // as a bug. Searching deliberately escapes the period and spans all time,
   // so history is still reachable; the heading below says which you're seeing.
-  const filteredTxns = search
-    ? transactions.filter(
-        (t) =>
-          t.name.toLowerCase().includes(search.toLowerCase()) ||
-          (t.category || "").toLowerCase().includes(search.toLowerCase())
-      )
-    : shownTxns;
+  // The type filter needs the same escape hatch: switching to "Income" while
+  // still period-bound uses the income-inclusive pool for that same month
+  // instead of the expenses-only one everything else on this page relies on.
+  const basePool = hasSearch ? transactions : typeFilter === "expense" ? shownTxns : shownAllTxns;
 
-  const txnListTitle = search ? "Search results" : period === "this" ? "This Month" : "Last Month";
+  const filteredTxns = basePool.filter((t) => {
+    const matchesSearch =
+      !hasSearch ||
+      t.name.toLowerCase().includes(search.toLowerCase()) ||
+      (t.category || "").toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = !hasCategoryFilter || activeCategories.has(t.category || "Other");
+    return matchesSearch && matchesCategory && matchesTypeFilter(t, typeFilter);
+  });
+
+  const txnListTitle = hasSearch ? "Search results" : period === "this" ? "This Month" : "Last Month";
+
+  function toggleCategory(cat: string) {
+    setActiveCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return next;
+    });
+  }
+
+  function clearFilters() {
+    setSearch("");
+    setTypeFilter("expense");
+    setActiveCategories(new Set());
+  }
 
   function handleNeedUpgrade(trigger: string) {
     setUpgradeTrigger(trigger);
@@ -56,8 +99,15 @@ export function SpendingPage() {
     <div className="px-4 pt-5 pb-4 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-ink">Spending</h1>
-        <button onClick={() => setShowSearch((s) => !s)} aria-label="Search" className="text-ink-secondary cursor-pointer">
+        <button
+          onClick={() => setShowSearch((s) => !s)}
+          aria-label="Search and filter transactions"
+          className="relative text-ink-secondary cursor-pointer"
+        >
           <Search size={19} />
+          {hasActiveFilter && (
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-brand" aria-hidden="true" />
+          )}
         </button>
       </div>
 
@@ -108,13 +158,57 @@ export function SpendingPage() {
       </div>
 
       {showSearch && (
-        <input
-          autoFocus
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search transactions…"
-          className="w-full px-3.5 py-3 rounded-xl border border-border-strong bg-surface-sunken text-ink text-sm outline-none placeholder:text-ink-muted"
-        />
+        <div className="flex flex-col gap-3">
+          <input
+            autoFocus
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search transactions…"
+            className="w-full px-3.5 py-3 rounded-xl border border-border-strong bg-surface-sunken text-ink text-sm outline-none placeholder:text-ink-muted"
+          />
+
+          <SegmentedControl
+            options={[
+              { value: "expense", label: "Expenses" },
+              { value: "income", label: "Income" },
+              { value: "all", label: "All" },
+            ]}
+            value={typeFilter}
+            onChange={setTypeFilter}
+          />
+
+          {availableCategories.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {availableCategories.map((cat) => {
+                const active = activeCategories.has(cat);
+                const color = categoryColor(cat);
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => toggleCategory(cat)}
+                    className="px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer border transition-colors"
+                    style={
+                      active
+                        ? { backgroundColor: color, borderColor: color, color: "var(--color-ink-on-brand)" }
+                        : { borderColor: "var(--color-border-strong)", color: "var(--color-ink-secondary)" }
+                    }
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {hasActiveFilter && (
+            <button
+              onClick={clearFilters}
+              className="self-start flex items-center gap-1 text-xs font-semibold text-ink-secondary cursor-pointer"
+            >
+              <X size={12} /> Clear filters
+            </button>
+          )}
+        </div>
       )}
 
       <Card>
