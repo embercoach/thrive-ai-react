@@ -81,11 +81,12 @@ export function HelpFeedbackPage() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Tell us what's on your mind..."
+            aria-label="Your message"
             rows={6}
             className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-ink placeholder-ink-muted focus:outline-none focus:ring-2 focus:ring-brand/30 resize-none"
           />
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-negative">{error}</p>}
 
           <button
             onClick={handleSubmit}
