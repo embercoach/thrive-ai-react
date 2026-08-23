@@ -90,8 +90,10 @@ export function ProfilePage() {
   const { profile, isPro, refetch } = useAppData();
   const [income, setIncome] = useState(String(profile?.monthly_income ?? ""));
   const [savingIncome, setSavingIncome] = useState(false);
+  const [incomeError, setIncomeError] = useState("");
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [savingCurrency, setSavingCurrency] = useState(false);
+  const [currencyError, setCurrencyError] = useState("");
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -111,16 +113,29 @@ export function ProfilePage() {
   async function handleSaveIncome() {
     if (!user) return;
     setSavingIncome(true);
-    await api.upsertProfile({ id: user.id, monthly_income: parseFloat(income) || 0 });
+    setIncomeError("");
+    // Errors here were previously silent: the button would just stop
+    // showing "…" as if the save had gone through, while the old value
+    // stayed in the database and every savings-rate insight kept using it.
+    const { error } = await api.upsertProfile({ id: user.id, monthly_income: parseFloat(income) || 0 });
     setSavingIncome(false);
+    if (error) {
+      setIncomeError(error.message);
+      return;
+    }
     await refetch();
   }
 
   async function handleSelectCurrency(code: CurrencyCode) {
     if (!user) return;
     setSavingCurrency(true);
-    await api.upsertProfile({ id: user.id, currency: code });
+    setCurrencyError("");
+    const { error } = await api.upsertProfile({ id: user.id, currency: code });
     setSavingCurrency(false);
+    if (error) {
+      setCurrencyError(error.message);
+      return;
+    }
     setShowCurrencyPicker(false);
     await refetch();
   }
@@ -177,7 +192,11 @@ export function ProfilePage() {
             {savingIncome ? "…" : "Save"}
           </Button>
         </div>
-        <p className="text-[11px] text-ink-muted mt-1.5">Used for your savings-rate insights on Home.</p>
+        {incomeError ? (
+          <p className="text-[11px] text-negative mt-1.5">{incomeError}</p>
+        ) : (
+          <p className="text-[11px] text-ink-muted mt-1.5">Used for your savings-rate insights on Home.</p>
+        )}
       </Card>
 
       <Card padding="none">
@@ -191,6 +210,9 @@ export function ProfilePage() {
             <ChevronRight size={15} className={showCurrencyPicker ? "rotate-90 transition-transform" : "transition-transform"} />
           </span>
         </button>
+        {currencyError && (
+          <p className="text-[11px] text-negative px-4 pb-3">{currencyError}</p>
+        )}
         {showCurrencyPicker && (
           <div className="border-t border-border px-2 pb-2">
             {(Object.keys(CURRENCIES) as CurrencyCode[]).map((code) => (
