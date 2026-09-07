@@ -27,6 +27,19 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [recurring, setRecurring] = useState<RecurringItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // `refetch` is memoized on `user` alone (see the eslint-disable below) so
+  // its identity stays stable across the profile updates it itself causes.
+  // Reading `profile` directly in its body would otherwise close over
+  // whatever `profile` was at the moment `user` last changed — null, on the
+  // very first login — and never see a later value for the rest of the
+  // session, silently falling back to "USD" for every recurring row that
+  // doesn't set its own currency. A ref sidesteps that without giving
+  // `refetch` a new identity on every profile change.
+  const profileRef = useRef<Profile | null>(null);
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
+
   const refetch = useCallback(async () => {
     if (!user) return;
     // `loading` is intentionally NOT set here — it starts true and this is
@@ -42,7 +55,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     //
     // Recurring bills are materialized into real transactions before anything
     // else loads, so every screen sees today's occurrences immediately.
-    await api.processRecurring(user.id, profile?.currency || "USD");
+    await api.processRecurring(user.id, profileRef.current?.currency || "USD");
     const [profileData, txns, goalList, budgetList, recurringList] = await Promise.all([
       api.fetchProfile(user.id),
       api.fetchTransactions(user.id),

@@ -60,12 +60,20 @@ export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }:
     const result = clearing
       ? await api.deleteBudget(user.id, category)
       : await api.upsertBudget(user.id, category, amt);
-    setSaving(false);
     if (result.error) {
+      setSaving(false);
       setError(result.error.message);
       return;
     }
+    // `drafts` gets reset from `initialDrafts` (derived from `budgetRows`)
+    // whenever this refetch resolves — the same lost-update shape as the
+    // goal-contribution race fixed earlier this session. Inputs stay
+    // disabled (via `saving`) for the whole save-and-refetch round trip,
+    // not just the initial write, so there's no window where a keystroke
+    // into a different category's field can land and then get silently
+    // wiped out from under the user the moment this refetch comes back.
     await refetch();
+    setSaving(false);
   }
 
   async function handleAddNew() {
@@ -83,14 +91,17 @@ export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }:
     setSaving(true);
     setError("");
     const result = await api.upsertBudget(user.id, newCategory.trim(), amt);
-    setSaving(false);
     if (result.error) {
+      setSaving(false);
       setError(result.error.message);
       return;
     }
     setNewCategory("");
     setNewAmount("");
+    // Same reasoning as handleSaveRow above: this refetch also resets
+    // `drafts`, so row inputs must stay disabled until it resolves too.
     await refetch();
+    setSaving(false);
   }
 
   return (
