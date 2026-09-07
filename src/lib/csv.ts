@@ -5,13 +5,25 @@ import type { Transaction } from "@/types";
  * when the field actually needs it (contains a comma, quote, or newline).
  * Leaving plain fields unquoted keeps the output readable when opened in a
  * text editor, while still round-tripping correctly through Excel/Sheets.
+ *
+ * Also neutralizes CSV/formula injection: a field starting with =, +, -, or
+ * @ is read as a live formula (not plain text) by Excel, Sheets, and
+ * LibreOffice when the file is reopened — a transaction name of
+ * `=HYPERLINK("http://evil.example","click")` or a notes field starting
+ * with `@SUM(...)` would execute on open rather than just display. Only
+ * `name`, `category`, `account`, and `notes` ever reach this function with
+ * free-text a user typed; `date`, `type`, and `amount` below are built from
+ * validated/computed values and never touch it. A leading apostrophe is
+ * Excel's own "force text" marker, so it neutralizes the formula in every
+ * spreadsheet app without changing how the field reads in a plain editor.
  */
 function csvField(value: string | number | null | undefined): string {
   const str = value === null || value === undefined ? "" : String(value);
-  if (/[",\n]/.test(str)) {
-    return `"${str.replace(/"/g, '""')}"`;
+  const safe = /^[=+\-@]/.test(str) ? `'${str}` : str;
+  if (/[",\n]/.test(safe)) {
+    return `"${safe.replace(/"/g, '""')}"`;
   }
-  return str;
+  return safe;
 }
 
 const HEADERS = ["Date", "Merchant", "Category", "Type", "Amount", "Account", "Notes"];

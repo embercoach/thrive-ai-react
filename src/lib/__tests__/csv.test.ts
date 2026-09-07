@@ -53,4 +53,23 @@ describe("transactionsToCsv", () => {
     expect(lines[1]).toContain(",Income,50.00,");
     expect(lines[2]).toContain(",Expense,-50.00,");
   });
+
+  it("neutralizes a leading formula-trigger character so it can't execute as a live formula on open", () => {
+    const csv = transactionsToCsv([
+      txn({ id: "1", name: '=HYPERLINK("http://evil.example","click me")' }),
+      txn({ id: "2", name: "+1+1", category: "-CMD('calc')", account: "@SUM(A1)", notes: "-5 owed" }),
+    ]);
+    const lines = csv.replace(/^﻿/, "").split("\r\n");
+    // Still quoted/escaped as normal (this field also contains commas and
+    // quotes), but now with a leading apostrophe forcing it to plain text.
+    expect(lines[1]).toContain('"\'=HYPERLINK(""http://evil.example"",""click me"")"');
+    expect(lines[2]).toBe("2026-08-10,'+1+1,'-CMD('calc'),Expense,-125.50,'@SUM(A1),'-5 owed");
+  });
+
+  it("leaves ordinary fields (including a negative Amount, which is never user text) untouched", () => {
+    const csv = transactionsToCsv([txn({ name: "Groceries", amount: -50 })]);
+    const dataLine = csv.replace(/^﻿/, "").split("\r\n")[1];
+    expect(dataLine.startsWith("2026-08-10,Groceries,")).toBe(true);
+    expect(dataLine).toContain(",-50.00,");
+  });
 });
