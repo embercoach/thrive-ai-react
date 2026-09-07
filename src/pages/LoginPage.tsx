@@ -45,6 +45,15 @@ export function LoginPage() {
       const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) {
         setError(error.message);
+      } else if (data.user && data.user.identities && data.user.identities.length === 0) {
+        // Supabase's email-enumeration protection returns a "successful"
+        // signup here too, with a populated user but no identities and no
+        // error, when the email is already registered — so this branch must
+        // be checked before the generic "check your email" one below, or an
+        // existing user trying to sign up again is told to wait for a
+        // confirmation email that will never arrive.
+        setError("An account with this email already exists. Try signing in, or use “Forgot password?” if you don't remember your password.");
+        setMode("signin");
       } else if (data.user && !data.session) {
         setInfo("Check your email to confirm your account, then sign in.");
         setMode("signin");
