@@ -6,7 +6,7 @@ import { PromptCard } from "@/components/ai/PromptCard";
 import { BreakdownCard } from "@/components/ai/BreakdownCard";
 import { IntakePreviewCard } from "@/components/ai/IntakePreviewCard";
 import { useAppData } from "@/hooks/useAppData";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import UpgradeModal from "@/components/profile/UpgradeModal";
 
 const SUGGESTIONS = [
@@ -26,6 +26,7 @@ function greeting(name?: string) {
 
 export function AdvisorPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { currency } = useAppData();
   const {
     messages,
@@ -56,6 +57,25 @@ export function AdvisorPage() {
     send(text);
     setInput("");
   }
+
+  // Screens like CategoryDetailPage's "Ask Thrive about this" link here via
+  // navigate("/ai", { state: { prompt } }) so the question is asked
+  // immediately instead of just prefilling the input. This used to be
+  // silently dropped — nothing ever read `location.state` — so the button
+  // looked broken: it landed on an empty (or unrelated) chat with no sign
+  // the tap did anything. Waits for chat history to finish loading first
+  // so this doesn't race the existing-messages fetch, and clears the nav
+  // state via `replace` so navigating back to /ai later (or a re-render)
+  // never re-sends the same question a second time.
+  const consumedNavPrompt = useRef(false);
+  useEffect(() => {
+    const prompt = (location.state as { prompt?: string } | null)?.prompt;
+    if (!prompt || loadingHistory || consumedNavPrompt.current) return;
+    consumedNavPrompt.current = true;
+    handleSend(prompt);
+    navigate(location.pathname, { replace: true, state: null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state, loadingHistory]);
 
   const isEmpty = !loadingHistory && messages.length === 0;
 
