@@ -71,7 +71,15 @@ export function TransactionForm({
   ]);
 
   const total = parseFloat(amount) || 0;
-  const allocated = legs.reduce((sum, l) => sum + (parseFloat(l.amount) || 0), 0);
+  // Math.abs on each leg here matters, not just style: submission (below)
+  // persists every leg as `sign * Math.abs(parseFloat(l.amount))`, so a
+  // negative-typed leg (e.g. "-5") is silently stored as if the user had
+  // typed "5". Summing raw signed values here let a negative leg cancel
+  // part of the total and show "Balanced" for a split whose actual stored
+  // total (all legs sharing the same sign) would come out higher than the
+  // amount the user saw and confirmed — this keeps the live check honest
+  // by matching exactly what will be persisted.
+  const allocated = legs.reduce((sum, l) => sum + Math.abs(parseFloat(l.amount) || 0), 0);
   const remaining = Math.round((total - allocated) * 100) / 100;
 
   function updateLeg(i: number, patch: Partial<SplitLeg>) {
@@ -101,7 +109,18 @@ export function TransactionForm({
     };
 
     if (splitting) {
-      const filled = legs.filter((l) => l.category.trim() && parseFloat(l.amount));
+      // A negative or zero amount has no sane meaning for a split leg (all
+      // legs share the transaction's one Type/sign), and letting one
+      // through here — rather than just excluding it below — would let a
+      // user "balance" the total by typing a negative number that then
+      // gets flattened to positive on persist, silently recording more
+      // spend than what they saw as "Balanced".
+      const hasInvalidLeg = legs.some((l) => l.category.trim() && parseFloat(l.amount) <= 0);
+      if (hasInvalidLeg) {
+        setLocalError("Each split amount must be greater than 0.");
+        return;
+      }
+      const filled = legs.filter((l) => l.category.trim() && parseFloat(l.amount) > 0);
       if (filled.length < 2) {
         setLocalError("A split needs at least two categories with amounts.");
         return;
