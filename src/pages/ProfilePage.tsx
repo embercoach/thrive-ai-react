@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  User,
+  Landmark,
   LogOut,
   Crown,
   Bell,
@@ -231,7 +231,7 @@ export function ProfilePage() {
       </Card>
 
       <Card padding="lg">
-        <ComingSoonRow icon={User} label="Connected Banks" />
+        <NavRow icon={Landmark} label="Connected Banks" onClick={() => navigate("/connected-banks")} />
         <NavRow icon={Bell} label="Notifications" onClick={() => navigate("/notifications")} />
         <NavRow icon={Shield} label="Security" onClick={() => navigate("/security")} />
         <AppearanceRow />
