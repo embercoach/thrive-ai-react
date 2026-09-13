@@ -8,10 +8,12 @@ import { CategoryDetailPage } from "@/pages/CategoryDetailPage";
 import { GoalsPage } from "@/pages/GoalsPage";
 import { AdvisorPage } from "@/pages/AdvisorPage";
 import { ProfilePage } from "@/pages/ProfilePage";
+import { SecurityPage } from "@/pages/SecurityPage";
 import { AboutPage } from "@/pages/AboutPage";
 import { HelpFeedbackPage } from "@/pages/HelpFeedbackPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
+import { MfaChallengePage } from "@/pages/MfaChallengePage";
 import { OnboardingPage } from "@/pages/OnboardingPage";
 import { HomeSkeleton } from "@/components/ui/HomeSkeleton";
 import type { ReactNode } from "react";
@@ -27,13 +29,17 @@ function AuthSpinner() {
 }
 
 function Gate({ children }: { children: ReactNode }) {
-  const { user, loading, recovering } = useAuth();
+  const { user, loading, recovering, mfaRequired } = useAuth();
   if (loading) return <AuthSpinner />;
   // Recovery takes priority over everything: a reset link creates a session,
   // so `user` is set here — without this the user would slip past into the app
   // without ever setting the new password they came to set.
   if (recovering) return <ResetPasswordPage />;
   if (!user) return <LoginPage />;
+  // A password sign-in only ever earns aal1. Anyone with a verified TOTP
+  // factor must clear the second-factor challenge before reaching the app,
+  // or 2FA would just be decorative.
+  if (mfaRequired) return <MfaChallengePage />;
   return <>{children}</>;
 }
 
@@ -63,6 +69,7 @@ function App() {
                 <Route path="/ai" element={<AdvisorPage />} />
                 <Route path="/goals" element={<GoalsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/security" element={<SecurityPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/help" element={<HelpFeedbackPage />} />
               </Route>
