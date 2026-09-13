@@ -232,7 +232,7 @@ export function ProfilePage() {
 
       <Card padding="lg">
         <ComingSoonRow icon={User} label="Connected Banks" />
-        <ComingSoonRow icon={Bell} label="Notifications" />
+        <NavRow icon={Bell} label="Notifications" onClick={() => navigate("/notifications")} />
         <NavRow icon={Shield} label="Security" onClick={() => navigate("/security")} />
         <AppearanceRow />
         <ComingSoonRow icon={Globe} label="Language" />

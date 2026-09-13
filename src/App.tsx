@@ -9,6 +9,7 @@ import { GoalsPage } from "@/pages/GoalsPage";
 import { AdvisorPage } from "@/pages/AdvisorPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { SecurityPage } from "@/pages/SecurityPage";
+import { NotificationsPage } from "@/pages/NotificationsPage";
 import { AboutPage } from "@/pages/AboutPage";
 import { HelpFeedbackPage } from "@/pages/HelpFeedbackPage";
 import { LoginPage } from "@/pages/LoginPage";
@@ -70,6 +71,7 @@ function App() {
                 <Route path="/goals" element={<GoalsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/security" element={<SecurityPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/help" element={<HelpFeedbackPage />} />
               </Route>
