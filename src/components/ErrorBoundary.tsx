@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useT } from "@/hooks/useI18n";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -11,6 +12,32 @@ interface ErrorBoundaryProps {
 
 interface ErrorBoundaryState {
   error: Error | null;
+}
+
+/** Renders the crash-recovery screen. Split out from the class component
+ *  below so it can call the `useT()` hook — hooks have no equivalent inside
+ *  a class component's render/methods. */
+function ErrorFallback({ onReset, onReload }: { onReset: () => void; onReload: () => void }) {
+  const t = useT();
+  return (
+    <div className="min-h-screen bg-canvas flex items-center justify-center px-6">
+      <div className="max-w-xs w-full text-center flex flex-col items-center gap-3">
+        <div className="w-12 h-12 rounded-full bg-negative/12 flex items-center justify-center">
+          <AlertTriangle size={22} className="text-negative" />
+        </div>
+        <h1 className="text-lg font-bold text-ink">{t("aiComponents.errorBoundary.title")}</h1>
+        <p className="text-sm text-ink-secondary">{t("aiComponents.errorBoundary.message")}</p>
+        <div className="flex flex-col gap-2 w-full mt-1">
+          <Button onClick={onReset} fullWidth>
+            {t("aiComponents.errorBoundary.tryAgain")}
+          </Button>
+          <Button variant="outline" fullWidth onClick={onReload}>
+            {t("aiComponents.errorBoundary.reloadApp")}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /**
@@ -43,27 +70,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   render() {
     if (this.state.error) {
-      return (
-        <div className="min-h-screen bg-canvas flex items-center justify-center px-6">
-          <div className="max-w-xs w-full text-center flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-negative/12 flex items-center justify-center">
-              <AlertTriangle size={22} className="text-negative" />
-            </div>
-            <h1 className="text-lg font-bold text-ink">Something went wrong</h1>
-            <p className="text-sm text-ink-secondary">
-              This screen hit a snag. Your data is safe — try again, or reload if it keeps happening.
-            </p>
-            <div className="flex flex-col gap-2 w-full mt-1">
-              <Button onClick={this.reset} fullWidth>
-                Try again
-              </Button>
-              <Button variant="outline" fullWidth onClick={() => window.location.reload()}>
-                Reload app
-              </Button>
-            </div>
-          </div>
-        </div>
-      );
+      return <ErrorFallback onReset={this.reset} onReload={() => window.location.reload()} />;
     }
     return this.props.children;
   }

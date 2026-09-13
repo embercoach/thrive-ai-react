@@ -4,6 +4,10 @@ import './styles/globals.css'
 import App from './App.tsx'
 import { ThemeProvider } from './hooks/useTheme'
 import { ErrorBoundary } from './components/ErrorBoundary'
+// Side-effect only: registers every non-English language with useI18n
+// before anything renders. Must run before <App /> mounts and reads the
+// user's detected/stored language.
+import './lib/i18n/translations'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

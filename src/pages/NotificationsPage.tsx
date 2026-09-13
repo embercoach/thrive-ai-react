@@ -4,6 +4,7 @@ import { ChevronLeft, Bell, BellOff, Clock, AlertTriangle, CircleCheck } from "l
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
 import { useAlerts } from "@/hooks/useAlerts";
+import { useT } from "@/hooks/useI18n";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { formatMoney } from "@/lib/currency";
@@ -11,6 +12,7 @@ import { isPushSupported, getPushPermission, isPushSubscribed, subscribeToPush, 
 
 export function NotificationsPage() {
   const navigate = useNavigate();
+  const t = useT();
   const { user } = useAuth();
   const { recurring, budgets, transactions, currency, isPro } = useAppData();
   const alerts = useAlerts(recurring, budgets, transactions, isPro);
@@ -56,34 +58,32 @@ export function NotificationsPage() {
       <div className="flex items-center gap-2">
         <button
           onClick={() => navigate("/profile")}
-          aria-label="Back"
+          aria-label={t("notifications.backAria")}
           className="text-ink-secondary cursor-pointer -ml-1 p-1"
         >
           <ChevronLeft size={22} />
         </button>
-        <h1 className="text-xl font-bold text-ink">Notifications</h1>
+        <h1 className="text-xl font-bold text-ink">{t("notifications.title")}</h1>
       </div>
 
       <Card>
         <div className="flex items-center gap-2 mb-1">
           {subscribed ? <Bell size={16} className="text-brand" /> : <BellOff size={16} className="text-ink-secondary" />}
-          <h2 className="text-sm font-bold text-ink">Push Notifications</h2>
+          <h2 className="text-sm font-bold text-ink">{t("notifications.pushTitle")}</h2>
         </div>
 
         {!supported ? (
           <p className="text-xs text-ink-secondary mt-2">
-            This browser doesn't support push notifications. On iPhone, open this site in Safari, tap Share, then
-            "Add to Home Screen" — once you open Thrive AI from there, push notifications work like a normal app.
+            {t("notifications.notSupported")}
           </p>
         ) : permission === "denied" ? (
           <p className="text-xs text-ink-secondary mt-2">
-            Notifications are blocked for this site in your browser or phone settings. Allow them there, then come
-            back to turn this on.
+            {t("notifications.denied")}
           </p>
         ) : (
           <>
             <p className="text-xs text-ink-secondary mt-2 mb-3">
-              Get a push notification on this device when a bill is due soon or you go over budget.
+              {t("notifications.description")}
             </p>
             {pushError && (
               <p className="text-xs text-negative bg-negative/5 border border-negative/20 rounded-xl py-2 px-3 mb-3">
@@ -94,21 +94,21 @@ export function NotificationsPage() {
               {toggling
                 ? "…"
                 : checkingStatus
-                  ? "Checking…"
+                  ? t("notifications.checking")
                   : subscribed
-                    ? "Turn off push notifications"
-                    : "Turn on push notifications"}
+                    ? t("notifications.turnOff")
+                    : t("notifications.turnOn")}
             </Button>
           </>
         )}
       </Card>
 
       <Card>
-        <h2 className="text-sm font-bold text-ink mb-2">Current Alerts</h2>
+        <h2 className="text-sm font-bold text-ink mb-2">{t("notifications.currentAlerts")}</h2>
         {alerts.length === 0 ? (
           <div className="flex items-center gap-2 py-2">
             <CircleCheck size={16} className="text-brand flex-shrink-0" />
-            <p className="text-xs text-ink-secondary">You're all caught up — no bills due soon and nothing over budget.</p>
+            <p className="text-xs text-ink-secondary">{t("notifications.allCaughtUp")}</p>
           </div>
         ) : (
           <div className="flex flex-col">
@@ -116,8 +116,12 @@ export function NotificationsPage() {
               const isBill = alert.kind === "bill_due";
               const Icon = isBill ? Clock : AlertTriangle;
               const text = isBill
-                ? `${alert.name} is due ${alert.daysUntil === 0 ? "today" : alert.daysUntil === 1 ? "tomorrow" : `in ${alert.daysUntil} days`} — ${formatMoney(alert.amount, currency)}.`
-                : `${alert.category} is over budget by ${formatMoney(alert.spent - alert.budget, currency)}.`;
+                ? alert.daysUntil === 0
+                  ? t("notifications.billDueToday", { name: alert.name, amount: formatMoney(alert.amount, currency) })
+                  : alert.daysUntil === 1
+                    ? t("notifications.billDueTomorrow", { name: alert.name, amount: formatMoney(alert.amount, currency) })
+                    : t("notifications.billDueInDays", { name: alert.name, days: alert.daysUntil, amount: formatMoney(alert.amount, currency) })
+                : t("notifications.overBudget", { category: alert.category, amount: formatMoney(alert.spent - alert.budget, currency) });
               return (
                 <div key={i} className="flex items-start gap-2.5 py-2.5 border-b border-border last:border-0">
                   <Icon size={15} className={`flex-shrink-0 mt-0.5 ${isBill ? "text-warning" : "text-negative"}`} />

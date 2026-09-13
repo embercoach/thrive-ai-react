@@ -3,12 +3,13 @@ import type { Goal } from "@/types";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { formatMoney } from "@/lib/currency";
+import { useT } from "@/hooks/useI18n";
 
-function encouragement(pct: number): string {
-  if (pct >= 100) return "Goal complete! Incredible work.";
-  if (pct >= 75) return "Almost there — keep going!";
-  if (pct >= 40) return "You're doing great! Keep going.";
-  return "Every contribution counts.";
+function encouragement(pct: number, t: (key: string) => string): string {
+  if (pct >= 100) return t("goalsModals.goalCard.goalComplete");
+  if (pct >= 75) return t("goalsModals.goalCard.almostThere");
+  if (pct >= 40) return t("goalsModals.goalCard.doingGreat");
+  return t("goalsModals.goalCard.everyContribution");
 }
 
 interface FeaturedGoalCardProps {
@@ -21,6 +22,7 @@ interface FeaturedGoalCardProps {
 
 /** The large hero ring shown once on Home and at the top of Goals. */
 export function FeaturedGoalCard({ goal, currency = "USD", onAddSavings, onAskAI, onDelete }: FeaturedGoalCardProps) {
+  const t = useT();
   const pct = Math.round((goal.current / goal.target) * 100);
   const isComplete = pct >= 100;
 
@@ -29,7 +31,11 @@ export function FeaturedGoalCard({ goal, currency = "USD", onAddSavings, onAskAI
       <div className="flex items-start justify-between mb-3.5">
         <h3 className="text-[15px] font-extrabold text-ink">{goal.name}</h3>
         {onDelete && (
-          <button onClick={onDelete} aria-label="Delete goal" className="text-ink-muted cursor-pointer">
+          <button
+            onClick={onDelete}
+            aria-label={t("goalsModals.goalCard.deleteAria")}
+            className="text-ink-muted cursor-pointer"
+          >
             <X size={15} />
           </button>
         )}
@@ -45,15 +51,22 @@ export function FeaturedGoalCard({ goal, currency = "USD", onAddSavings, onAskAI
         />
         <div className="flex-1 min-w-0">
           <div className="text-lg font-extrabold text-ink">{formatMoney(goal.current, currency)}</div>
-          <div className="text-sm text-ink-secondary mb-1">of {formatMoney(goal.target, currency)}</div>
+          <div className="text-sm text-ink-secondary mb-1">
+            {t("goalsModals.goalCard.ofTarget", { target: formatMoney(goal.target, currency) })}
+          </div>
           {goal.deadline && (
             <div className="text-xs text-ink-muted">
-              Target date {new Date(`${goal.deadline}T00:00:00`).toLocaleDateString(undefined, { month: "short", year: "numeric" })}
+              {t("goalsModals.goalCard.targetDate", {
+                date: new Date(`${goal.deadline}T00:00:00`).toLocaleDateString(undefined, {
+                  month: "short",
+                  year: "numeric",
+                }),
+              })}
             </div>
           )}
         </div>
       </div>
-      <p className="text-sm text-positive mt-3">{encouragement(pct)}</p>
+      <p className="text-sm text-positive mt-3">{encouragement(pct, t)}</p>
       {(onAddSavings || onAskAI) && (
         <div className="flex gap-2 mt-3">
           {onAddSavings && (
@@ -61,7 +74,7 @@ export function FeaturedGoalCard({ goal, currency = "USD", onAddSavings, onAskAI
               onClick={onAddSavings}
               className="flex-1 py-2 px-3 rounded-xl bg-brand/12 border border-brand/30 text-brand text-xs font-bold cursor-pointer"
             >
-              + Add Savings
+              {t("goalsModals.goalCard.addSavings")}
             </button>
           )}
           {onAskAI && (
@@ -69,14 +82,14 @@ export function FeaturedGoalCard({ goal, currency = "USD", onAddSavings, onAskAI
               onClick={onAskAI}
               className="flex-1 py-2 px-3 rounded-xl bg-info/10 border border-info/30 text-info text-xs font-bold cursor-pointer"
             >
-              Ask Thrive AI
+              {t("goalsModals.goalCard.askThriveAI")}
             </button>
           )}
         </div>
       )}
       {isComplete && (
         <div className="flex items-center gap-1.5 text-brand text-xs font-bold mt-2">
-          <Trophy size={13} /> Complete
+          <Trophy size={13} /> {t("goalsModals.goalCard.complete")}
         </div>
       )}
     </div>
@@ -91,6 +104,7 @@ interface CompactGoalRowProps {
 
 /** The smaller list row used for every goal after the featured one. */
 export function CompactGoalRow({ goal, onClick, onDelete }: CompactGoalRowProps) {
+  const t = useT();
   const pct = Math.round((goal.current / goal.target) * 100);
   const isComplete = pct >= 100;
   const Icon = isComplete ? Trophy : Target;
@@ -111,7 +125,11 @@ export function CompactGoalRow({ goal, onClick, onDelete }: CompactGoalRowProps)
         {pct}%
       </div>
       {onDelete && (
-        <button onClick={onDelete} aria-label="Delete goal" className="text-ink-muted p-0.5 cursor-pointer flex-shrink-0">
+        <button
+          onClick={onDelete}
+          aria-label={t("goalsModals.goalCard.deleteAria")}
+          className="text-ink-muted p-0.5 cursor-pointer flex-shrink-0"
+        >
           <X size={14} />
         </button>
       )}

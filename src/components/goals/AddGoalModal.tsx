@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
 import * as api from "@/services/api";
+import { useT } from "@/hooks/useI18n";
 
 interface AddGoalModalProps {
   open: boolean;
@@ -15,6 +16,7 @@ interface AddGoalModalProps {
 const FREE_GOAL_LIMIT = 2;
 
 export function AddGoalModal({ open, onClose, onNeedUpgrade }: AddGoalModalProps) {
+  const t = useT();
   const { user } = useAuth();
   const { goals, isPro, refetch } = useAppData();
   const [name, setName] = useState("");
@@ -28,7 +30,7 @@ export function AddGoalModal({ open, onClose, onNeedUpgrade }: AddGoalModalProps
     if (!user) return;
     const targetAmt = Math.abs(parseFloat(target));
     if (!name.trim() || !targetAmt) {
-      setError("Please fill in goal name and target amount.");
+      setError(t("goalsModals.addGoal.errorRequired"));
       return;
     }
     if (!isPro && goals.length >= FREE_GOAL_LIMIT) {
@@ -59,30 +61,40 @@ export function AddGoalModal({ open, onClose, onNeedUpgrade }: AddGoalModalProps
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Add Goal">
+    <Modal open={open} onClose={onClose} title={t("goalsModals.addGoal.title")}>
       {error && <p className="text-negative text-sm mb-3">{error}</p>}
-      <Input label="Goal Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Emergency Fund" />
       <Input
-        label="Target Amount"
+        label={t("goalsModals.addGoal.nameLabel")}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder={t("goalsModals.addGoal.namePlaceholder")}
+      />
+      <Input
+        label={t("goalsModals.addGoal.targetLabel")}
         type="number"
         value={target}
         onChange={(e) => setTarget(e.target.value)}
         placeholder="5000"
       />
       <Input
-        label="Current Savings"
+        label={t("goalsModals.addGoal.currentLabel")}
         type="number"
         value={current}
         onChange={(e) => setCurrent(e.target.value)}
         placeholder="0"
       />
-      <Input label="Target Date" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+      <Input
+        label={t("goalsModals.addGoal.dateLabel")}
+        type="date"
+        value={deadline}
+        onChange={(e) => setDeadline(e.target.value)}
+      />
       <Button fullWidth onClick={handleSave} disabled={saving}>
-        {saving ? "Saving…" : "Add Goal"}
+        {saving ? t("goalsModals.addGoal.saving") : t("goalsModals.addGoal.submit")}
       </Button>
       {!isPro && (
         <p className="text-xs text-ink-muted text-center mt-2">
-          Free plan: {goals.length} of {FREE_GOAL_LIMIT} goals used
+          {t("goalsModals.addGoal.freePlanUsage", { current: goals.length, limit: FREE_GOAL_LIMIT })}
         </p>
       )}
     </Modal>

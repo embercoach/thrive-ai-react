@@ -3,6 +3,7 @@ import { IconX, IconCheck, IconLoader2 } from '@tabler/icons-react';
 import { openPaddleCheckout, isPaddleConfigured, fetchPriceLabels } from '@/lib/paddle';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppData } from '@/hooks/useAppData';
+import { useT } from '@/hooks/useI18n';
 
 const MONTHLY_PRICE_ID = import.meta.env.VITE_PADDLE_PRICE_MONTHLY as string;
 const ANNUAL_PRICE_ID = import.meta.env.VITE_PADDLE_PRICE_ANNUAL as string;
@@ -15,14 +16,8 @@ interface UpgradeModalProps {
   triggeredBy?: string;
 }
 
-const FEATURES = [
-  'Unlimited goals',
-  'Unlimited recurring transactions',
-  'Unlimited budget categories',
-  'Unlimited AI Advisor questions',
-];
-
 export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModalProps) {
+  const t = useT();
   const { user } = useAuth();
   const { refetch } = useAppData();
   const [cycle, setCycle] = useState<BillingCycle>('monthly');
@@ -43,6 +38,13 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
   }, [open]);
 
   if (!open) return null;
+
+  const FEATURES = [
+    t('upgradeModal.featureUnlimitedGoals'),
+    t('upgradeModal.featureUnlimitedRecurring'),
+    t('upgradeModal.featureUnlimitedBudgetCategories'),
+    t('upgradeModal.featureUnlimitedAIQuestions'),
+  ];
 
   const priceId = cycle === 'monthly' ? MONTHLY_PRICE_ID : ANNUAL_PRICE_ID;
   const monthlyLabel = priceLabels[MONTHLY_PRICE_ID];
@@ -88,19 +90,19 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
       >
         <button
           onClick={onClose}
-          aria-label="Close"
+          aria-label={t('upgradeModal.closeAria')}
           className="absolute top-4 right-4 text-ink-muted hover:text-ink transition-colors"
         >
           <IconX size={20} />
         </button>
 
-        <h2 className="font-serif text-2xl text-ink mb-1">Upgrade to Thrive Pro</h2>
+        <h2 className="font-serif text-2xl text-ink mb-1">{t('upgradeModal.title')}</h2>
         {triggeredBy ? (
           <p className="text-sm text-ink-secondary mb-4">
-            You've hit the free-tier limit for {triggeredBy}. Upgrade for unlimited access.
+            {t('upgradeModal.triggeredMessage', { trigger: triggeredBy })}
           </p>
         ) : (
-          <p className="text-sm text-ink-secondary mb-4">Unlock the full Thrive AI experience.</p>
+          <p className="text-sm text-ink-secondary mb-4">{t('upgradeModal.defaultMessage')}</p>
         )}
 
         <div className="flex rounded-xl bg-surface-sunken p-1 mb-5">
@@ -110,7 +112,7 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
             }`}
             onClick={() => setCycle('monthly')}
           >
-            Monthly
+            {t('upgradeModal.monthly')}
             {monthlyLabel && <span className="block text-xs font-normal opacity-80">{monthlyLabel}</span>}
           </button>
           <button
@@ -119,7 +121,7 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
             }`}
             onClick={() => setCycle('annual')}
           >
-            Annual <span className="text-[#9C7440]">· save</span>
+            {t('upgradeModal.annual')} <span className="text-[#9C7440]">{t('upgradeModal.annualSave')}</span>
             {annualLabel && <span className="block text-xs font-normal opacity-80">{annualLabel}</span>}
           </button>
         </div>
@@ -140,16 +142,17 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
         >
           {loading ? <IconLoader2 size={18} className="animate-spin" /> : null}
           {loading
-            ? 'Opening checkout…'
+            ? t('upgradeModal.openingCheckout')
             : selectedLabel
-            ? `Upgrade now — ${selectedLabel}/${cycle === 'monthly' ? 'month' : 'year'}`
-            : 'Upgrade now'}
+            ? t('upgradeModal.upgradeNowWithPrice', {
+                price: selectedLabel,
+                period: cycle === 'monthly' ? t('upgradeModal.periodMonth') : t('upgradeModal.periodYear'),
+              })
+            : t('upgradeModal.upgradeNow')}
         </button>
 
         {!priceId && (
-          <p className="text-xs text-negative mt-2 text-center">
-            Missing Paddle price ID env var — check VITE_PADDLE_PRICE_MONTHLY / VITE_PADDLE_PRICE_ANNUAL.
-          </p>
+          <p className="text-xs text-negative mt-2 text-center">{t('upgradeModal.missingPriceId')}</p>
         )}
       </div>
     </div>

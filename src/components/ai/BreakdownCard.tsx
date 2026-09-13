@@ -2,6 +2,7 @@ import type { Breakdown } from "@/types";
 import { categoryIcon, categoryColor } from "@/lib/categories";
 import { formatMoney } from "@/lib/currency";
 import { Button } from "@/components/ui/Button";
+import { useT } from "@/hooks/useI18n";
 
 interface BreakdownCardProps {
   breakdown: Breakdown;
@@ -11,6 +12,7 @@ interface BreakdownCardProps {
 }
 
 export function BreakdownCard({ breakdown, currency = "USD", onViewTransactions, onSeeFullAnalysis }: BreakdownCardProps) {
+  const t = useT();
   return (
     <div className="flex gap-2 items-start">
       <div className="w-6.5 h-6.5 rounded-lg bg-brand flex-shrink-0 mt-0.5 flex items-center justify-center overflow-hidden">
@@ -41,10 +43,10 @@ export function BreakdownCard({ breakdown, currency = "USD", onViewTransactions,
         )}
         <div className="flex gap-2 mt-2.5">
           <Button variant="info" size="sm" className="flex-1" onClick={onViewTransactions}>
-            View Transactions
+            {t("aiComponents.breakdownCard.viewTransactions")}
           </Button>
           <Button variant="outline" size="sm" className="flex-1" onClick={onSeeFullAnalysis}>
-            See Full Analysis
+            {t("aiComponents.breakdownCard.seeFullAnalysis")}
           </Button>
         </div>
       </div>

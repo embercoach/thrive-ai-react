@@ -3,6 +3,7 @@ import { Plus, X, SplitSquareHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { formatMoney } from "@/lib/currency";
+import { useT } from "@/hooks/useI18n";
 import type { Transaction } from "@/types";
 import { todayLocalStr } from "@/utils/dates";
 
@@ -53,6 +54,7 @@ export function TransactionForm({
   onSubmit,
   secondaryAction,
 }: TransactionFormProps) {
+  const t = useT();
   const [name, setName] = useState(initial?.name ?? "");
   const [amount, setAmount] = useState(initial ? String(Math.abs(initial.amount)) : "");
   const [type, setType] = useState<"expense" | "income">(
@@ -95,7 +97,7 @@ export function TransactionForm({
   function handleSubmit() {
     const amt = parseFloat(amount);
     if (!name.trim() || !amt) {
-      setLocalError("Please fill in name and amount.");
+      setLocalError(t("transactions.shared.fillNameAmount"));
       return;
     }
 
@@ -117,19 +119,19 @@ export function TransactionForm({
       // spend than what they saw as "Balanced".
       const hasInvalidLeg = legs.some((l) => l.category.trim() && parseFloat(l.amount) <= 0);
       if (hasInvalidLeg) {
-        setLocalError("Each split amount must be greater than 0.");
+        setLocalError(t("transactions.form.eachSplitPositive"));
         return;
       }
       const filled = legs.filter((l) => l.category.trim() && parseFloat(l.amount) > 0);
       if (filled.length < 2) {
-        setLocalError("A split needs at least two categories with amounts.");
+        setLocalError(t("transactions.form.splitNeedsTwo"));
         return;
       }
       if (Math.abs(remaining) > 0.009) {
         setLocalError(
           remaining > 0
-            ? `${formatMoney(remaining, currency)} still unallocated.`
-            : `Split is over by ${formatMoney(Math.abs(remaining), currency)}.`
+            ? t("transactions.form.unallocated", { amount: formatMoney(remaining, currency) })
+            : t("transactions.form.splitOverBy", { amount: formatMoney(Math.abs(remaining), currency) })
         );
         return;
       }
@@ -159,26 +161,33 @@ export function TransactionForm({
     <>
       {shownError && <p className="text-negative text-sm mb-3">{shownError}</p>}
 
-      <Input label="Merchant" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Woolworths" />
       <Input
-        label={splitting ? "Total amount" : "Amount"}
+        label={t("transactions.form.merchantLabel")}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder={t("transactions.form.merchantPlaceholder")}
+      />
+      <Input
+        label={splitting ? t("transactions.form.totalAmountLabel") : t("transactions.shared.amountLabel")}
         type="number"
         step="0.01"
         inputMode="decimal"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
-        placeholder="0.00"
+        placeholder={t("transactions.shared.amountPlaceholder")}
       />
 
       <div className="mb-3">
-        <label className="block text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-1.5">Type</label>
+        <label className="block text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-1.5">
+          {t("transactions.shared.typeLabel")}
+        </label>
         <select
           value={type}
           onChange={(e) => setType(e.target.value as "expense" | "income")}
           className="w-full px-3.5 py-3 rounded-xl border border-border-strong bg-surface text-ink text-sm outline-none"
         >
-          <option value="expense">Expense</option>
-          <option value="income">Income</option>
+          <option value="expense">{t("transactions.shared.expense")}</option>
+          <option value="income">{t("transactions.shared.income")}</option>
         </select>
       </div>
 
@@ -186,14 +195,14 @@ export function TransactionForm({
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1.5">
             <label className="block text-xs font-semibold uppercase tracking-wide text-ink-secondary">
-              Split across
+              {t("transactions.form.splitAcrossLabel")}
             </label>
             <button
               type="button"
               onClick={() => setSplitting(false)}
               className="text-xs font-semibold text-ink-muted hover:text-ink transition-colors"
             >
-              Cancel split
+              {t("transactions.form.cancelSplit")}
             </button>
           </div>
 
@@ -203,7 +212,7 @@ export function TransactionForm({
                 <input
                   value={leg.category}
                   onChange={(e) => updateLeg(i, { category: e.target.value })}
-                  placeholder="Category"
+                  placeholder={t("transactions.shared.categoryLabel")}
                   className="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-border-strong bg-surface text-ink text-sm outline-none placeholder:text-ink-muted focus:border-brand transition-colors"
                 />
                 <input
@@ -212,14 +221,14 @@ export function TransactionForm({
                   type="number"
                   step="0.01"
                   inputMode="decimal"
-                  placeholder="0.00"
+                  placeholder={t("transactions.shared.amountPlaceholder")}
                   className="w-[104px] flex-shrink-0 px-3 py-2.5 rounded-xl border border-border-strong bg-surface text-ink text-sm outline-none placeholder:text-ink-muted focus:border-brand transition-colors tabular-nums"
                 />
                 <button
                   type="button"
                   onClick={() => removeLeg(i)}
                   disabled={legs.length <= 2}
-                  aria-label="Remove split line"
+                  aria-label={t("transactions.form.removeSplitLineAria")}
                   className="text-ink-muted hover:text-negative disabled:opacity-30 disabled:hover:text-ink-muted transition-colors flex-shrink-0"
                 >
                   <X size={16} />
@@ -234,7 +243,7 @@ export function TransactionForm({
               onClick={addLeg}
               className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:opacity-80 transition-opacity"
             >
-              <Plus size={13} /> Add category
+              <Plus size={13} /> {t("transactions.form.addCategory")}
             </button>
             <span
               className={`text-xs font-semibold tabular-nums ${
@@ -242,20 +251,20 @@ export function TransactionForm({
               }`}
             >
               {Math.abs(remaining) < 0.01
-                ? "Balanced"
+                ? t("transactions.form.balanced")
                 : remaining > 0
-                  ? `${formatMoney(remaining, currency)} left`
-                  : `${formatMoney(Math.abs(remaining), currency)} over`}
+                  ? t("transactions.form.amountLeft", { amount: formatMoney(remaining, currency) })
+                  : t("transactions.form.amountOver", { amount: formatMoney(Math.abs(remaining), currency) })}
             </span>
           </div>
         </div>
       ) : (
         <>
           <Input
-            label="Category"
+            label={t("transactions.shared.categoryLabel")}
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            placeholder="e.g. Food, Housing, Transport…"
+            placeholder={t("transactions.form.categoryPlaceholder")}
           />
           {allowSplit && (
             <button
@@ -263,22 +272,29 @@ export function TransactionForm({
               onClick={() => setSplitting(true)}
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand hover:opacity-80 transition-opacity -mt-1 mb-3"
             >
-              <SplitSquareHorizontal size={14} /> Split across categories
+              <SplitSquareHorizontal size={14} /> {t("transactions.form.splitAcrossCategories")}
             </button>
           )}
         </>
       )}
 
-      <Input label="Account" value={account} onChange={(e) => setAccount(e.target.value)} placeholder="e.g. Cheque card (optional)" />
-      <Input label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <Input
+        label={t("transactions.form.accountLabel")}
+        value={account}
+        onChange={(e) => setAccount(e.target.value)}
+        placeholder={t("transactions.form.accountPlaceholder")}
+      />
+      <Input label={t("transactions.form.dateLabel")} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
 
       <div className="mb-3">
-        <label className="block text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-1.5">Notes</label>
+        <label className="block text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-1.5">
+          {t("transactions.form.notesLabel")}
+        </label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
-          placeholder="Anything worth remembering (optional)"
+          placeholder={t("transactions.form.notesPlaceholder")}
           className="w-full px-3.5 py-3 rounded-xl border border-border-strong bg-surface text-ink text-sm outline-none placeholder:text-ink-muted focus:border-brand transition-colors resize-none"
         />
       </div>
@@ -286,7 +302,7 @@ export function TransactionForm({
       <div className="flex gap-2">
         {secondaryAction}
         <Button fullWidth onClick={handleSubmit} disabled={saving}>
-          {saving ? "Saving…" : submitLabel}
+          {saving ? t("transactions.shared.saving") : submitLabel}
         </Button>
       </div>
     </>

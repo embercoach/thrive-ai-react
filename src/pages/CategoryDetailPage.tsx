@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useAppData } from "@/hooks/useAppData";
 import { budgetFor } from "@/hooks/useSpendingData";
+import { useT } from "@/hooks/useI18n";
 import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -18,6 +19,7 @@ export function CategoryDetailPage() {
   const { category = "" } = useParams<{ category: string }>();
   const decodedCategory = decodeURIComponent(category);
   const navigate = useNavigate();
+  const t = useT();
   const { transactions, budgets, currency } = useAppData();
   const [editing, setEditing] = useState<Transaction | null>(null);
   const Icon = categoryIcon(decodedCategory);
@@ -50,7 +52,7 @@ export function CategoryDetailPage() {
   return (
     <div className="pb-4">
       <div className="flex items-center gap-3 px-4 pt-5 pb-3">
-        <button onClick={() => navigate("/spending")} aria-label="Back" className="text-ink cursor-pointer">
+        <button onClick={() => navigate("/spending")} aria-label={t("categoryDetail.backAria")} className="text-ink cursor-pointer">
           <ArrowLeft size={20} />
         </button>
         <div className="flex items-center gap-2">
@@ -65,24 +67,24 @@ export function CategoryDetailPage() {
           {budget ? (
             <>
               <div className={`text-sm mt-1 mb-2 ${over ? "text-negative" : "text-ink-secondary"}`}>
-                {pct}% of {formatMoney(budget, currency)} budget
+                {t("categoryDetail.percentOfBudget", { pct, budget: formatMoney(budget, currency) })}
               </div>
               <ProgressBar percent={Math.min(pct, 100)} color={over ? "var(--color-negative)" : "var(--color-positive)"} />
             </>
           ) : (
-            <p className="text-sm text-ink-muted mt-1">No budget set for {decodedCategory}</p>
+            <p className="text-sm text-ink-muted mt-1">{t("categoryDetail.noBudgetSet", { category: decodedCategory })}</p>
           )}
         </Card>
 
         <Card>
-          <CardHeader title="Spending Trend" />
+          <CardHeader title={t("categoryDetail.spendingTrend")} />
           <TrendLine points={cumPoints} labels={weekLabels} currency={currency} />
         </Card>
 
         <Card padding="lg">
-          <CardHeader title="Transactions" />
+          <CardHeader title={t("categoryDetail.transactions")} />
           {shown.length === 0 ? (
-            <p className="text-sm text-ink-muted text-center py-2">No transactions this month</p>
+            <p className="text-sm text-ink-muted text-center py-2">{t("categoryDetail.noTransactionsMonth")}</p>
           ) : (
             shown.map((t) => (
               <TransactionRow key={t.id} transaction={t} currency={currency} showDate onClick={() => setEditing(t)} />
@@ -94,7 +96,7 @@ export function CategoryDetailPage() {
             onClick={() => navigate("/spending")}
             className="text-sm text-brand font-semibold text-center cursor-pointer"
           >
-            View all {sorted.length} {decodedCategory} transactions ›
+            {t("categoryDetail.viewAllTransactions", { count: sorted.length, category: decodedCategory })}
           </button>
         )}
 
@@ -102,11 +104,11 @@ export function CategoryDetailPage() {
           onClick={() => navigate("/ai", { state: { prompt: `Tell me about my ${decodedCategory} spending this month` } })}
           className="w-full flex items-center justify-center py-3.5 rounded-full bg-brand text-ink-on-brand font-bold text-sm cursor-pointer hover:bg-brand-strong transition-colors"
         >
-          Ask Thrive about this
+          {t("categoryDetail.askAboutThis")}
         </button>
 
         <p className="text-center text-[10.5px] text-ink-muted uppercase tracking-wide pt-1 pb-2">
-          Educational purposes only · Not financial advice
+          {t("common.educational")}
         </p>
       </div>
 

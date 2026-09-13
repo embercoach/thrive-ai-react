@@ -3,6 +3,7 @@ import { supabase } from "@/services/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { useT } from "@/hooks/useI18n";
 
 /**
  * Shown only while `mfaRequired` is true — a password sign-in earns aal1,
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/Button";
  * app during password recovery.
  */
 export function MfaChallengePage() {
+  const t = useT();
   const { verifyMfaCode } = useAuth();
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -23,7 +25,7 @@ export function MfaChallengePage() {
 
     const trimmed = code.trim();
     if (!/^\d{6}$/.test(trimmed)) {
-      setError("Enter the 6-digit code from your authenticator app.");
+      setError(t("mfa.invalidCode"));
       return;
     }
 
@@ -72,9 +74,9 @@ export function MfaChallengePage() {
             </div>
           </div>
 
-          <h1 className="text-xl font-bold text-ink text-center mb-1.5">Two-factor verification</h1>
+          <h1 className="text-xl font-bold text-ink text-center mb-1.5">{t("mfa.title")}</h1>
           <p className="text-ink-secondary text-sm text-center mb-7">
-            Enter the 6-digit code from your authenticator app.
+            {t("mfa.subtitle")}
           </p>
 
           {error && (
@@ -85,7 +87,7 @@ export function MfaChallengePage() {
 
           <form onSubmit={handleSubmit}>
             <Input
-              label="Verification code"
+              label={t("mfa.verificationCodeLabel")}
               type="text"
               inputMode="numeric"
               autoComplete="one-time-code"
@@ -96,7 +98,7 @@ export function MfaChallengePage() {
               className="tracking-[0.3em] text-center"
             />
             <Button type="submit" fullWidth disabled={verifying} className="mt-3">
-              {verifying ? "Verifying…" : "Verify"}
+              {verifying ? t("mfa.verifying") : t("mfa.verify")}
             </Button>
           </form>
 
@@ -106,7 +108,7 @@ export function MfaChallengePage() {
             disabled={signingOut}
             className="w-full text-center text-sm font-semibold text-ink-secondary hover:text-ink transition-colors mt-6 disabled:opacity-50"
           >
-            {signingOut ? "Signing out…" : "Sign out instead"}
+            {signingOut ? t("mfa.signingOut") : t("mfa.signOutInstead")}
           </button>
         </div>
       </div>

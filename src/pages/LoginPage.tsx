@@ -2,10 +2,12 @@ import { useState } from "react";
 import { supabase } from "@/services/supabase";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { useT } from "@/hooks/useI18n";
 
 type Mode = "signin" | "signup" | "forgot";
 
 export function LoginPage() {
+  const t = useT();
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +30,7 @@ export function LoginPage() {
         redirectTo: window.location.origin,
       });
       if (error) setError(error.message);
-      else setInfo("Check your email for a link to reset your password.");
+      else setInfo(t("login.emailSentInfo"));
       setLoading(false);
       return;
     }
@@ -38,7 +40,7 @@ export function LoginPage() {
       if (error) setError(error.message);
     } else {
       if (password.length < 6) {
-        setError("Password must be at least 6 characters.");
+        setError(t("login.passwordMinLength"));
         setLoading(false);
         return;
       }
@@ -52,10 +54,10 @@ export function LoginPage() {
         // be checked before the generic "check your email" one below, or an
         // existing user trying to sign up again is told to wait for a
         // confirmation email that will never arrive.
-        setError("An account with this email already exists. Try signing in, or use “Forgot password?” if you don't remember your password.");
+        setError(t("login.accountExists"));
         setMode("signin");
       } else if (data.user && !data.session) {
-        setInfo("Check your email to confirm your account, then sign in.");
+        setInfo(t("login.confirmEmailInfo"));
         setMode("signin");
       }
     }
@@ -142,10 +144,10 @@ export function LoginPage() {
           </div>
           <p className="text-ink-secondary text-sm text-center mb-7">
             {mode === "signin"
-              ? "Welcome back"
+              ? t("login.welcomeBack")
               : mode === "signup"
-                ? "Let's get your money sorted"
-                : "We'll email you a reset link"}
+                ? t("login.letsGetSorted")
+                : t("login.willEmailReset")}
           </p>
 
           {error && (
@@ -161,19 +163,19 @@ export function LoginPage() {
 
           <form onSubmit={handleSubmit}>
             <Input
-              label="Email"
+              label={t("login.emailLabel")}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder={t("login.emailPlaceholder")}
             />
             {mode !== "forgot" && (
               <Input
-                label="Password"
+                label={t("login.passwordLabel")}
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Your password"
+                placeholder={t("login.passwordPlaceholder")}
               />
             )}
             {mode === "signin" && (
@@ -183,22 +185,22 @@ export function LoginPage() {
                   onClick={showForgot}
                   className="text-xs font-semibold text-ink-secondary hover:text-brand transition-colors"
                 >
-                  Forgot password?
+                  {t("login.forgotPassword")}
                 </button>
               </div>
             )}
             <Button type="submit" fullWidth disabled={loading} className="mt-3">
               {loading
                 ? mode === "signin"
-                  ? "Signing in…"
+                  ? t("login.signingIn")
                   : mode === "signup"
-                    ? "Creating account…"
-                    : "Sending…"
+                    ? t("login.creatingAccount")
+                    : t("login.sending")
                 : mode === "signin"
-                  ? "Sign in"
+                  ? t("login.signIn")
                   : mode === "signup"
-                    ? "Create account"
-                    : "Send reset link"}
+                    ? t("login.createAccount")
+                    : t("login.sendResetLink")}
             </Button>
           </form>
 
@@ -208,14 +210,14 @@ export function LoginPage() {
               onClick={backToSignIn}
               className="w-full text-center text-sm font-semibold text-brand hover:opacity-80 transition-opacity mt-6"
             >
-              Back to sign in
+              {t("login.backToSignIn")}
             </button>
           ) : (
             <>
               <div className="flex items-center gap-3 my-6">
                 <div className="flex-1 h-px bg-border" />
                 <span className="text-[11px] uppercase tracking-wide text-ink-muted">
-                  {mode === "signin" ? "New here" : "Have an account"}
+                  {mode === "signin" ? t("login.newHere") : t("login.haveAccount")}
                 </span>
                 <div className="flex-1 h-px bg-border" />
               </div>
@@ -225,7 +227,7 @@ export function LoginPage() {
                 onClick={toggleMode}
                 className="w-full text-center text-sm font-semibold text-brand hover:opacity-80 transition-opacity"
               >
-                {mode === "signin" ? "Create an account" : "Sign in instead"}
+                {mode === "signin" ? t("login.createAnAccount") : t("login.signInInstead")}
               </button>
             </>
           )}

@@ -9,6 +9,7 @@ import {
   useHomeBrief,
 } from "@/hooks/useHomeMetrics";
 import { useBalanceVisibility } from "@/hooks/useBalanceVisibility";
+import { useT } from "@/hooks/useI18n";
 import { TopBar } from "@/components/layout/TopBar";
 import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
@@ -21,14 +22,17 @@ import { HomeSkeleton } from "@/components/ui/HomeSkeleton";
 import { formatMoney, formatMoneySigned } from "@/lib/currency";
 import type { Goal, Transaction } from "@/types";
 
-function greeting(name?: string) {
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
+
+function greeting(t: Translate, name?: string) {
   const h = new Date().getHours();
-  const g = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
+  const g = h < 12 ? t("common.greetingMorning") : h < 17 ? t("common.greetingAfternoon") : t("common.greetingEvening");
   return `${g}${name ? `, ${name}` : ""} 👋`;
 }
 
 export function HomePage() {
   const navigate = useNavigate();
+  const t = useT();
   const { profile, transactions, goals, recurring, budgets, currency, monthlyIncome, isPro, loading } = useAppData();
   const availableToSpend = useAvailableToSpend(transactions, recurring);
   const netWorth = useNetWorth(transactions);
@@ -62,7 +66,7 @@ export function HomePage() {
 
   return (
     <div>
-      <TopBar greeting={greeting(profile?.name)} onBellClick={() => navigate("/profile")} />
+      <TopBar greeting={greeting(t, profile?.name)} onBellClick={() => navigate("/profile")} />
 
       <div className="px-4 pt-3 flex flex-col gap-3.5 pb-4">
         {/* Hero */}
@@ -70,13 +74,13 @@ export function HomePage() {
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <div className="text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-1.5">
-                Available to spend
+                {t("home.availableToSpend")}
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-sans text-[40px] font-extrabold text-ink tracking-tight leading-none">
                   {hidden ? "••••••" : formatMoneySigned(availableToSpend, currency)}
                 </span>
-                <button onClick={toggle} aria-label="Toggle balance visibility" className="text-ink-muted cursor-pointer">
+                <button onClick={toggle} aria-label={t("home.toggleBalanceAria")} className="text-ink-muted cursor-pointer">
                   {hidden ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
@@ -86,7 +90,7 @@ export function HomePage() {
 
           <div className="mt-4 pt-3.5 border-t border-border">
             <div className="text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-0.5">
-              Total balance
+              {t("home.totalBalance")}
             </div>
             <div className="font-sans text-[22px] font-extrabold text-ink tracking-tight">
               {hidden ? "••••" : formatMoneySigned(netWorth, currency)}
@@ -98,7 +102,7 @@ export function HomePage() {
                 }`}
               >
                 {trendUp ? <ArrowUp size={11} /> : <ArrowDown size={11} />}
-                {trendPct}% vs last week
+                {t("home.trendVsLastWeek", { pct: trendPct })}
               </span>
             )}
           </div>
@@ -106,9 +110,9 @@ export function HomePage() {
 
         {/* Today's Brief */}
         <Card>
-          <CardHeader title="Today's Brief" />
+          <CardHeader title={t("home.todaysBrief")} />
           {brief.length === 0 ? (
-            <p className="text-sm text-ink-muted">Add a few transactions and I'll start giving you a daily brief here →</p>
+            <p className="text-sm text-ink-muted">{t("home.briefEmpty")}</p>
           ) : (
             <div>
               {brief.map((line, i) => {
@@ -132,9 +136,9 @@ export function HomePage() {
 
         {/* Upcoming Bills */}
         <Card>
-          <CardHeader title="Upcoming Bills" action="View all" onActionClick={() => navigate("/spending")} />
+          <CardHeader title={t("home.upcomingBills")} action={t("home.viewAll")} onActionClick={() => navigate("/spending")} />
           {upcomingBills.length === 0 ? (
-            <p className="text-sm text-ink-muted">Add a recurring bill to track it here ›</p>
+            <p className="text-sm text-ink-muted">{t("home.billsEmpty")}</p>
           ) : (
             upcomingBills.map((bill) => <BillRow key={bill.id} bill={bill} currency={currency} />)
           )}
@@ -142,19 +146,19 @@ export function HomePage() {
 
         {/* Savings Progress */}
         <Card>
-          <CardHeader title="Savings Progress" />
+          <CardHeader title={t("home.savingsProgress")} />
           {featuredGoal ? (
             <FeaturedGoalRing goal={featuredGoal} currency={currency} onClick={() => navigate("/goals")} />
           ) : (
-            <p className="text-sm text-ink-muted">No goals yet — set one to start tracking ›</p>
+            <p className="text-sm text-ink-muted">{t("home.noGoalsYet")}</p>
           )}
         </Card>
 
         {/* Recent Transactions */}
         <Card padding="lg">
-          <CardHeader title="Recent Transactions" action="See all" onActionClick={() => navigate("/spending")} />
+          <CardHeader title={t("home.recentTransactions")} action={t("home.seeAll")} onActionClick={() => navigate("/spending")} />
           {recentTxns.length === 0 ? (
-            <p className="text-sm text-ink-muted text-center py-2">No transactions yet</p>
+            <p className="text-sm text-ink-muted text-center py-2">{t("home.noTransactionsYet")}</p>
           ) : (
             recentTxns.map((t) => (
               <TransactionRow key={t.id} transaction={t} currency={currency} onClick={() => setEditing(t)} />
@@ -166,11 +170,11 @@ export function HomePage() {
           onClick={() => navigate("/ai")}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-brand text-ink-on-brand font-bold text-sm cursor-pointer hover:bg-brand-strong transition-colors"
         >
-          <MessageCircle size={16} /> Ask Thrive
+          <MessageCircle size={16} /> {t("home.askThrive")}
         </button>
 
         <p className="text-center text-[10.5px] text-ink-muted uppercase tracking-wide pt-1 pb-2">
-          Educational purposes only · Not financial advice
+          {t("common.educational")}
         </p>
       </div>
 
@@ -183,15 +187,16 @@ export function HomePage() {
 // within Home specifically (a more compact treatment than the Goals page's
 // FeaturedGoalCard, matching the reference's Home savings card).
 function FeaturedGoalRing({ goal, currency, onClick }: { goal: Goal; currency: string; onClick: () => void }) {
+  const t = useT();
   const pct = Math.min(Math.round((goal.current / goal.target) * 100), 100);
   const encourage =
     pct >= 100
-      ? "Goal complete! Incredible work."
+      ? t("home.goalComplete")
       : pct >= 75
-      ? "Almost there — keep going!"
+      ? t("home.goalAlmostThere")
       : pct >= 40
-      ? "You're doing great! Keep going."
-      : "Every contribution counts.";
+      ? t("home.goalDoingGreat")
+      : t("home.goalEveryContribution");
 
   return (
     <div className="flex items-center gap-4 w-full cursor-pointer" onClick={onClick}>
@@ -199,7 +204,7 @@ function FeaturedGoalRing({ goal, currency, onClick }: { goal: Goal; currency: s
       <div className="flex-1 min-w-0">
         <div className="text-sm font-bold text-ink">{goal.name}</div>
         <div className="text-xs text-ink-secondary">
-          {formatMoney(goal.current, currency)} of {formatMoney(goal.target, currency)}
+          {t("home.goalOf", { current: formatMoney(goal.current, currency), target: formatMoney(goal.target, currency) })}
         </div>
         <div className="text-xs text-positive mt-0.5">{encourage}</div>
       </div>

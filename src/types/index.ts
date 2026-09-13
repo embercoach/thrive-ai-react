@@ -55,6 +55,11 @@ export interface Profile {
   email?: string;
   monthly_income?: number;
   currency?: string;
+  /** ISO 639-1 code (e.g. "en", "es") for the language this user has chosen
+   *  in Profile > Language. Null/undefined means "never explicitly set" —
+   *  the device-local detection in useI18n's detectInitialLanguage() picks
+   *  a default until they do, exactly like currency defaulting to USD. */
+  language?: string;
   is_pro?: boolean;
   ai_questions_count?: number;
   ai_questions_month?: string;

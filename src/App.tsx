@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { AppDataProvider, useAppData } from "@/hooks/useAppData";
+import { I18nProvider } from "@/hooks/useI18n";
+import { LanguageSync } from "@/components/LanguageSync";
 import { AppLayout } from "@/layouts/AppLayout";
 import { HomePage } from "@/pages/HomePage";
 import { SpendingPage } from "@/pages/SpendingPage";
@@ -58,32 +60,41 @@ function OnboardingGate({ children }: { children: ReactNode }) {
 
 function App() {
   return (
-    <AuthProvider>
-      <Gate>
-        <AppDataProvider>
-          <OnboardingGate>
-          <BrowserRouter>
-            <Routes>
-              <Route element={<AppLayout />}>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/spending" element={<SpendingPage />} />
-                <Route path="/spending/:category" element={<CategoryDetailPage />} />
-                <Route path="/ai" element={<AdvisorPage />} />
-                <Route path="/goals" element={<GoalsPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/security" element={<SecurityPage />} />
-                <Route path="/notifications" element={<NotificationsPage />} />
-                <Route path="/connected-banks" element={<ConnectedBanksPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/help" element={<HelpFeedbackPage />} />
-              </Route>
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </BrowserRouter>
-          </OnboardingGate>
-        </AppDataProvider>
-      </Gate>
-    </AuthProvider>
+    // Outermost, alongside AuthProvider — Login, the MFA challenge, and
+    // password reset all need translated text before there's any signed-in
+    // profile to read a language preference from, which is exactly why
+    // I18nProvider itself has zero auth/profile dependency (device-local
+    // detection only). LanguageSync below is the one place that later
+    // layers the signed-in user's saved preference on top of that.
+    <I18nProvider>
+      <AuthProvider>
+        <Gate>
+          <AppDataProvider>
+            <LanguageSync />
+            <OnboardingGate>
+            <BrowserRouter>
+              <Routes>
+                <Route element={<AppLayout />}>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/spending" element={<SpendingPage />} />
+                  <Route path="/spending/:category" element={<CategoryDetailPage />} />
+                  <Route path="/ai" element={<AdvisorPage />} />
+                  <Route path="/goals" element={<GoalsPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/security" element={<SecurityPage />} />
+                  <Route path="/notifications" element={<NotificationsPage />} />
+                  <Route path="/connected-banks" element={<ConnectedBanksPage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/help" element={<HelpFeedbackPage />} />
+                </Route>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </BrowserRouter>
+            </OnboardingGate>
+          </AppDataProvider>
+        </Gate>
+      </AuthProvider>
+    </I18nProvider>
   );
 }
 

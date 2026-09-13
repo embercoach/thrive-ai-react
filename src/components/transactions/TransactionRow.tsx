@@ -2,6 +2,7 @@ import { Repeat, SplitSquareHorizontal, StickyNote } from "lucide-react";
 import type { Transaction } from "@/types";
 import { categoryIcon, categoryColor } from "@/lib/categories";
 import { formatMoney } from "@/lib/currency";
+import { useT } from "@/hooks/useI18n";
 import { parseLocalDate } from "@/utils/dates";
 
 interface TransactionRowProps {
@@ -12,6 +13,7 @@ interface TransactionRowProps {
 }
 
 export function TransactionRow({ transaction, currency = "USD", showDate = true, onClick }: TransactionRowProps) {
+  const t = useT();
   const Icon = categoryIcon(transaction.category);
   const isIncome = transaction.amount > 0;
 
@@ -31,10 +33,14 @@ export function TransactionRow({ transaction, currency = "USD", showDate = true,
           {transaction.name}
           {transaction.recurring_id && <Repeat size={10} className="text-ink-muted flex-shrink-0" />}
           {transaction.split_group_id && (
-            <SplitSquareHorizontal size={10} className="text-ink-muted flex-shrink-0" aria-label="Part of a split" />
+            <SplitSquareHorizontal
+              size={10}
+              className="text-ink-muted flex-shrink-0"
+              aria-label={t("transactions.row.partOfSplitAria")}
+            />
           )}
           {transaction.notes && (
-            <StickyNote size={10} className="text-ink-muted flex-shrink-0" aria-label="Has notes" />
+            <StickyNote size={10} className="text-ink-muted flex-shrink-0" aria-label={t("transactions.row.hasNotesAria")} />
           )}
         </div>
         {showDate && (

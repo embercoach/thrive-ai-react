@@ -6,6 +6,7 @@ import { useAppData } from "@/hooks/useAppData";
 import { useAuth } from "@/hooks/useAuth";
 import * as api from "@/services/api";
 import type { Goal } from "@/types";
+import { useT } from "@/hooks/useI18n";
 
 interface ContributeGoalModalProps {
   goal: Goal | null;
@@ -13,6 +14,7 @@ interface ContributeGoalModalProps {
 }
 
 export function ContributeGoalModal({ goal, onClose }: ContributeGoalModalProps) {
+  const t = useT();
   const { user } = useAuth();
   const { refetch } = useAppData();
   const [amount, setAmount] = useState("");
@@ -23,7 +25,7 @@ export function ContributeGoalModal({ goal, onClose }: ContributeGoalModalProps)
     if (!goal || !user) return;
     const amt = parseFloat(amount);
     if (!amt || amt <= 0) {
-      setError("Please enter a valid amount.");
+      setError(t("goalsModals.contribute.errorInvalidAmount"));
       return;
     }
     setSaving(true);
@@ -50,11 +52,13 @@ export function ContributeGoalModal({ goal, onClose }: ContributeGoalModalProps)
   }
 
   return (
-    <Modal open={!!goal} onClose={onClose} title="Add to Goal" preventClose={saving}>
+    <Modal open={!!goal} onClose={onClose} title={t("goalsModals.contribute.title")} preventClose={saving}>
       {error && <p className="text-negative text-sm mb-3">{error}</p>}
-      <p className="text-sm text-ink-secondary mb-3">Adding savings to: {goal?.name}</p>
+      <p className="text-sm text-ink-secondary mb-3">
+        {t("goalsModals.contribute.addingSavingsTo", { name: goal?.name ?? "" })}
+      </p>
       <Input
-        label="Amount to Add"
+        label={t("goalsModals.contribute.amountLabel")}
         type="number"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
@@ -62,7 +66,7 @@ export function ContributeGoalModal({ goal, onClose }: ContributeGoalModalProps)
         autoFocus
       />
       <Button fullWidth onClick={handleSave} disabled={saving}>
-        {saving ? "Saving…" : "Add Savings"}
+        {saving ? t("goalsModals.contribute.saving") : t("goalsModals.contribute.submit")}
       </Button>
     </Modal>
   );

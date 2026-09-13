@@ -1,16 +1,18 @@
 import { NavLink } from "react-router-dom";
 import { Home, PieChart, Sparkles, Target, User } from "lucide-react";
 import { cn } from "@/lib/cn";
-
-const TABS = [
-  { to: "/", label: "Home", icon: Home, end: true },
-  { to: "/spending", label: "Spending", icon: PieChart, end: false },
-  { to: "/ai", label: "AI", icon: Sparkles, end: false },
-  { to: "/goals", label: "Goals", icon: Target, end: false },
-  { to: "/profile", label: "Profile", icon: User, end: false },
-];
+import { useT } from "@/hooks/useI18n";
 
 export function BottomNav() {
+  const t = useT();
+  const TABS = [
+    { to: "/", label: t("nav.home"), icon: Home, end: true },
+    { to: "/spending", label: t("nav.spending"), icon: PieChart, end: false },
+    { to: "/ai", label: t("nav.ai"), icon: Sparkles, end: false },
+    { to: "/goals", label: t("nav.goals"), icon: Target, end: false },
+    { to: "/profile", label: t("nav.profile"), icon: User, end: false },
+  ];
+
   return (
     <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] flex bg-surface/95 backdrop-blur-xl border-t border-border pt-2 pb-6 z-40">
       {TABS.map(({ to, label, icon: Icon, end }) => (

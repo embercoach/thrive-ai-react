@@ -1,6 +1,7 @@
 import type { RecurringItem } from "@/types";
 import { categoryIcon, categoryColor } from "@/lib/categories";
 import { formatMoney } from "@/lib/currency";
+import { useT } from "@/hooks/useI18n";
 import { parseLocalDate, todayLocal, daysBetween } from "@/utils/dates";
 
 interface BillRowProps {
@@ -9,10 +10,18 @@ interface BillRowProps {
 }
 
 export function BillRow({ bill, currency = "USD" }: BillRowProps) {
+  const t = useT();
   const Icon = categoryIcon(bill.category);
   const due = parseLocalDate(bill.next_date);
   const d = daysBetween(todayLocal(), due);
-  const when = d < 0 ? "Overdue" : d === 0 ? "Today" : d === 1 ? "Tomorrow" : due.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  const when =
+    d < 0
+      ? t("transactions.billRow.overdue")
+      : d === 0
+        ? t("transactions.billRow.today")
+        : d === 1
+          ? t("transactions.billRow.tomorrow")
+          : due.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
   return (
     <div className="flex items-center gap-2.5 py-2 border-b border-border last:border-0 first:pt-0 last:pb-0 text-sm">

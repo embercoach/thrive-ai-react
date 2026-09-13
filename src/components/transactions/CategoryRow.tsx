@@ -2,6 +2,7 @@ import type { CategoryBudgetRow } from "@/hooks/useSpendingData";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { categoryIcon } from "@/lib/categories";
 import { formatMoney } from "@/lib/currency";
+import { useT } from "@/hooks/useI18n";
 
 interface CategoryRowProps {
   row: CategoryBudgetRow;
@@ -10,13 +11,14 @@ interface CategoryRowProps {
 }
 
 export function CategoryRow({ row, currency = "USD", onClick }: CategoryRowProps) {
+  const t = useT();
   const Icon = categoryIcon(row.category);
   const ringColor = row.over ? "var(--color-negative)" : row.budget && row.budgetPct >= 80 ? "var(--color-warning)" : row.color;
   const statusText = row.budget
     ? row.over
-      ? `${formatMoney(row.amount - row.budget, currency)} over budget`
-      : `${formatMoney(row.budget - row.amount, currency)} left of budget`
-    : "No budget set";
+      ? t("transactions.categoryRow.overBudget", { amount: formatMoney(row.amount - row.budget, currency) })
+      : t("transactions.categoryRow.leftOfBudget", { amount: formatMoney(row.budget - row.amount, currency) })
+    : t("transactions.categoryRow.noBudgetSet");
 
   return (
     <div

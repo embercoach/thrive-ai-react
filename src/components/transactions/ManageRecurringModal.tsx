@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
+import { useT } from "@/hooks/useI18n";
 import { categoryIcon } from "@/lib/categories";
 import { formatMoney } from "@/lib/currency";
 import * as api from "@/services/api";
@@ -20,6 +21,7 @@ interface ManageRecurringModalProps {
 const FREE_RECURRING_LIMIT = 2;
 
 export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRecurringModalProps) {
+  const t = useT();
   const { user } = useAuth();
   const { recurring, currency, isPro, refetch } = useAppData();
   const [showAdd, setShowAdd] = useState(false);
@@ -78,7 +80,7 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
     }
     const amt = parseFloat(amount);
     if (!name.trim() || !amt) {
-      setError("Please fill in name and amount.");
+      setError(t("transactions.shared.fillNameAmount"));
       return;
     }
     setSaving(true);
@@ -107,11 +109,11 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
   const sorted = [...recurring].sort((a, b) => a.next_date.localeCompare(b.next_date));
 
   return (
-    <Modal open={open} onClose={onClose} title="Manage Recurring">
+    <Modal open={open} onClose={onClose} title={t("transactions.manageRecurring.title")}>
       {error && <p className="text-negative text-sm mb-3">{error}</p>}
 
       {sorted.length === 0 && !showAdd ? (
-        <p className="text-sm text-ink-muted mb-4">No recurring bills or income set up yet.</p>
+        <p className="text-sm text-ink-muted mb-4">{t("transactions.manageRecurring.noneYet")}</p>
       ) : (
         <div className="mb-4 max-h-[36vh] overflow-y-auto">
           {sorted.map((item) => {
@@ -121,7 +123,9 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
                 <button
                   onClick={() => handleToggleActive(item)}
                   disabled={busyId === item.id}
-                  aria-label={item.active ? "Pause" : "Resume"}
+                  aria-label={
+                    item.active ? t("transactions.manageRecurring.pauseAria") : t("transactions.manageRecurring.resumeAria")
+                  }
                   className={`w-9 h-5 rounded-full flex-shrink-0 relative transition-colors cursor-pointer ${
                     item.active ? "bg-brand" : "bg-surface-sunken border border-border-strong"
                   }`}
@@ -136,7 +140,13 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
                 <div className={`flex-1 min-w-0 ${item.active ? "" : "opacity-50"}`}>
                   <div className="text-sm font-semibold text-ink truncate">{item.name}</div>
                   <div className="text-[11px] text-ink-muted">
-                    {item.frequency === "monthly" ? "Monthly" : "Weekly"} · next {item.next_date}
+                    {t("transactions.manageRecurring.nextDateDisplay", {
+                      frequency:
+                        item.frequency === "monthly"
+                          ? t("transactions.manageRecurring.monthly")
+                          : t("transactions.manageRecurring.weekly"),
+                      date: item.next_date,
+                    })}
                   </div>
                 </div>
                 <span className={`text-sm font-bold flex-shrink-0 ${item.amount < 0  ? "text-ink" : "text-positive"}`}>
@@ -146,7 +156,7 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
                 <button
                   onClick={() => handleDelete(item)}
                   disabled={busyId === item.id}
-                  aria-label="Delete"
+                  aria-label={t("transactions.shared.delete")}
                   className="text-ink-muted hover:text-negative cursor-pointer flex-shrink-0"
                 >
                   <Trash2 size={15} />
@@ -159,46 +169,58 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
 
       {showAdd ? (
         <div className="pt-3 border-t border-border">
-          <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Rent" />
           <Input
-            label="Amount"
+            label={t("transactions.manageRecurring.nameLabel")}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t("transactions.manageRecurring.namePlaceholder")}
+          />
+          <Input
+            label={t("transactions.shared.amountLabel")}
             type="number"
             step="0.01"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
+            placeholder={t("transactions.shared.amountPlaceholder")}
           />
           <div className="mb-3">
-            <label className="block text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-1.5">Type</label>
+            <label className="block text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-1.5">
+              {t("transactions.shared.typeLabel")}
+            </label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as "expense" | "income")}
               className="w-full px-3.5 py-3 rounded-xl border border-border-strong bg-surface text-ink text-sm outline-none"
             >
-              <option value="expense">Expense</option>
-              <option value="income">Income</option>
+              <option value="expense">{t("transactions.shared.expense")}</option>
+              <option value="income">{t("transactions.shared.income")}</option>
             </select>
           </div>
           <Input
-            label="Category"
+            label={t("transactions.shared.categoryLabel")}
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            placeholder="e.g. Housing"
+            placeholder={t("transactions.manageRecurring.categoryPlaceholder")}
           />
           <div className="mb-3">
             <label className="block text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-1.5">
-              Frequency
+              {t("transactions.manageRecurring.frequencyLabel")}
             </label>
             <select
               value={frequency}
               onChange={(e) => setFrequency(e.target.value as "monthly" | "weekly")}
               className="w-full px-3.5 py-3 rounded-xl border border-border-strong bg-surface text-ink text-sm outline-none"
             >
-              <option value="monthly">Monthly</option>
-              <option value="weekly">Weekly</option>
+              <option value="monthly">{t("transactions.manageRecurring.monthly")}</option>
+              <option value="weekly">{t("transactions.manageRecurring.weekly")}</option>
             </select>
           </div>
-          <Input label="Next Date" type="date" value={nextDate} onChange={(e) => setNextDate(e.target.value)} />
+          <Input
+            label={t("transactions.manageRecurring.nextDateLabel")}
+            type="date"
+            value={nextDate}
+            onChange={(e) => setNextDate(e.target.value)}
+          />
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -209,21 +231,24 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
                 resetAddForm();
               }}
             >
-              Cancel
+              {t("transactions.manageRecurring.cancel")}
             </Button>
             <Button fullWidth onClick={handleAdd} disabled={saving}>
-              {saving ? "Saving…" : "Save"}
+              {saving ? t("transactions.shared.saving") : t("transactions.manageRecurring.save")}
             </Button>
           </div>
         </div>
       ) : (
         <>
           <Button variant="outline" fullWidth onClick={() => setShowAdd(true)}>
-            <Plus size={15} /> Add Recurring
+            <Plus size={15} /> {t("transactions.manageRecurring.addRecurring")}
           </Button>
           {!isPro && (
             <p className="text-xs text-ink-muted text-center mt-2">
-              Free plan: {recurring.length} of {FREE_RECURRING_LIMIT} recurring items used
+              {t("transactions.manageRecurring.freePlanUsage", {
+                used: recurring.length,
+                limit: FREE_RECURRING_LIMIT,
+              })}
             </p>
           )}
         </>

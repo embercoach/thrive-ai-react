@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Check, ChevronLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
+import { useT } from "@/hooks/useI18n";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { CURRENCIES } from "@/lib/currency";
@@ -22,6 +23,7 @@ const STEPS = ["name", "currency", "income", "goal"] as const;
 type Step = (typeof STEPS)[number];
 
 export function OnboardingPage() {
+  const t = useT();
   const { user } = useAuth();
   const { profile, refetch } = useAppData();
 
@@ -108,7 +110,7 @@ export function OnboardingPage() {
             {stepIndex > 0 ? (
               <button
                 onClick={back}
-                aria-label="Back"
+                aria-label={t("onboarding.backAria")}
                 className="text-ink-muted hover:text-ink transition-colors -ml-1"
               >
                 <ChevronLeft size={20} />
@@ -126,7 +128,7 @@ export function OnboardingPage() {
               ))}
             </div>
             <span className="text-[11px] font-semibold text-ink-muted tabular-nums">
-              {stepIndex + 1}/{STEPS.length}
+              {t("onboarding.stepCounter", { current: stepIndex + 1, total: STEPS.length })}
             </span>
           </div>
 
@@ -138,15 +140,15 @@ export function OnboardingPage() {
 
           {step === "name" && (
             <>
-              <h1 className="text-xl font-bold text-ink mb-1.5">What should we call you?</h1>
+              <h1 className="text-xl font-bold text-ink mb-1.5">{t("onboarding.nameTitle")}</h1>
               <p className="text-ink-secondary text-sm mb-6">
-                Just so Thrive can greet you properly.
+                {t("onboarding.nameSubtitle")}
               </p>
               <Input
-                label="Your name"
+                label={t("onboarding.nameLabel")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Deacon"
+                placeholder={t("onboarding.namePlaceholder")}
                 autoFocus
               />
             </>
@@ -154,9 +156,9 @@ export function OnboardingPage() {
 
           {step === "currency" && (
             <>
-              <h1 className="text-xl font-bold text-ink mb-1.5">Which currency do you use?</h1>
+              <h1 className="text-xl font-bold text-ink mb-1.5">{t("onboarding.currencyTitle")}</h1>
               <p className="text-ink-secondary text-sm mb-5">
-                Every amount in Thrive will be shown in this.
+                {t("onboarding.currencySubtitle")}
               </p>
               <div className="max-h-[260px] overflow-y-auto -mx-1 px-1">
                 {(Object.keys(CURRENCIES) as CurrencyCode[]).map((code) => (
@@ -180,12 +182,12 @@ export function OnboardingPage() {
 
           {step === "income" && (
             <>
-              <h1 className="text-xl font-bold text-ink mb-1.5">What comes in each month?</h1>
+              <h1 className="text-xl font-bold text-ink mb-1.5">{t("onboarding.incomeTitle")}</h1>
               <p className="text-ink-secondary text-sm mb-6">
-                Used for your savings-rate insight on Home. You can change it any time.
+                {t("onboarding.incomeSubtitle")}
               </p>
               <Input
-                label={`Monthly income (${symbol})`}
+                label={t("onboarding.incomeLabel", { symbol })}
                 type="number"
                 inputMode="decimal"
                 value={income}
@@ -198,19 +200,19 @@ export function OnboardingPage() {
 
           {step === "goal" && (
             <>
-              <h1 className="text-xl font-bold text-ink mb-1.5">Saving towards anything?</h1>
+              <h1 className="text-xl font-bold text-ink mb-1.5">{t("onboarding.goalTitle")}</h1>
               <p className="text-ink-secondary text-sm mb-6">
-                Set one goal to start tracking. Add more later.
+                {t("onboarding.goalSubtitle")}
               </p>
               <Input
-                label="Goal"
+                label={t("onboarding.goalLabel")}
                 value={goalName}
                 onChange={(e) => setGoalName(e.target.value)}
-                placeholder="Emergency fund"
+                placeholder={t("onboarding.goalPlaceholder")}
                 autoFocus
               />
               <Input
-                label={`Target amount (${symbol})`}
+                label={t("onboarding.targetLabel", { symbol })}
                 type="number"
                 inputMode="decimal"
                 value={goalTarget}
@@ -222,10 +224,10 @@ export function OnboardingPage() {
 
           <Button fullWidth onClick={next} disabled={saving} className="mt-4">
             {saving
-              ? "Setting up…"
+              ? t("onboarding.settingUp")
               : stepIndex === STEPS.length - 1
-                ? "Finish"
-                : "Continue"}
+                ? t("onboarding.finish")
+                : t("onboarding.continue")}
           </Button>
 
           {step !== "name" && (
@@ -235,13 +237,13 @@ export function OnboardingPage() {
               disabled={saving}
               className="w-full text-center text-sm font-semibold text-ink-muted hover:text-ink transition-colors mt-3.5 disabled:opacity-50"
             >
-              Skip for now
+              {t("onboarding.skip")}
             </button>
           )}
         </div>
 
         <p className="text-center text-[10.5px] text-ink-muted uppercase tracking-wide mt-5">
-          Educational purposes only · Not financial advice
+          {t("common.educational")}
         </p>
       </div>
     </div>

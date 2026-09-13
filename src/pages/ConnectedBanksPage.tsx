@@ -4,6 +4,7 @@ import { usePlaidLink } from "react-plaid-link";
 import { ChevronLeft, Landmark, RefreshCw, Trash2, Plus, Crown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
+import { useT } from "@/hooks/useI18n";
 import { supabase } from "@/services/supabase";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -47,6 +48,7 @@ async function authedFetch(path: string, body?: object) {
 
 export function ConnectedBanksPage() {
   const navigate = useNavigate();
+  const t = useT();
   const { user } = useAuth();
   const { isPro, refetch: refetchAppData } = useAppData();
 
@@ -163,12 +165,12 @@ export function ConnectedBanksPage() {
       <div className="flex items-center gap-2">
         <button
           onClick={() => navigate("/profile")}
-          aria-label="Back"
+          aria-label={t("connectedBanks.backAria")}
           className="text-ink-secondary cursor-pointer -ml-1 p-1"
         >
           <ChevronLeft size={22} />
         </button>
-        <h1 className="text-xl font-bold text-ink">Connected Banks</h1>
+        <h1 className="text-xl font-bold text-ink">{t("connectedBanks.title")}</h1>
       </div>
 
       {error && (
@@ -177,21 +179,19 @@ export function ConnectedBanksPage() {
 
       {loading ? (
         <Card>
-          <p className="text-xs text-ink-secondary">Loading…</p>
+          <p className="text-xs text-ink-secondary">{t("connectedBanks.loading")}</p>
         </Card>
       ) : institutions.length === 0 ? (
         <Card>
           <div className="flex items-center gap-2 mb-1.5">
             <Landmark size={16} className="text-ink-secondary" />
-            <h2 className="text-sm font-bold text-ink">No banks connected yet</h2>
+            <h2 className="text-sm font-bold text-ink">{t("connectedBanks.noneTitle")}</h2>
           </div>
           <p className="text-xs text-ink-secondary mb-3">
-            Connect a bank to automatically import transactions instead of adding them by hand. Thrive AI never sees
-            or stores your bank login — that's handled entirely by Plaid, a bank-connection service used by
-            thousands of apps.
+            {t("connectedBanks.noneBody")}
           </p>
           <Button size="sm" onClick={handleConnect} disabled={connecting}>
-            <Plus size={14} /> {connecting ? "Connecting…" : "Connect a bank"}
+            <Plus size={14} /> {connecting ? t("connectedBanks.connecting") : t("connectedBanks.connectABank")}
           </Button>
         </Card>
       ) : (
@@ -205,7 +205,7 @@ export function ConnectedBanksPage() {
                 </div>
                 <button
                   onClick={() => setRemovingItemId(inst.itemId)}
-                  aria-label={`Disconnect ${inst.institutionName}`}
+                  aria-label={t("connectedBanks.disconnectAria", { name: inst.institutionName })}
                   className="text-ink-muted hover:text-negative cursor-pointer p-1"
                 >
                   <Trash2 size={15} />
@@ -229,11 +229,11 @@ export function ConnectedBanksPage() {
 
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={handleSyncNow} disabled={syncing} className="flex-1">
-              <RefreshCw size={14} className={syncing ? "animate-spin" : ""} /> {syncing ? "Syncing…" : "Sync now"}
+              <RefreshCw size={14} className={syncing ? "animate-spin" : ""} /> {syncing ? t("connectedBanks.syncing") : t("connectedBanks.syncNow")}
             </Button>
             {!atFreeLimit && (
               <Button size="sm" onClick={handleConnect} disabled={connecting} className="flex-1">
-                <Plus size={14} /> {connecting ? "Connecting…" : "Connect another"}
+                <Plus size={14} /> {connecting ? t("connectedBanks.connecting") : t("connectedBanks.connectAnother")}
               </Button>
             )}
           </div>
@@ -242,7 +242,7 @@ export function ConnectedBanksPage() {
             <Card padding="sm">
               <div className="flex items-center gap-2">
                 <Crown size={14} className="text-brand flex-shrink-0" />
-                <p className="text-xs text-ink-secondary">Free plan includes 1 connected bank. Upgrade to Pro to connect more.</p>
+                <p className="text-xs text-ink-secondary">{t("connectedBanks.freeLimitNotice")}</p>
               </div>
             </Card>
           )}
@@ -250,15 +250,14 @@ export function ConnectedBanksPage() {
       )}
 
       <p className="text-[11px] text-ink-muted leading-relaxed">
-        Bank data updates automatically once a day, or tap "Sync now" any time. Imported transactions appear
-        alongside your manually-added ones everywhere in the app.
+        {t("connectedBanks.footerNote")}
       </p>
 
       <ConfirmModal
         open={!!removingItemId}
-        title="Disconnect Bank"
-        message={`Disconnect ${removingInstitution?.institutionName ?? "this bank"}? Your existing transactions will be kept, but new ones will stop importing until you reconnect.`}
-        confirmLabel="Disconnect"
+        title={t("connectedBanks.disconnectTitle")}
+        message={t("connectedBanks.disconnectMessage", { name: removingInstitution?.institutionName ?? t("connectedBanks.thisBank") })}
+        confirmLabel={t("connectedBanks.disconnect")}
         loading={removing}
         onConfirm={handleRemove}
         onCancel={() => setRemovingItemId(null)}

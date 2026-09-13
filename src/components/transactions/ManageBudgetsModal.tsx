@@ -3,6 +3,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
+import { useT } from "@/hooks/useI18n";
 import { categoryIcon } from "@/lib/categories";
 import { currencyConfig } from "@/lib/currency";
 import * as api from "@/services/api";
@@ -18,6 +19,7 @@ interface ManageBudgetsModalProps {
 const FREE_BUDGET_LIMIT = 2;
 
 export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }: ManageBudgetsModalProps) {
+  const t = useT();
   const { user } = useAuth();
   const { currency, budgets, isPro, refetch } = useAppData();
   const symbol = currencyConfig(currency).symbol;
@@ -85,7 +87,7 @@ export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }:
     }
     const amt = parseFloat(newAmount);
     if (!newCategory.trim() || !amt || amt <= 0) {
-      setError("Enter a category and an amount greater than 0.");
+      setError(t("transactions.manageBudgets.enterCategoryAmount"));
       return;
     }
     setSaving(true);
@@ -105,13 +107,11 @@ export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }:
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Manage Budgets">
+    <Modal open={open} onClose={onClose} title={t("transactions.manageBudgets.title")}>
       {error && <p className="text-negative text-sm mb-3">{error}</p>}
 
       {budgetRows.length === 0 ? (
-        <p className="text-sm text-ink-muted mb-4">
-          No spending categories yet this month, add a transaction first, or set a budget for a new category below.
-        </p>
+        <p className="text-sm text-ink-muted mb-4">{t("transactions.manageBudgets.noCategoriesYet")}</p>
       ) : (
         <div className="mb-4 max-h-[40vh] overflow-y-auto">
           {budgetRows.map((row) => {
@@ -129,7 +129,7 @@ export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }:
                     value={drafts[row.category] ?? ""}
                     onChange={(e) => setDrafts((d) => ({ ...d, [row.category]: e.target.value }))}
                     onBlur={() => handleSaveRow(row.category)}
-                    placeholder="No limit"
+                    placeholder={t("transactions.manageBudgets.noLimitPlaceholder")}
                     disabled={saving}
                     className="w-24 px-2.5 py-1.5 rounded-lg border border-border-strong bg-surface text-ink text-sm text-right outline-none placeholder:text-ink-muted focus:border-brand transition-colors"
                   />
@@ -142,13 +142,13 @@ export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }:
 
       <div className="pt-3 border-t border-border">
         <label className="block text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-1.5">
-          Add a budget for another category
+          {t("transactions.manageBudgets.addBudgetLabel")}
         </label>
         <div className="flex items-center gap-2">
           <input
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
-            placeholder="e.g. Travel"
+            placeholder={t("transactions.manageBudgets.categoryPlaceholder")}
             className="flex-1 min-w-0 px-3.5 py-3 rounded-xl border border-border-strong bg-surface text-ink text-sm outline-none placeholder:text-ink-muted focus:border-brand transition-colors"
           />
           <input
@@ -157,21 +157,24 @@ export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }:
             inputMode="decimal"
             value={newAmount}
             onChange={(e) => setNewAmount(e.target.value)}
-            placeholder="0.00"
+            placeholder={t("transactions.shared.amountPlaceholder")}
             className="w-24 flex-shrink-0 px-3 py-3 rounded-xl border border-border-strong bg-surface text-ink text-sm text-right outline-none placeholder:text-ink-muted focus:border-brand transition-colors"
           />
         </div>
         <Button fullWidth onClick={handleAddNew} disabled={saving} className="mt-3">
-          {saving ? "Saving..." : "Add Budget"}
+          {saving ? t("transactions.manageBudgets.saving") : t("transactions.manageBudgets.addBudget")}
         </Button>
         {!isPro && (
           <p className="text-xs text-ink-muted text-center mt-2">
-            Free plan: {activeBudgetCount} of {FREE_BUDGET_LIMIT} budgets used
+            {t("transactions.manageBudgets.freePlanUsage", {
+              used: activeBudgetCount,
+              limit: FREE_BUDGET_LIMIT,
+            })}
           </p>
         )}
       </div>
 
-      <p className="text-xs text-ink-muted text-center mt-4">Clear an amount to remove that category's budget.</p>
+      <p className="text-xs text-ink-muted text-center mt-4">{t("transactions.manageBudgets.clearToRemove")}</p>
     </Modal>
   );
 }

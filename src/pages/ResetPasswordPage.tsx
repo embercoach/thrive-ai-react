@@ -3,6 +3,7 @@ import { supabase } from "@/services/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { useT } from "@/hooks/useI18n";
 
 /**
  * Shown only while `recovering` is true — i.e. the user followed a password
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/Button";
  * drops them straight into the app, already signed in.
  */
 export function ResetPasswordPage() {
+  const t = useT();
   const { endRecovery } = useAuth();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -24,11 +26,11 @@ export function ResetPasswordPage() {
     setError("");
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError(t("resetPassword.passwordMinLength"));
       return;
     }
     if (password !== confirm) {
-      setError("Those passwords don't match.");
+      setError(t("resetPassword.passwordsDontMatch"));
       return;
     }
 
@@ -73,19 +75,19 @@ export function ResetPasswordPage() {
 
           {done ? (
             <div className="text-center">
-              <h1 className="text-xl font-bold text-ink mb-1.5">Password updated</h1>
+              <h1 className="text-xl font-bold text-ink mb-1.5">{t("resetPassword.doneTitle")}</h1>
               <p className="text-ink-secondary text-sm mb-6">
-                You're all set — your new password is active.
+                {t("resetPassword.doneSubtitle")}
               </p>
               <Button fullWidth onClick={endRecovery}>
-                Continue to Thrive
+                {t("resetPassword.continueToThrive")}
               </Button>
             </div>
           ) : (
             <>
-              <h1 className="text-xl font-bold text-ink text-center mb-1.5">Choose a new password</h1>
+              <h1 className="text-xl font-bold text-ink text-center mb-1.5">{t("resetPassword.title")}</h1>
               <p className="text-ink-secondary text-sm text-center mb-7">
-                Enter it twice so we know it's right.
+                {t("resetPassword.subtitle")}
               </p>
 
               {error && (
@@ -96,21 +98,21 @@ export function ResetPasswordPage() {
 
               <form onSubmit={handleSubmit}>
                 <Input
-                  label="New password"
+                  label={t("resetPassword.newPasswordLabel")}
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
+                  placeholder={t("resetPassword.newPasswordPlaceholder")}
                 />
                 <Input
-                  label="Confirm password"
+                  label={t("resetPassword.confirmPasswordLabel")}
                   type="password"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
-                  placeholder="Type it again"
+                  placeholder={t("resetPassword.confirmPasswordPlaceholder")}
                 />
                 <Button type="submit" fullWidth disabled={saving} className="mt-3">
-                  {saving ? "Saving…" : "Update password"}
+                  {saving ? t("resetPassword.saving") : t("resetPassword.updatePassword")}
                 </Button>
               </form>
             </>

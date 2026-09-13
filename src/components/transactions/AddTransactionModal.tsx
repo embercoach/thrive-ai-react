@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
+import { useT } from "@/hooks/useI18n";
 import * as api from "@/services/api";
 import { TransactionForm, type TransactionFormValues } from "./TransactionForm";
 
@@ -11,6 +12,7 @@ interface AddTransactionModalProps {
 }
 
 export function AddTransactionModal({ open, onClose }: AddTransactionModalProps) {
+  const t = useT();
   const { user } = useAuth();
   const { currency, refetch } = useAppData();
   const [saving, setSaving] = useState(false);
@@ -60,10 +62,10 @@ export function AddTransactionModal({ open, onClose }: AddTransactionModalProps)
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Add Transaction">
+    <Modal open={open} onClose={onClose} title={t("transactions.addModal.title")}>
       <TransactionForm
         key={formKey}
-        submitLabel="Add Transaction"
+        submitLabel={t("transactions.addModal.submitLabel")}
         saving={saving}
         error={error}
         currency={currency}

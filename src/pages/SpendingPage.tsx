@@ -4,6 +4,7 @@ import { Search, Plus, X, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppData } from "@/hooks/useAppData";
 import { useSpendingData, matchesTypeFilter, type TxnTypeFilter } from "@/hooks/useSpendingData";
+import { useT } from "@/hooks/useI18n";
 import { categoryColor } from "@/lib/categories";
 import { transactionsToCsv, downloadCsv } from "@/lib/csv";
 import { todayLocalStr } from "@/utils/dates";
@@ -23,6 +24,7 @@ import { formatMoney } from "@/lib/currency";
 
 export function SpendingPage() {
   const navigate = useNavigate();
+  const t = useT();
   const { transactions, budgets, recurring, currency } = useAppData();
   const { period, setPeriod, shownTxns, shownAllTxns, shownTotal, trendPct, breakdown, budgetRows } = useSpendingData(
     transactions,
@@ -75,7 +77,7 @@ export function SpendingPage() {
     return matchesSearch && matchesCategory && matchesTypeFilter(t, typeFilter);
   });
 
-  const txnListTitle = hasSearch ? "Search results" : period === "this" ? "This Month" : "Last Month";
+  const txnListTitle = hasSearch ? t("spending.searchResults") : period === "this" ? t("spending.periodThis") : t("spending.periodLast");
 
   function toggleCategory(cat: string) {
     setActiveCategories((prev) => {
@@ -108,19 +110,19 @@ export function SpendingPage() {
   return (
     <div className="px-4 pt-5 pb-4 flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-ink">Spending</h1>
+        <h1 className="text-2xl font-bold text-ink">{t("spending.title")}</h1>
         <div className="flex items-center gap-4">
           <button
             onClick={handleExport}
             disabled={transactions.length === 0}
-            aria-label="Export transactions as CSV"
+            aria-label={t("spending.exportAria")}
             className="text-ink-secondary cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Download size={19} />
           </button>
           <button
             onClick={() => setShowSearch((s) => !s)}
-            aria-label="Search and filter transactions"
+            aria-label={t("spending.searchFilterAria")}
             className="relative text-ink-secondary cursor-pointer"
           >
             <Search size={19} />
@@ -133,8 +135,8 @@ export function SpendingPage() {
 
       <SegmentedControl
         options={[
-          { value: "this", label: "This Month" },
-          { value: "last", label: "Last Month" },
+          { value: "this", label: t("spending.periodThis") },
+          { value: "last", label: t("spending.periodLast") },
         ]}
         value={period}
         onChange={setPeriod}
@@ -151,7 +153,7 @@ export function SpendingPage() {
                 trendPct > 0 ? "bg-negative/12 text-negative" : "bg-positive/12 text-positive"
               }`}
             >
-              {trendPct > 0 ? "↑" : "↓"} {Math.abs(trendPct)}% vs last month
+              {trendPct > 0 ? "↑" : "↓"} {t("spending.trendVsLastMonth", { pct: Math.abs(trendPct) })}
             </span>
           )}
         </div>
@@ -160,7 +162,7 @@ export function SpendingPage() {
 
       <div>
         {breakdown.length === 0 ? (
-          <p className="text-sm text-ink-muted">No spending recorded this period</p>
+          <p className="text-sm text-ink-muted">{t("spending.noSpendingPeriod")}</p>
         ) : (
           breakdown.map((seg) => (
             <div
@@ -183,15 +185,15 @@ export function SpendingPage() {
             autoFocus
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search transactions…"
+            placeholder={t("spending.searchPlaceholder")}
             className="w-full px-3.5 py-3 rounded-xl border border-border-strong bg-surface-sunken text-ink text-sm outline-none placeholder:text-ink-muted"
           />
 
           <SegmentedControl
             options={[
-              { value: "expense", label: "Expenses" },
-              { value: "income", label: "Income" },
-              { value: "all", label: "All" },
+              { value: "expense", label: t("spending.filterExpenses") },
+              { value: "income", label: t("spending.filterIncome") },
+              { value: "all", label: t("spending.filterAll") },
             ]}
             value={typeFilter}
             onChange={setTypeFilter}
@@ -225,25 +227,25 @@ export function SpendingPage() {
               onClick={clearFilters}
               className="self-start flex items-center gap-1 text-xs font-semibold text-ink-secondary cursor-pointer"
             >
-              <X size={12} /> Clear filters
+              <X size={12} /> {t("spending.clearFilters")}
             </button>
           )}
         </div>
       )}
 
       <Card>
-        <CardHeader title="Recurring" action="Manage" onActionClick={() => setRecurringOpen(true)} />
+        <CardHeader title={t("spending.recurring")} action={t("spending.manage")} onActionClick={() => setRecurringOpen(true)} />
         {upcomingRecurring.length === 0 ? (
-          <p className="text-sm text-ink-muted">No recurring bills or income yet ›</p>
+          <p className="text-sm text-ink-muted">{t("spending.noRecurring")}</p>
         ) : (
           upcomingRecurring.map((item) => <BillRow key={item.id} bill={item} currency={currency} />)
         )}
       </Card>
 
       <Card>
-        <CardHeader title="Categories" action="Set budgets" onActionClick={() => setBudgetsOpen(true)} />
+        <CardHeader title={t("spending.categories")} action={t("spending.setBudgets")} onActionClick={() => setBudgetsOpen(true)} />
         {budgetRows.length === 0 ? (
-          <p className="text-sm text-ink-muted text-center py-2">Add transactions to see categories</p>
+          <p className="text-sm text-ink-muted text-center py-2">{t("spending.noCategories")}</p>
         ) : (
           budgetRows.map((row) => (
             <CategoryRow
@@ -260,13 +262,13 @@ export function SpendingPage() {
         onClick={() => setAddOpen(true)}
         className="flex items-center justify-center gap-1.5 py-3 rounded-xl border border-border-strong text-ink text-sm font-semibold cursor-pointer"
       >
-        <Plus size={15} /> Add Transaction
+        <Plus size={15} /> {t("spending.addTransaction")}
       </button>
 
       <Card padding="lg">
         <CardHeader title={txnListTitle} />
         {filteredTxns.length === 0 ? (
-          <p className="text-sm text-ink-muted text-center py-2">No transactions found</p>
+          <p className="text-sm text-ink-muted text-center py-2">{t("spending.noTransactionsFound")}</p>
         ) : (
           filteredTxns.map((t) => (
             <TransactionRow key={t.id} transaction={t} currency={currency} onClick={() => setEditing(t)} />
@@ -275,7 +277,7 @@ export function SpendingPage() {
       </Card>
 
       <p className="text-center text-[10.5px] text-ink-muted uppercase tracking-wide pt-1 pb-2">
-        Educational purposes only · Not financial advice
+        {t("common.educational")}
       </p>
 
       <AddTransactionModal open={addOpen} onClose={() => setAddOpen(false)} />

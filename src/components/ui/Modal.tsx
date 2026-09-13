@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useT } from "@/hooks/useI18n";
 
 interface ModalProps {
   open: boolean;
@@ -20,6 +21,7 @@ interface ModalProps {
 }
 
 export function Modal({ open, onClose, title, children, preventClose }: ModalProps) {
+  const t = useT();
   if (!open) return null;
 
   const requestClose = () => {
@@ -42,7 +44,7 @@ export function Modal({ open, onClose, title, children, preventClose }: ModalPro
             onClick={requestClose}
             disabled={preventClose}
             className="w-7 h-7 rounded-full bg-surface-sunken flex items-center justify-center text-ink cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            aria-label="Close"
+            aria-label={t("common.close")}
           >
             <X size={15} />
           </button>

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ThumbsUp, ThumbsDown, Copy, RotateCcw, Check } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/hooks/useI18n";
 
 export function UserBubble({ children }: { children: ReactNode }) {
   return (
@@ -20,6 +21,7 @@ interface AssistantBubbleProps {
 /** The AI's voice — Lora, not Inter, mirroring how Claude.ai itself
  * separates "the interface talking" from "the AI talking." */
 export function AssistantBubble({ text, onRetry }: AssistantBubbleProps) {
+  const t = useT();
   const [copied, setCopied] = useState(false);
   const [rating, setRating] = useState<"up" | "down" | null>(null);
 
@@ -37,29 +39,29 @@ export function AssistantBubble({ text, onRetry }: AssistantBubbleProps) {
       </div>
       <div className="max-w-[82%]">
         <div className="bg-surface border border-border rounded-2xl rounded-tl-md px-3.5 py-2.5 shadow-card">
-          <div className="text-[9px] font-bold uppercase tracking-wide text-ink-muted mb-1">Thrive AI</div>
+          <div className="text-[9px] font-bold uppercase tracking-wide text-ink-muted mb-1">{t("aiComponents.chatBubble.aiLabel")}</div>
           <div className="font-voice text-[15px] text-ink leading-relaxed whitespace-pre-line">{text}</div>
         </div>
         <div className="flex gap-3.5 mt-2 pl-0.5 text-ink-muted">
           <button
             onClick={() => setRating("up")}
-            aria-label="Good response"
+            aria-label={t("aiComponents.chatBubble.goodResponse")}
             className={`cursor-pointer transition-colors ${rating === "up" ? "text-brand" : "hover:text-ink-secondary"}`}
           >
             <ThumbsUp size={14} />
           </button>
           <button
             onClick={() => setRating("down")}
-            aria-label="Bad response"
+            aria-label={t("aiComponents.chatBubble.badResponse")}
             className={`cursor-pointer transition-colors ${rating === "down" ? "text-brand" : "hover:text-ink-secondary"}`}
           >
             <ThumbsDown size={14} />
           </button>
-          <button onClick={handleCopy} aria-label="Copy" className="cursor-pointer hover:text-ink-secondary transition-colors">
+          <button onClick={handleCopy} aria-label={t("aiComponents.chatBubble.copy")} className="cursor-pointer hover:text-ink-secondary transition-colors">
             {copied ? <Check size={14} className="text-brand" /> : <Copy size={14} />}
           </button>
           {onRetry && (
-            <button onClick={onRetry} aria-label="Retry" className="cursor-pointer hover:text-ink-secondary transition-colors">
+            <button onClick={onRetry} aria-label={t("aiComponents.chatBubble.retry")} className="cursor-pointer hover:text-ink-secondary transition-colors">
               <RotateCcw size={14} />
             </button>
           )}
