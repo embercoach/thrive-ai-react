@@ -1,0 +1,41 @@
+-- ============================================================
+-- Thrive AI: prevent duplicate recurring-bill transactions
+-- ============================================================
+-- Run this in the Supabase SQL Editor BEFORE applying the matching code
+-- patch (fix/prevent-duplicate-recurring-transactions).
+--
+-- processRecurring() in src/services/api.ts materializes each due recurring
+-- bill/income into a real transaction row, and runs on nearly every page
+-- load and after nearly every save across the app. It guards against
+-- inserting the same occurrence twice with only a module-level
+-- `processingRecurring` boolean — a variable that lives in one browser
+-- tab's JS, so it does nothing across two tabs, two windows, or a phone and
+-- a laptop open on the same account at the same time, which is an everyday
+-- scenario, not a contrived one. If a bill's next_date is due when two
+-- sessions call processRecurring around the same moment, both read the same
+-- stale next_date and both insert a transaction for it before either
+-- updates the recurring row — silently double-posting a real bill or
+-- paycheck and permanently corrupting balance, net-worth, and spending
+-- totals, with no error surfaced anywhere. The code's own prior comment
+-- already flagged this as a known, deliberately-deferred gap ("a real fix
+-- belongs at the database level").
+--
+-- Fix: a partial unique index on (recurring_id, date), scoped to rows that
+-- actually came from a recurring bill (recurring_id is not null) so it
+-- never restricts ordinary manually-entered transactions, which routinely
+-- share a date with other transactions and have no recurring_id at all.
+-- Whichever session's insert reaches Postgres first wins; the loser gets a
+-- 23505 (unique_violation) error, which the matching code patch treats as
+-- "already recorded by another session" rather than a real failure.
+--
+-- Safe to run more than once — CREATE UNIQUE INDEX IF NOT EXISTS is
+-- idempotent. If any duplicates already exist in a given database from
+-- before this migration, creating the index will fail with a clear
+-- "could not create unique index" error naming the conflicting rows; those
+-- would need deduplicating by hand first (this migration does not delete
+-- any data on its own).
+-- ============================================================
+
+create unique index if not exists transactions_recurring_id_date_uniq
+  on public.transactions (recurring_id, date)
+  where recurring_id is not null;

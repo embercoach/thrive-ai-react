@@ -125,13 +125,17 @@ export async function deleteRecurring(userId: string, id: string) {
   return supabase.from("recurring").delete().eq("id", id).eq("user_id", userId);
 }
 
-// Guards against two overlapping calls both reading the same stale
-// next_date and each inserting a transaction for it — the exact race that
-// let React StrictMode's dev-mode double-invoke create duplicate Rent and
-// Shopify transactions during testing. A real fix belongs at the database
-// level (a unique constraint or a Postgres advisory lock), but this closes
-// the client-side race for now: only one processRecurring call runs at a
-// time per browser tab, and a second call while one is in flight is a no-op.
+// Guards against two overlapping calls in the SAME browser tab both reading
+// the same stale next_date and each inserting a transaction for it — the
+// race that let React StrictMode's dev-mode double-invoke create duplicate
+// Rent and Shopify transactions during testing. This flag is a module-level
+// variable, though, so it does nothing across two tabs, two windows, or a
+// phone + laptop open on the same account at once — an everyday scenario,
+// not a contrived one. The real backstop is the database-level unique index
+// from the prevent_duplicate_recurring_transactions migration (on
+// (recurring_id, date), only for materialized recurring rows), checked for
+// below via its 23505 (unique_violation) error code; this in-tab flag just
+// avoids hitting that constraint needlessly on every render.
 let processingRecurring = false;
 
 export async function processRecurring(userId: string, currency: string) {
@@ -152,7 +156,7 @@ export async function processRecurring(userId: string, currency: string) {
       let next = r.next_date;
       let guard = 0;
       while (next <= today && guard < 60) {
-        await supabase.from("transactions").insert({
+        const { error } = await supabase.from("transactions").insert({
           user_id: userId,
           name: r.name,
           amount: r.amount,
@@ -161,6 +165,16 @@ export async function processRecurring(userId: string, currency: string) {
           currency: r.currency || currency,
           recurring_id: r.id,
         });
+        if (error) {
+          // 23505 = unique_violation: another tab/device already
+          // materialized this exact occurrence (same recurring_id + date)
+          // and won the race — that's success from here, so keep advancing
+          // as if this session's own insert had gone through. Any other
+          // error means the insert genuinely failed, so stop for this rule
+          // rather than advance next_date past an occurrence that was
+          // never actually recorded.
+          if (error.code !== "23505") break;
+        }
         next = advanceDate(next, r.frequency);
         guard++;
         // Persist progress after every insert, not just at the end — if a
