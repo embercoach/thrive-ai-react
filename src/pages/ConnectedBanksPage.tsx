@@ -29,12 +29,15 @@ const FREE_BANK_LIMIT = 1;
  * current Supabase session token — getSession() (not a cached value from
  * an earlier render) so a long-open tab doesn't call these with a token
  * that's since expired. Same pattern as useChat.ts's call to api/chat.
+ *
+ * A plain module-level function like this can't call useT() itself (that's
+ * a hook), so the caller — which does have it — passes its `t` through.
  */
-async function authedFetch(path: string, body?: object) {
+async function authedFetch(t: (key: string) => string, path: string, body?: object) {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error("Your session has expired. Please sign in again.");
+  if (!session) throw new Error(t("common.sessionExpired"));
 
   const res = await fetch(path, {
     method: "POST",
@@ -42,7 +45,7 @@ async function authedFetch(path: string, body?: object) {
     body: JSON.stringify(body ?? {}),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Something went wrong");
+  if (!res.ok) throw new Error(data.error || t("common.somethingWentWrong"));
   return data;
 }
 
@@ -94,11 +97,11 @@ export function ConnectedBanksPage() {
       setConnecting(true);
       setError("");
       try {
-        await authedFetch("/api/plaid-exchange-public-token", { public_token: publicToken });
-        await authedFetch("/api/plaid-sync");
+        await authedFetch(t, "/api/plaid-exchange-public-token", { public_token: publicToken });
+        await authedFetch(t, "/api/plaid-sync");
         await Promise.all([loadAccounts(), refetchAppData()]);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Couldn't finish connecting this bank.");
+        setError(err instanceof Error ? err.message : t("connectedBanks.errorConnectFinish"));
       } finally {
         setConnecting(false);
         setLinkToken(null);
@@ -122,11 +125,11 @@ export function ConnectedBanksPage() {
     setError("");
     setConnecting(true);
     try {
-      const { link_token } = await authedFetch("/api/plaid-create-link-token");
+      const { link_token } = await authedFetch(t, "/api/plaid-create-link-token");
       setLinkToken(link_token);
     } catch (err) {
       setConnecting(false);
-      setError(err instanceof Error ? err.message : "Couldn't start bank connection.");
+      setError(err instanceof Error ? err.message : t("connectedBanks.errorConnectStart"));
     }
   }
 
@@ -134,10 +137,10 @@ export function ConnectedBanksPage() {
     setError("");
     setSyncing(true);
     try {
-      await authedFetch("/api/plaid-sync");
+      await authedFetch(t, "/api/plaid-sync");
       await Promise.all([loadAccounts(), refetchAppData()]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't sync your accounts.");
+      setError(err instanceof Error ? err.message : t("connectedBanks.errorSync"));
     } finally {
       setSyncing(false);
     }
@@ -148,11 +151,11 @@ export function ConnectedBanksPage() {
     setRemoving(true);
     setError("");
     try {
-      await authedFetch("/api/plaid-remove-item", { item_id: removingItemId });
+      await authedFetch(t, "/api/plaid-remove-item", { item_id: removingItemId });
       await Promise.all([loadAccounts(), refetchAppData()]);
       setRemovingItemId(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't disconnect this bank.");
+      setError(err instanceof Error ? err.message : t("connectedBanks.errorDisconnect"));
     } finally {
       setRemoving(false);
     }

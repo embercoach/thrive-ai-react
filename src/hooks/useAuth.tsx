@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/services/supabase";
+import { useT } from "@/hooks/useI18n";
 
 interface AuthContextValue {
   user: User | null;
@@ -34,6 +35,7 @@ const AuthContext = createContext<AuthContextValue>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const t = useT();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [recovering, setRecovering] = useState(false);
@@ -80,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: factorsData, error: factorsErr } = await supabase.auth.mfa.listFactors();
     if (factorsErr) return { error: factorsErr.message };
     const factor = factorsData?.totp?.find((f) => f.status === "verified");
-    if (!factor) return { error: "No verified authenticator app found on this account." };
+    if (!factor) return { error: t("mfa.noVerifiedFactor") };
 
     const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId: factor.id, code });
     if (error) return { error: error.message };

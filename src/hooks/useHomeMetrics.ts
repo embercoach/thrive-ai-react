@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import type { Transaction, Goal, RecurringItem, Budget } from "@/types";
 import { parseLocalDate, todayLocal, daysBetween, isSameMonth, isSameDay, normCategory } from "@/utils/dates";
 import { formatMoney } from "@/lib/currency";
+import { useT } from "@/hooks/useI18n";
 import type { LucideIcon } from "lucide-react";
 import { Clock, TrendingDown, TrendingUp, AlertTriangle, PiggyBank, Trophy, Target } from "lucide-react";
 
@@ -68,6 +69,7 @@ export function useHomeBrief(
   isPro: boolean,
   currency: string = "USD"
 ): BriefLine[] {
+  const t = useT();
   return useMemo(() => {
     const lines: BriefLine[] = [];
     const today = todayLocal();
@@ -80,8 +82,20 @@ export function useHomeBrief(
       const tier = nearGoal.pct >= 100 ? 100 : nearGoal.pct >= 75 ? 75 : 50;
       lines.push(
         tier === 100
-          ? { text: `You hit your "${nearGoal.g.name}" goal — ${formatMoney(nearGoal.g.target, currency)} saved. Incredible work.`, icon: Trophy, tone: "positive" }
-          : { text: `You're ${tier}% of the way to "${nearGoal.g.name}". Only ${formatMoney(nearGoal.g.target - nearGoal.g.current, currency)} to go.`, icon: Target, tone: "positive" }
+          ? {
+              text: t("home.briefGoalComplete", { goal: nearGoal.g.name, amount: formatMoney(nearGoal.g.target, currency) }),
+              icon: Trophy,
+              tone: "positive",
+            }
+          : {
+              text: t("home.briefGoalProgress", {
+                pct: tier,
+                goal: nearGoal.g.name,
+                amount: formatMoney(nearGoal.g.target - nearGoal.g.current, currency),
+              }),
+              icon: Target,
+              tone: "positive",
+            }
       );
     }
 
@@ -95,8 +109,14 @@ export function useHomeBrief(
       .sort((a, b) => a.due.getTime() - b.due.getTime())[0];
     if (dueSoon) {
       const d = daysBetween(today, dueSoon.due);
-      const when = d === 0 ? "today" : d === 1 ? "tomorrow" : `in ${d} days`;
-      lines.push({ text: `${dueSoon.name} is due ${when} — ${formatMoney(Math.abs(dueSoon.amount), currency)}.`, icon: Clock, tone: "warning" });
+      const amount = formatMoney(Math.abs(dueSoon.amount), currency);
+      const text =
+        d === 0
+          ? t("home.briefBillDueToday", { name: dueSoon.name, amount })
+          : d === 1
+            ? t("home.briefBillDueTomorrow", { name: dueSoon.name, amount })
+            : t("home.briefBillDueInDays", { name: dueSoon.name, days: d, amount });
+      lines.push({ text, icon: Clock, tone: "warning" });
     }
 
     const dayOfMonth = today.getDate();
@@ -113,8 +133,8 @@ export function useHomeBrief(
       if (Math.abs(diff) > 1) {
         lines.push(
           diff > 0
-            ? { text: `You spent ${formatMoney(diff, currency)} less than usual yesterday.`, icon: TrendingDown, tone: "positive" }
-            : { text: `You spent ${formatMoney(Math.abs(diff), currency)} more than usual yesterday.`, icon: TrendingUp, tone: "negative" }
+            ? { text: t("home.briefSpentLess", { amount: formatMoney(diff, currency) }), icon: TrendingDown, tone: "positive" }
+            : { text: t("home.briefSpentMore", { amount: formatMoney(Math.abs(diff), currency) }), icon: TrendingUp, tone: "negative" }
         );
       }
     }
@@ -133,7 +153,11 @@ export function useHomeBrief(
       });
       if (over) {
         const b = budgetFor(budgets, over[0])!;
-        lines.push({ text: `${over[0]} is over budget by ${formatMoney(over[1] - b, currency)}.`, icon: AlertTriangle, tone: "negative" });
+        lines.push({
+          text: t("home.briefOverBudget", { category: over[0], amount: formatMoney(over[1] - b, currency) }),
+          icon: AlertTriangle,
+          tone: "negative",
+        });
       }
     }
 
@@ -146,12 +170,12 @@ export function useHomeBrief(
     if (income > 0) {
       const rate = Math.round(((income - spentThisMonth) / income) * 100);
       if (rate >= 40) {
-        lines.push({ text: `Outstanding month — you're saving ${rate}% of your income. Future you says thank you.`, icon: PiggyBank, tone: "positive" });
+        lines.push({ text: t("home.briefOutstandingMonth", { pct: rate }), icon: PiggyBank, tone: "positive" });
       } else if (rate >= 0) {
-        lines.push({ text: `You're on track to save ${rate}% of your income this month.`, icon: PiggyBank, tone: "positive" });
+        lines.push({ text: t("home.briefOnTrack", { pct: rate }), icon: PiggyBank, tone: "positive" });
       }
     }
 
     return lines.slice(0, 4);
-  }, [transactions, goals, recurring, budgets, monthlyIncome, isPro, currency]);
+  }, [transactions, goals, recurring, budgets, monthlyIncome, isPro, currency, t]);
 }

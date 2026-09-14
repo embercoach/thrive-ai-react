@@ -286,12 +286,12 @@ export function SpendingPage() {
         open={budgetsOpen}
         onClose={() => setBudgetsOpen(false)}
         budgetRows={budgetRows}
-        onNeedUpgrade={() => handleNeedUpgrade("budget categories")}
+        onNeedUpgrade={() => handleNeedUpgrade("budgetCategories")}
       />
       <ManageRecurringModal
         open={recurringOpen}
         onClose={() => setRecurringOpen(false)}
-        onNeedUpgrade={() => handleNeedUpgrade("recurring transactions")}
+        onNeedUpgrade={() => handleNeedUpgrade("recurringTransactions")}
       />
       <UpgradeModal
         open={showUpgradeModal}

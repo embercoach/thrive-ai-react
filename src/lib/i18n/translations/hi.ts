@@ -11,6 +11,9 @@ export const hi: Translations = {
     greetingMorning: "सुप्रभात",
     greetingAfternoon: "नमस्कार",
     greetingEvening: "शुभ संध्या",
+    sessionExpired: "आपका सेशन समाप्त हो गया है। कृपया फिर से साइन इन करें।",
+    somethingWentWrong: "कुछ गड़बड़ हो गई",
+    somethingWentWrongRetry: "कुछ गड़बड़ हो गई। कृपया फिर से कोशिश करें।",
   },
 
   nav: {
@@ -43,6 +46,16 @@ export const hi: Translations = {
     goalDoingGreat: "आप बहुत बढ़िया कर रहे हैं! लगे रहें।",
     goalEveryContribution: "हर योगदान मायने रखता है।",
     goalOf: "{target} में से {current}",
+    briefGoalComplete: "आपने अपना “{goal}” लक्ष्य पूरा कर लिया — {amount} बचाए। शानदार काम।",
+    briefGoalProgress: "आप “{goal}” की ओर {pct}% रास्ता तय कर चुके हैं। बस {amount} और बाकी हैं।",
+    briefBillDueToday: "{name} आज देय है — {amount}।",
+    briefBillDueTomorrow: "{name} कल देय है — {amount}।",
+    briefBillDueInDays: "{name} {days} दिनों में देय है — {amount}।",
+    briefSpentLess: "आपने कल सामान्य से {amount} कम खर्च किया।",
+    briefSpentMore: "आपने कल सामान्य से {amount} ज़्यादा खर्च किया।",
+    briefOverBudget: "{category} बजट से {amount} ज़्यादा हो गया है।",
+    briefOutstandingMonth: "शानदार महीना — आप अपनी आय का {pct}% बचा रहे हैं। आपका भविष्य आपका शुक्रिया अदा करता है।",
+    briefOnTrack: "आप इस महीने अपनी आय का {pct}% बचाने की राह पर हैं।",
   },
 
   spending: {
@@ -112,6 +125,14 @@ export const hi: Translations = {
     upgradeToKeepChatting: "चैट जारी रखने के लिए अपग्रेड करें",
     inputPlaceholder: "अपने पैसों के बारे में मुझसे कुछ भी पूछें…",
     sendAria: "भेजें",
+    limitReachedError: "आपने इस महीने अपने {limit} मुफ़्त सवाल इस्तेमाल कर लिए हैं। असीमित एक्सेस के लिए Pro में अपग्रेड करें।",
+    intakeNoteMore: "पहले {max} आइटम दिखाए जा रहे हैं — बाकी को अलग से जोड़ने के लिए मुझसे कहें।",
+    intakeNeedsProOne: "{count} आइटम जोड़ने के लिए Pro चाहिए",
+    intakeNeedsProMany: "{count} आइटम जोड़ने के लिए Pro चाहिए",
+    intakeFailed: "{count} सेव नहीं हो सके",
+    intakeSavedWithNotes: "{count} सेव हुए। {notes}।",
+    intakeAddedOne: "{count} आइटम आपके अकाउंट में जोड़ा गया।",
+    intakeAddedMany: "{count} आइटम आपके अकाउंट में जोड़े गए।",
   },
 
   login: {
@@ -173,6 +194,7 @@ export const hi: Translations = {
     verify: "सत्यापित करें",
     signOutInstead: "इसके बजाय साइन आउट करें",
     signingOut: "साइन आउट हो रहा है…",
+    noVerifiedFactor: "इस अकाउंट पर कोई सत्यापित ऑथेंटिकेटर ऐप नहीं मिला।",
   },
 
   resetPassword: {
@@ -212,6 +234,10 @@ export const hi: Translations = {
       "{name} को डिस्कनेक्ट करें? आपके मौजूदा लेन-देन सुरक्षित रहेंगे, लेकिन जब तक आप दोबारा कनेक्ट नहीं करते, नए लेन-देन इम्पोर्ट होना बंद हो जाएंगे।",
     disconnect: "डिस्कनेक्ट करें",
     thisBank: "यह बैंक",
+    errorConnectFinish: "इस बैंक को कनेक्ट करना पूरा नहीं हो सका।",
+    errorConnectStart: "बैंक कनेक्शन शुरू नहीं हो सका।",
+    errorSync: "आपके खाते सिंक नहीं हो सके।",
+    errorDisconnect: "इस बैंक को डिस्कनेक्ट नहीं किया जा सका।",
   },
 
   notifications: {
@@ -232,6 +258,15 @@ export const hi: Translations = {
     billDueTomorrow: "{name} कल देय है — {amount}।",
     billDueInDays: "{name} {days} दिनों में देय है — {amount}।",
     overBudget: "{category} बजट से {amount} ज़्यादा हो गया है।",
+    push: {
+      unsupported: "यह ब्राउज़र पुश सूचनाओं का समर्थन नहीं करता।",
+      notConfigured: "पुश सूचनाएं अभी कॉन्फ़िगर नहीं हुई हैं।",
+      permissionDenied: "इस साइट के लिए सूचनाएं ब्लॉक हैं। अपने ब्राउज़र की साइट सेटिंग्स में इन्हें अनुमति दें, फिर फिर से कोशिश करें।",
+      permissionDefault: "अनुमति नहीं दी गई।",
+      subscriptionIncomplete: "सब्सक्रिप्शन पूरा नहीं हो सका। कृपया फिर से कोशिश करें।",
+      enableFailed: "पुश सूचनाएं चालू नहीं हो सकीं।",
+      disableFailed: "पुश सूचनाएं बंद नहीं हो सकीं।",
+    },
   },
 
   profile: {
@@ -445,6 +480,10 @@ export const hi: Translations = {
     closeAria: "बंद करें",
     title: "Thrive Pro में अपग्रेड करें",
     triggeredMessage: "आपने {trigger} के लिए फ्री-टियर सीमा पार कर ली है। असीमित एक्सेस के लिए अपग्रेड करें।",
+    triggerGoals: "लक्ष्यों",
+    triggerRecurringTransactions: "नियमित लेन-देन",
+    triggerBudgetCategories: "बजट श्रेणियों",
+    triggerAiQuestions: "AI सवालों",
     defaultMessage: "पूरे Thrive AI अनुभव को अनलॉक करें।",
     monthly: "मासिक",
     annual: "वार्षिक",

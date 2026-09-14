@@ -11,6 +11,9 @@ export const pt: Translations = {
     greetingMorning: "Bom dia",
     greetingAfternoon: "Boa tarde",
     greetingEvening: "Boa noite",
+    sessionExpired: "A tua sessão expirou. Inicia sessão novamente.",
+    somethingWentWrong: "Algo correu mal",
+    somethingWentWrongRetry: "Algo correu mal. Tenta novamente.",
   },
 
   nav: {
@@ -43,6 +46,16 @@ export const pt: Translations = {
     goalDoingGreat: "Estás a ir muito bem! Continua assim.",
     goalEveryContribution: "Cada contribuição conta.",
     goalOf: "{current} de {target}",
+    briefGoalComplete: "Atingiste o teu objetivo “{goal}” — {amount} poupados. Um trabalho incrível.",
+    briefGoalProgress: "Já percorreste {pct}% do caminho até “{goal}”. Faltam apenas {amount}.",
+    briefBillDueToday: "{name} vence hoje — {amount}.",
+    briefBillDueTomorrow: "{name} vence amanhã — {amount}.",
+    briefBillDueInDays: "{name} vence dentro de {days} dias — {amount}.",
+    briefSpentLess: "Ontem gastaste {amount} a menos do que o habitual.",
+    briefSpentMore: "Ontem gastaste {amount} a mais do que o habitual.",
+    briefOverBudget: "{category} ultrapassou o orçamento em {amount}.",
+    briefOutstandingMonth: "Mês excecional — estás a poupar {pct}% do teu rendimento. O teu eu futuro agradece.",
+    briefOnTrack: "Estás no bom caminho para poupar {pct}% do teu rendimento este mês.",
   },
 
   spending: {
@@ -112,6 +125,14 @@ export const pt: Translations = {
     upgradeToKeepChatting: "Atualiza para continuares a conversar",
     inputPlaceholder: "Pergunta-me qualquer coisa sobre o teu dinheiro…",
     sendAria: "Enviar",
+    limitReachedError: "Já usaste as tuas {limit} perguntas gratuitas este mês. Atualiza para o Pro para acesso ilimitado.",
+    intakeNoteMore: "A mostrar os primeiros {max} itens — pede-me para adicionar o resto separadamente.",
+    intakeNeedsProOne: "{count} item precisa do Pro para ser adicionado",
+    intakeNeedsProMany: "{count} itens precisam do Pro para serem adicionados",
+    intakeFailed: "{count} falharam ao guardar",
+    intakeSavedWithNotes: "{count} guardados. {notes}.",
+    intakeAddedOne: "{count} item adicionado à tua conta.",
+    intakeAddedMany: "{count} itens adicionados à tua conta.",
   },
 
   login: {
@@ -173,6 +194,7 @@ export const pt: Translations = {
     verify: "Verificar",
     signOutInstead: "Terminar sessão em vez disso",
     signingOut: "A terminar sessão…",
+    noVerifiedFactor: "Não foi encontrada nenhuma aplicação de autenticação verificada nesta conta.",
   },
 
   resetPassword: {
@@ -212,6 +234,10 @@ export const pt: Translations = {
       "Desligar {name}? As tuas transações existentes serão mantidas, mas deixarão de ser importadas novas até voltares a ligar.",
     disconnect: "Desligar",
     thisBank: "este banco",
+    errorConnectFinish: "Não foi possível concluir a ligação a este banco.",
+    errorConnectStart: "Não foi possível iniciar a ligação bancária.",
+    errorSync: "Não foi possível sincronizar as tuas contas.",
+    errorDisconnect: "Não foi possível desligar este banco.",
   },
 
   notifications: {
@@ -232,6 +258,15 @@ export const pt: Translations = {
     billDueTomorrow: "{name} vence amanhã — {amount}.",
     billDueInDays: "{name} vence dentro de {days} dias — {amount}.",
     overBudget: "{category} ultrapassou o orçamento em {amount}.",
+    push: {
+      unsupported: "As notificações push não são suportadas neste navegador.",
+      notConfigured: "As notificações push ainda não estão configuradas.",
+      permissionDenied: "As notificações estão bloqueadas para este site. Permite-as nas definições do site do teu navegador e tenta novamente.",
+      permissionDefault: "A permissão não foi concedida.",
+      subscriptionIncomplete: "Não foi possível concluir a subscrição. Tenta novamente.",
+      enableFailed: "Não foi possível ativar as notificações push.",
+      disableFailed: "Não foi possível desativar as notificações push.",
+    },
   },
 
   profile: {
@@ -445,6 +480,10 @@ export const pt: Translations = {
     closeAria: "Fechar",
     title: "Atualizar para o Thrive Pro",
     triggeredMessage: "Atingiste o limite do plano gratuito para {trigger}. Atualiza para acesso ilimitado.",
+    triggerGoals: "objetivos",
+    triggerRecurringTransactions: "transações recorrentes",
+    triggerBudgetCategories: "categorias de orçamento",
+    triggerAiQuestions: "perguntas de IA",
     defaultMessage: "Desbloqueia toda a experiência Thrive AI.",
     monthly: "Mensal",
     annual: "Anual",

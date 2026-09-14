@@ -14,6 +14,9 @@ export const de: Translations = {
     greetingMorning: "Guten Morgen",
     greetingAfternoon: "Guten Tag",
     greetingEvening: "Guten Abend",
+    sessionExpired: "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+    somethingWentWrong: "Etwas ist schiefgelaufen",
+    somethingWentWrongRetry: "Etwas ist schiefgelaufen. Bitte versuch es erneut.",
   },
 
   nav: {
@@ -46,6 +49,16 @@ export const de: Translations = {
     goalDoingGreat: "Du machst das großartig! Weiter so.",
     goalEveryContribution: "Jeder Beitrag zählt.",
     goalOf: "{current} von {target}",
+    briefGoalComplete: "Du hast dein Ziel „{goal}“ erreicht — {amount} gespart. Unglaubliche Leistung.",
+    briefGoalProgress: "Du bist {pct}% auf dem Weg zu „{goal}“. Nur noch {amount} fehlen.",
+    briefBillDueToday: "{name} ist heute fällig — {amount}.",
+    briefBillDueTomorrow: "{name} ist morgen fällig — {amount}.",
+    briefBillDueInDays: "{name} ist in {days} Tagen fällig — {amount}.",
+    briefSpentLess: "Du hast gestern {amount} weniger als üblich ausgegeben.",
+    briefSpentMore: "Du hast gestern {amount} mehr als üblich ausgegeben.",
+    briefOverBudget: "{category} überschreitet das Budget um {amount}.",
+    briefOutstandingMonth: "Herausragender Monat — du sparst {pct}% deines Einkommens. Dein zukünftiges Ich dankt dir.",
+    briefOnTrack: "Du bist auf gutem Weg, diesen Monat {pct}% deines Einkommens zu sparen.",
   },
 
   spending: {
@@ -115,6 +128,14 @@ export const de: Translations = {
     upgradeToKeepChatting: "Upgraden, um weiter zu chatten",
     inputPlaceholder: "Frag mich alles zu deinem Geld…",
     sendAria: "Senden",
+    limitReachedError: "Du hast deine {limit} kostenlosen Fragen für diesen Monat aufgebraucht. Upgrade auf Pro für unbegrenzten Zugriff.",
+    intakeNoteMore: "Die ersten {max} Einträge werden angezeigt — bitte den Rest separat hinzufügen lassen.",
+    intakeNeedsProOne: "{count} Eintrag benötigt Pro zum Hinzufügen",
+    intakeNeedsProMany: "{count} Einträge benötigen Pro zum Hinzufügen",
+    intakeFailed: "{count} konnten nicht gespeichert werden",
+    intakeSavedWithNotes: "{count} gespeichert. {notes}.",
+    intakeAddedOne: "{count} Eintrag zu deinem Konto hinzugefügt.",
+    intakeAddedMany: "{count} Einträge zu deinem Konto hinzugefügt.",
   },
 
   login: {
@@ -176,6 +197,7 @@ export const de: Translations = {
     verify: "Bestätigen",
     signOutInstead: "Stattdessen abmelden",
     signingOut: "Abmeldung läuft…",
+    noVerifiedFactor: "Für dieses Konto wurde keine verifizierte Authenticator-App gefunden.",
   },
 
   resetPassword: {
@@ -215,6 +237,10 @@ export const de: Translations = {
       "{name} trennen? Deine bestehenden Transaktionen bleiben erhalten, aber neue werden erst wieder importiert, sobald du die Verbindung erneuerst.",
     disconnect: "Trennen",
     thisBank: "diese Bank",
+    errorConnectFinish: "Die Verbindung zu dieser Bank konnte nicht abgeschlossen werden.",
+    errorConnectStart: "Die Bankverbindung konnte nicht gestartet werden.",
+    errorSync: "Deine Konten konnten nicht synchronisiert werden.",
+    errorDisconnect: "Diese Bank konnte nicht getrennt werden.",
   },
 
   notifications: {
@@ -236,6 +262,16 @@ export const de: Translations = {
     billDueTomorrow: "{name} ist morgen fällig — {amount}.",
     billDueInDays: "{name} ist in {days} Tagen fällig — {amount}.",
     overBudget: "{category} überschreitet das Budget um {amount}.",
+    push: {
+      unsupported: "Push-Benachrichtigungen werden in diesem Browser nicht unterstützt.",
+      notConfigured: "Push-Benachrichtigungen sind noch nicht konfiguriert.",
+      permissionDenied:
+        "Benachrichtigungen sind für diese Seite blockiert. Erlaube sie in den Website-Einstellungen deines Browsers und versuch es dann erneut.",
+      permissionDefault: "Die Berechtigung wurde nicht erteilt.",
+      subscriptionIncomplete: "Das Abonnement konnte nicht abgeschlossen werden. Bitte versuch es erneut.",
+      enableFailed: "Push-Benachrichtigungen konnten nicht aktiviert werden.",
+      disableFailed: "Push-Benachrichtigungen konnten nicht deaktiviert werden.",
+    },
   },
 
   profile: {
@@ -451,6 +487,10 @@ export const de: Translations = {
     closeAria: "Schließen",
     title: "Upgrade auf Thrive Pro",
     triggeredMessage: "Du hast das Limit des kostenlosen Plans für {trigger} erreicht. Upgrade für unbegrenzten Zugriff.",
+    triggerGoals: "Ziele",
+    triggerRecurringTransactions: "wiederkehrende Transaktionen",
+    triggerBudgetCategories: "Budgetkategorien",
+    triggerAiQuestions: "KI-Fragen",
     defaultMessage: "Schalte das vollständige Thrive AI-Erlebnis frei.",
     monthly: "Monatlich",
     annual: "Jährlich",

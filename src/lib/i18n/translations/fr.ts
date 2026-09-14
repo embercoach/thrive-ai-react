@@ -11,6 +11,9 @@ export const fr: Translations = {
     greetingMorning: "Bonjour",
     greetingAfternoon: "Bon après-midi",
     greetingEvening: "Bonsoir",
+    sessionExpired: "Ta session a expiré. Merci de te reconnecter.",
+    somethingWentWrong: "Une erreur est survenue",
+    somethingWentWrongRetry: "Une erreur est survenue. Merci de réessayer.",
   },
 
   nav: {
@@ -43,6 +46,16 @@ export const fr: Translations = {
     goalDoingGreat: "Tu t'en sors très bien ! Continue comme ça.",
     goalEveryContribution: "Chaque contribution compte.",
     goalOf: "{current} sur {target}",
+    briefGoalComplete: "Tu as atteint ton objectif « {goal} » — {amount} économisés. Un travail incroyable.",
+    briefGoalProgress: "Tu es à {pct}% de ton objectif « {goal} ». Plus que {amount} à réunir.",
+    briefBillDueToday: "{name} est due aujourd'hui — {amount}.",
+    briefBillDueTomorrow: "{name} est due demain — {amount}.",
+    briefBillDueInDays: "{name} est due dans {days} jours — {amount}.",
+    briefSpentLess: "Tu as dépensé {amount} de moins que d'habitude hier.",
+    briefSpentMore: "Tu as dépensé {amount} de plus que d'habitude hier.",
+    briefOverBudget: "{category} dépasse le budget de {amount}.",
+    briefOutstandingMonth: "Mois exceptionnel — tu épargnes {pct}% de tes revenus. Ton toi futur te dit merci.",
+    briefOnTrack: "Tu es en bonne voie pour épargner {pct}% de tes revenus ce mois-ci.",
   },
 
   spending: {
@@ -112,6 +125,14 @@ export const fr: Translations = {
     upgradeToKeepChatting: "Passe à un forfait supérieur pour continuer à discuter",
     inputPlaceholder: "Pose-moi une question sur ton argent…",
     sendAria: "Envoyer",
+    limitReachedError: "Tu as utilisé tes {limit} questions gratuites de ce mois-ci. Passe au forfait Pro pour un accès illimité.",
+    intakeNoteMore: "Affichage des {max} premiers éléments — demande-moi d'ajouter le reste séparément.",
+    intakeNeedsProOne: "{count} élément nécessite le forfait Pro pour être ajouté",
+    intakeNeedsProMany: "{count} éléments nécessitent le forfait Pro pour être ajoutés",
+    intakeFailed: "{count} échec(s) d'enregistrement",
+    intakeSavedWithNotes: "{count} enregistré(s). {notes}.",
+    intakeAddedOne: "{count} élément ajouté à ton compte.",
+    intakeAddedMany: "{count} éléments ajoutés à ton compte.",
   },
 
   login: {
@@ -173,6 +194,7 @@ export const fr: Translations = {
     verify: "Vérifier",
     signOutInstead: "Se déconnecter à la place",
     signingOut: "Déconnexion en cours…",
+    noVerifiedFactor: "Aucune application d'authentification vérifiée n'a été trouvée sur ce compte.",
   },
 
   resetPassword: {
@@ -212,6 +234,10 @@ export const fr: Translations = {
       "Déconnecter {name} ? Tes transactions existantes seront conservées, mais les nouvelles cesseront d'être importées jusqu'à ce que tu te reconnectes.",
     disconnect: "Déconnecter",
     thisBank: "cette banque",
+    errorConnectFinish: "Impossible de terminer la connexion à cette banque.",
+    errorConnectStart: "Impossible de démarrer la connexion bancaire.",
+    errorSync: "Impossible de synchroniser tes comptes.",
+    errorDisconnect: "Impossible de déconnecter cette banque.",
   },
 
   notifications: {
@@ -232,6 +258,15 @@ export const fr: Translations = {
     billDueTomorrow: "{name} arrive à échéance demain — {amount}.",
     billDueInDays: "{name} arrive à échéance dans {days} jours — {amount}.",
     overBudget: "{category} dépasse le budget de {amount}.",
+    push: {
+      unsupported: "Les notifications push ne sont pas prises en charge par ce navigateur.",
+      notConfigured: "Les notifications push ne sont pas encore configurées.",
+      permissionDenied: "Les notifications sont bloquées pour ce site. Autorise-les dans les paramètres de ton navigateur, puis réessaie.",
+      permissionDefault: "L'autorisation n'a pas été accordée.",
+      subscriptionIncomplete: "Impossible de terminer l'abonnement. Merci de réessayer.",
+      enableFailed: "Impossible d'activer les notifications push.",
+      disableFailed: "Impossible de désactiver les notifications push.",
+    },
   },
 
   profile: {
@@ -445,6 +480,10 @@ export const fr: Translations = {
     closeAria: "Fermer",
     title: "Passer à Thrive Pro",
     triggeredMessage: "Tu as atteint la limite du forfait gratuit pour {trigger}. Passe au forfait supérieur pour un accès illimité.",
+    triggerGoals: "les objectifs",
+    triggerRecurringTransactions: "les transactions récurrentes",
+    triggerBudgetCategories: "les catégories de budget",
+    triggerAiQuestions: "les questions à l'IA",
     defaultMessage: "Débloque l'expérience Thrive AI complète.",
     monthly: "Mensuel",
     annual: "Annuel",

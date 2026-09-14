@@ -38,7 +38,7 @@ export function AdvisorPage() {
   } = useChat();
   const [input, setInput] = useState("");
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [upgradeTrigger, setUpgradeTrigger] = useState("AI questions");
+  const [upgradeTrigger, setUpgradeTrigger] = useState("aiQuestions");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const SUGGESTIONS = [
@@ -174,7 +174,7 @@ export function AdvisorPage() {
         {limitReached ? (
           <button
             onClick={() => {
-              setUpgradeTrigger("AI questions");
+              setUpgradeTrigger("aiQuestions");
               setShowUpgradeModal(true);
             }}
             className="w-full bg-[#9C7440] hover:bg-[#8a6537] text-white font-medium py-3 rounded-full transition-colors"

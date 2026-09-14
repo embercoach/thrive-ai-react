@@ -19,6 +19,9 @@ export const en = {
     greetingMorning: "Good Morning",
     greetingAfternoon: "Good Afternoon",
     greetingEvening: "Good Evening",
+    sessionExpired: "Your session has expired. Please sign in again.",
+    somethingWentWrong: "Something went wrong",
+    somethingWentWrongRetry: "Something went wrong. Please try again.",
   },
 
   nav: {
@@ -51,6 +54,16 @@ export const en = {
     goalDoingGreat: "You're doing great! Keep going.",
     goalEveryContribution: "Every contribution counts.",
     goalOf: "{current} of {target}",
+    briefGoalComplete: "You hit your “{goal}” goal — {amount} saved. Incredible work.",
+    briefGoalProgress: "You're {pct}% of the way to “{goal}”. Only {amount} to go.",
+    briefBillDueToday: "{name} is due today — {amount}.",
+    briefBillDueTomorrow: "{name} is due tomorrow — {amount}.",
+    briefBillDueInDays: "{name} is due in {days} days — {amount}.",
+    briefSpentLess: "You spent {amount} less than usual yesterday.",
+    briefSpentMore: "You spent {amount} more than usual yesterday.",
+    briefOverBudget: "{category} is over budget by {amount}.",
+    briefOutstandingMonth: "Outstanding month — you're saving {pct}% of your income. Future you says thank you.",
+    briefOnTrack: "You're on track to save {pct}% of your income this month.",
   },
 
   spending: {
@@ -120,6 +133,14 @@ export const en = {
     upgradeToKeepChatting: "Upgrade to keep chatting",
     inputPlaceholder: "Ask me anything about your money…",
     sendAria: "Send",
+    limitReachedError: "You've used your {limit} free questions this month. Upgrade to Pro for unlimited access.",
+    intakeNoteMore: "Showing the first {max} items — ask me to add the rest separately.",
+    intakeNeedsProOne: "{count} item needs Pro to add",
+    intakeNeedsProMany: "{count} items need Pro to add",
+    intakeFailed: "{count} failed to save",
+    intakeSavedWithNotes: "{count} saved. {notes}.",
+    intakeAddedOne: "{count} item added to your account.",
+    intakeAddedMany: "{count} items added to your account.",
   },
 
   login: {
@@ -181,6 +202,7 @@ export const en = {
     verify: "Verify",
     signOutInstead: "Sign out instead",
     signingOut: "Signing out…",
+    noVerifiedFactor: "No verified authenticator app found on this account.",
   },
 
   resetPassword: {
@@ -220,6 +242,10 @@ export const en = {
       "Disconnect {name}? Your existing transactions will be kept, but new ones will stop importing until you reconnect.",
     disconnect: "Disconnect",
     thisBank: "this bank",
+    errorConnectFinish: "Couldn't finish connecting this bank.",
+    errorConnectStart: "Couldn't start bank connection.",
+    errorSync: "Couldn't sync your accounts.",
+    errorDisconnect: "Couldn't disconnect this bank.",
   },
 
   notifications: {
@@ -240,6 +266,15 @@ export const en = {
     billDueTomorrow: "{name} is due tomorrow — {amount}.",
     billDueInDays: "{name} is due in {days} days — {amount}.",
     overBudget: "{category} is over budget by {amount}.",
+    push: {
+      unsupported: "Push notifications aren't supported in this browser.",
+      notConfigured: "Push notifications aren't configured yet.",
+      permissionDenied: "Notifications are blocked for this site. Allow them in your browser's site settings, then try again.",
+      permissionDefault: "Permission wasn't granted.",
+      subscriptionIncomplete: "Couldn't complete subscription. Please try again.",
+      enableFailed: "Couldn't enable push notifications.",
+      disableFailed: "Couldn't disable push notifications.",
+    },
   },
 
   profile: {

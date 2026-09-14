@@ -8,7 +8,7 @@ import { useT } from "@/hooks/useI18n";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { formatMoney } from "@/lib/currency";
-import { isPushSupported, getPushPermission, isPushSubscribed, subscribeToPush, unsubscribeFromPush } from "@/lib/push";
+import { isPushSupported, getPushPermission, isPushSubscribed, subscribeToPush, unsubscribeFromPush, isPushErrorCode } from "@/lib/push";
 
 export function NotificationsPage() {
   const navigate = useNavigate();
@@ -47,7 +47,10 @@ export function NotificationsPage() {
     setToggling(false);
 
     if (error) {
-      setPushError(error);
+      // A known code (e.g. "unsupported") gets a translated message; any
+      // other string is a raw Supabase/browser error message, already
+      // language-agnostic text, and is shown as-is.
+      setPushError(isPushErrorCode(error) ? t(`notifications.push.${error}`) : error);
       return;
     }
     setSubscribed(!subscribed);

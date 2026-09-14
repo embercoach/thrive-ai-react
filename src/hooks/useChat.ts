@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
+import { useT } from "@/hooks/useI18n";
 import { useAvailableToSpend, useNetWorth } from "@/hooks/useHomeMetrics";
 import { parseBreakdown } from "@/lib/parseBreakdown";
 import { parseIntake } from "@/lib/parseIntake";
@@ -46,6 +47,7 @@ const FREE_RECURRING_LIMIT = 2;
 const FREE_GOAL_LIMIT = 2;
 
 export function useChat() {
+  const t = useT();
   const { user } = useAuth();
   const { profile, transactions, goals, budgets, recurring, currency, monthlyIncome, isPro, refetch } = useAppData();
   const availableToSpend = useAvailableToSpend(transactions, recurring);
@@ -133,7 +135,7 @@ export function useChat() {
     async (userText: string) => {
       if (!user || !userText.trim() || sending) return;
       if (limitReached) {
-        setError("You've used your 3 free questions this month. Upgrade to Pro for unlimited access.");
+        setError(t("advisor.limitReachedError", { limit: FREE_MONTHLY_QUESTIONS }));
         return;
       }
       setError("");
@@ -153,7 +155,7 @@ export function useChat() {
           data: { session },
         } = await supabase.auth.getSession();
         if (!session) {
-          setError("Your session has expired. Please sign in again.");
+          setError(t("common.sessionExpired"));
           return;
         }
 
@@ -171,7 +173,7 @@ export function useChat() {
         });
         const data = await res.json();
         if (!res.ok) {
-          if (res.status === 401) throw new Error("Your session has expired. Please sign in again.");
+          if (res.status === 401) throw new Error(t("common.sessionExpired"));
           if (res.status === 402) {
             // The server's own count is the source of truth and may have
             // moved since this tab last loaded it (e.g. the limit was hit
@@ -179,7 +181,7 @@ export function useChat() {
             // rather than staying stuck on a stale, too-generous number.
             await refetch();
           }
-          throw new Error(data.error || "Something went wrong");
+          throw new Error(data.error || t("common.somethingWentWrong"));
         }
 
         const { text: textAfterBreakdown, breakdown } = parseBreakdown(data.text as string);
@@ -189,7 +191,7 @@ export function useChat() {
         let intakeNote: string | undefined;
         if (actions && actions.length > MAX_INTAKE_ACTIONS_PER_TURN) {
           actions = actions.slice(0, MAX_INTAKE_ACTIONS_PER_TURN);
-          intakeNote = `Showing the first ${MAX_INTAKE_ACTIONS_PER_TURN} items — ask me to add the rest separately.`;
+          intakeNote = t("advisor.intakeNoteMore", { max: MAX_INTAKE_ACTIONS_PER_TURN });
         }
 
         const assistantMsg: DisplayMessage = {
@@ -213,12 +215,12 @@ export function useChat() {
         // now-authoritative count back into this tab's local state.
         if (!isPro) await refetch();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+        setError(err instanceof Error ? err.message : t("common.somethingWentWrongRetry"));
       } finally {
         setSending(false);
       }
     },
-    [user, sending, limitReached, messages, context, isPro, refetch]
+    [user, sending, limitReached, messages, context, isPro, refetch, t]
   );
 
   const clear = useCallback(async () => {
@@ -352,12 +354,14 @@ export function useChat() {
 
       const noteParts: string[] = [];
       if (upgradeBlockedCount > 0) {
-        noteParts.push(`${upgradeBlockedCount} item${upgradeBlockedCount > 1 ? "s" : ""} need${upgradeBlockedCount > 1 ? "" : "s"} Pro to add`);
+        noteParts.push(
+          t(upgradeBlockedCount > 1 ? "advisor.intakeNeedsProMany" : "advisor.intakeNeedsProOne", { count: upgradeBlockedCount })
+        );
       }
-      if (failedCount > 0) noteParts.push(`${failedCount} failed to save`);
+      if (failedCount > 0) noteParts.push(t("advisor.intakeFailed", { count: failedCount }));
       const note = noteParts.length
-        ? `${savedCount} saved. ${noteParts.join(", ")}.`
-        : `${savedCount} item${savedCount === 1 ? "" : "s"} added to your account.`;
+        ? t("advisor.intakeSavedWithNotes", { count: savedCount, notes: noteParts.join(", ") })
+        : t(savedCount === 1 ? "advisor.intakeAddedOne" : "advisor.intakeAddedMany", { count: savedCount });
 
       setMessages((prev) =>
         prev.map((m) =>
@@ -367,7 +371,7 @@ export function useChat() {
         )
       );
 
-      if (hitRecurringCap) onNeedUpgrade("recurring transactions");
+      if (hitRecurringCap) onNeedUpgrade("recurringTransactions");
       else if (hitGoalCap) onNeedUpgrade("goals");
     },
     [user, messages, recurring.length, goals.length, isPro, currency, refetch]

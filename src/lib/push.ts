@@ -2,6 +2,32 @@ import { supabase } from "@/services/supabase";
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
 
+/**
+ * Fixed set of error codes this module can return. Plain functions like
+ * these (not hooks/components) can't call useT() themselves, so they hand
+ * back a code instead of English text — the caller (NotificationsPage,
+ * which does have useT()) maps a known code to a translated string via
+ * `isPushErrorCode` + `t("notifications.push." + code)`. A Supabase error's
+ * own `.message`, or a caught exception's `.message`, is NOT one of these
+ * codes — it's arbitrary provider text that's already language-agnostic
+ * (same as how the rest of the app leaves raw Supabase errors untranslated)
+ * and is returned as-is for the caller to display directly.
+ */
+export const PUSH_ERROR_CODES = [
+  "unsupported",
+  "notConfigured",
+  "permissionDenied",
+  "permissionDefault",
+  "subscriptionIncomplete",
+  "enableFailed",
+  "disableFailed",
+] as const;
+export type PushErrorCode = (typeof PUSH_ERROR_CODES)[number];
+
+export function isPushErrorCode(value: string): value is PushErrorCode {
+  return (PUSH_ERROR_CODES as readonly string[]).includes(value);
+}
+
 export function isPushSupported(): boolean {
   return (
     typeof window !== "undefined" &&
@@ -50,19 +76,16 @@ export async function isPushSubscribed(): Promise<boolean> {
  *  second one. */
 export async function subscribeToPush(userId: string): Promise<{ error: string | null }> {
   if (!isPushSupported()) {
-    return { error: "Push notifications aren't supported in this browser." };
+    return { error: "unsupported" satisfies PushErrorCode };
   }
   if (!VAPID_PUBLIC_KEY) {
-    return { error: "Push notifications aren't configured yet." };
+    return { error: "notConfigured" satisfies PushErrorCode };
   }
 
   const permission = await Notification.requestPermission();
   if (permission !== "granted") {
     return {
-      error:
-        permission === "denied"
-          ? "Notifications are blocked for this site. Allow them in your browser's site settings, then try again."
-          : "Permission wasn't granted.",
+      error: (permission === "denied" ? "permissionDenied" : "permissionDefault") satisfies PushErrorCode,
     };
   }
 
@@ -80,7 +103,7 @@ export async function subscribeToPush(userId: string): Promise<{ error: string |
 
     const json = sub.toJSON();
     if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) {
-      return { error: "Couldn't complete subscription. Please try again." };
+      return { error: "subscriptionIncomplete" satisfies PushErrorCode };
     }
 
     const { error } = await supabase.from("push_subscriptions").upsert(
@@ -90,7 +113,7 @@ export async function subscribeToPush(userId: string): Promise<{ error: string |
     if (error) return { error: error.message };
     return { error: null };
   } catch (err) {
-    return { error: err instanceof Error ? err.message : "Couldn't enable push notifications." };
+    return { error: err instanceof Error ? err.message : ("enableFailed" satisfies PushErrorCode) };
   }
 }
 
@@ -114,6 +137,6 @@ export async function unsubscribeFromPush(userId: string): Promise<{ error: stri
     }
     return { error: null };
   } catch (err) {
-    return { error: err instanceof Error ? err.message : "Couldn't disable push notifications." };
+    return { error: err instanceof Error ? err.message : ("disableFailed" satisfies PushErrorCode) };
   }
 }

@@ -39,6 +39,18 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
 
   if (!open) return null;
 
+  // `triggeredBy` is a semantic code (not display text) so the surrounding
+  // sentence stays fully translated in every language — an unrecognized
+  // code (there shouldn't be one) falls back to showing it verbatim rather
+  // than silently dropping the context.
+  const TRIGGER_LABELS: Record<string, string> = {
+    goals: t('upgradeModal.triggerGoals'),
+    recurringTransactions: t('upgradeModal.triggerRecurringTransactions'),
+    budgetCategories: t('upgradeModal.triggerBudgetCategories'),
+    aiQuestions: t('upgradeModal.triggerAiQuestions'),
+  };
+  const triggerLabel = triggeredBy ? (TRIGGER_LABELS[triggeredBy] ?? triggeredBy) : undefined;
+
   const FEATURES = [
     t('upgradeModal.featureUnlimitedGoals'),
     t('upgradeModal.featureUnlimitedRecurring'),
@@ -97,9 +109,9 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
         </button>
 
         <h2 className="font-serif text-2xl text-ink mb-1">{t('upgradeModal.title')}</h2>
-        {triggeredBy ? (
+        {triggerLabel ? (
           <p className="text-sm text-ink-secondary mb-4">
-            {t('upgradeModal.triggeredMessage', { trigger: triggeredBy })}
+            {t('upgradeModal.triggeredMessage', { trigger: triggerLabel })}
           </p>
         ) : (
           <p className="text-sm text-ink-secondary mb-4">{t('upgradeModal.defaultMessage')}</p>
