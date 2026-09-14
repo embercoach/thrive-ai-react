@@ -39,6 +39,7 @@ const USER_ID_TABLES = [
   "recurring",
   "budgets",
   "goals",
+  "manual_assets",
   "plaid_accounts",
   "plaid_items",
   "paddle_subscriptions",

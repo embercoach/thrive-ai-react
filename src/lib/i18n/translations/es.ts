@@ -217,6 +217,39 @@ export const es: Translations = {
     continueToThrive: "Continuar a Thrive",
   },
 
+  assets: {
+    title: "Patrimonio neto",
+    backAria: "Atrás",
+    totalLabel: "Activos totales",
+    totalHelp: "Se suma a los saldos de tus bancos vinculados para el patrimonio neto que se muestra en Inicio.",
+    noneMessage: "Agrega inversiones, propiedades, vehículos o efectivo que no tengas vinculado a un banco.",
+    addFirst: "Agregar un activo",
+    addAnother: "Agregar otro activo",
+    footerNote:
+      "Los activos manuales son una instantánea que tú mismo actualizas; no se sincronizan automáticamente como un banco conectado.",
+    deleteAria: "Eliminar {name}",
+    deleteModalTitle: "Eliminar activo",
+    deleteModalMessage: "¿Eliminar {name}? Esta acción no se puede deshacer.",
+    delete: "Eliminar",
+    category: {
+      investment: "Inversión",
+      property: "Propiedad",
+      vehicle: "Vehículo",
+      cash: "Efectivo",
+      other: "Otro",
+    },
+    addModal: {
+      title: "Agregar activo",
+      errorRequired: "Por favor ingresa un nombre y un valor.",
+      nameLabel: "Nombre",
+      namePlaceholder: "p. ej. Cuenta de inversión",
+      categoryLabel: "Categoría",
+      valueLabel: "Valor actual",
+      saving: "Guardando…",
+      submit: "Agregar activo",
+    },
+  },
+
   connectedBanks: {
     title: "Bancos conectados",
     backAria: "Atrás",
@@ -286,6 +319,7 @@ export const es: Translations = {
     savingsRateHelp: "Se usa para tus análisis de tasa de ahorro en Inicio.",
     currency: "Moneda",
     connectedBanks: "Bancos conectados",
+    assets: "Patrimonio neto",
     notifications: "Notificaciones",
     security: "Seguridad",
     appearance: "Apariencia",

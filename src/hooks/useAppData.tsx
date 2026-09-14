@@ -1,6 +1,6 @@
 import { createContext, useContext, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import type { Transaction, Goal, Budget, RecurringItem, Profile } from "@/types";
+import type { Transaction, Goal, Budget, RecurringItem, Profile, ManualAsset } from "@/types";
 import * as api from "@/services/api";
 
 interface AppDataContextValue {
@@ -9,6 +9,7 @@ interface AppDataContextValue {
   goals: Goal[];
   budgets: Budget[];
   recurring: RecurringItem[];
+  manualAssets: ManualAsset[];
   loading: boolean;
   currency: string;
   monthlyIncome: number;
@@ -25,6 +26,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [recurring, setRecurring] = useState<RecurringItem[]>([]);
+  const [manualAssets, setManualAssets] = useState<ManualAsset[]>([]);
   const [loading, setLoading] = useState(true);
 
   // `refetch` is memoized on `user` alone (see the eslint-disable below) so
@@ -63,6 +65,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     recurringRef.current = recurring;
   }, [recurring]);
+  const manualAssetsRef = useRef<ManualAsset[]>([]);
+  useEffect(() => {
+    manualAssetsRef.current = manualAssets;
+  }, [manualAssets]);
 
   const refetch = useCallback(async () => {
     if (!user) return;
@@ -80,7 +86,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     // Recurring bills are materialized into real transactions before anything
     // else loads, so every screen sees today's occurrences immediately.
     await api.processRecurring(user.id, profileRef.current?.currency || "USD");
-    const [profileData, txns, goalList, budgetList, recurringList] = await Promise.all([
+    const [profileData, txns, goalList, budgetList, recurringList, manualAssetList] = await Promise.all([
       // A transient fetchProfile error must not reject this whole
       // Promise.all — that would also stall transactions/goals/budgets/
       // recurring on the same blip, and (via OnboardingGate reading a null
@@ -107,12 +113,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         console.error("fetchRecurring failed, keeping last known recurring:", err);
         return recurringRef.current;
       }),
+      api.fetchManualAssets(user.id).catch((err) => {
+        console.error("fetchManualAssets failed, keeping last known manual assets:", err);
+        return manualAssetsRef.current;
+      }),
     ]);
     setProfile(profileData);
     setTransactions(txns);
     setGoals(goalList);
     setBudgets(budgetList);
     setRecurring(recurringList);
+    setManualAssets(manualAssetList);
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -132,6 +143,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     goals,
     budgets,
     recurring,
+    manualAssets,
     loading,
     currency: profile?.currency || "USD",
     monthlyIncome: profile?.monthly_income || 0,

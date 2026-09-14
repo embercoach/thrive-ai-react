@@ -220,6 +220,39 @@ export const de: Translations = {
     continueToThrive: "Weiter zu Thrive",
   },
 
+  assets: {
+    title: "Nettovermögen",
+    backAria: "Zurück",
+    totalLabel: "Vermögenswerte gesamt",
+    totalHelp: "Wird zu den Salden deiner verbundenen Banken für das auf Start angezeigte Nettovermögen addiert.",
+    noneMessage: "Füge Investitionen, Immobilien, Fahrzeuge oder Bargeld hinzu, die du nicht mit einer Bank verknüpft hast.",
+    addFirst: "Vermögenswert hinzufügen",
+    addAnother: "Weiteren Vermögenswert hinzufügen",
+    footerNote:
+      "Manuelle Vermögenswerte sind eine Momentaufnahme, die du selbst aktualisierst — sie synchronisieren nicht automatisch wie eine verbundene Bank.",
+    deleteAria: "{name} löschen",
+    deleteModalTitle: "Vermögenswert löschen",
+    deleteModalMessage: "{name} löschen? Dies kann nicht rückgängig gemacht werden.",
+    delete: "Löschen",
+    category: {
+      investment: "Investition",
+      property: "Immobilie",
+      vehicle: "Fahrzeug",
+      cash: "Bargeld",
+      other: "Sonstiges",
+    },
+    addModal: {
+      title: "Vermögenswert hinzufügen",
+      errorRequired: "Bitte gib einen Namen und einen Wert ein.",
+      nameLabel: "Name",
+      namePlaceholder: "z. B. Wertpapierdepot",
+      categoryLabel: "Kategorie",
+      valueLabel: "Aktueller Wert",
+      saving: "Wird gespeichert…",
+      submit: "Vermögenswert hinzufügen",
+    },
+  },
+
   connectedBanks: {
     title: "Verbundene Banken",
     backAria: "Zurück",
@@ -290,6 +323,7 @@ export const de: Translations = {
     savingsRateHelp: "Wird für deine Sparquoten-Einblicke auf der Startseite verwendet.",
     currency: "Währung",
     connectedBanks: "Verbundene Banken",
+    assets: "Nettovermögen",
     notifications: "Benachrichtigungen",
     security: "Sicherheit",
     appearance: "Erscheinungsbild",

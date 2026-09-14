@@ -217,6 +217,39 @@ export const pt: Translations = {
     continueToThrive: "Continuar para a Thrive",
   },
 
+  assets: {
+    title: "Patrimônio Líquido",
+    backAria: "Voltar",
+    totalLabel: "Total de Ativos",
+    totalHelp: "Somado aos saldos dos teus bancos ligados para o patrimônio líquido mostrado no Início.",
+    noneMessage: "Adiciona investimentos, imóveis, veículos ou dinheiro que não ligaste a um banco.",
+    addFirst: "Adicionar um Ativo",
+    addAnother: "Adicionar Outro Ativo",
+    footerNote:
+      "Os ativos manuais são uma fotografia que tu próprio atualizas — não sincronizam automaticamente como um banco ligado.",
+    deleteAria: "Eliminar {name}",
+    deleteModalTitle: "Eliminar Ativo",
+    deleteModalMessage: "Eliminar {name}? Esta ação não pode ser desfeita.",
+    delete: "Eliminar",
+    category: {
+      investment: "Investimento",
+      property: "Imóvel",
+      vehicle: "Veículo",
+      cash: "Dinheiro",
+      other: "Outro",
+    },
+    addModal: {
+      title: "Adicionar Ativo",
+      errorRequired: "Por favor, indica um nome e um valor.",
+      nameLabel: "Nome",
+      namePlaceholder: "p. ex. Conta de Investimento",
+      categoryLabel: "Categoria",
+      valueLabel: "Valor Atual",
+      saving: "A guardar…",
+      submit: "Adicionar Ativo",
+    },
+  },
+
   connectedBanks: {
     title: "Bancos Ligados",
     backAria: "Voltar",
@@ -285,6 +318,7 @@ export const pt: Translations = {
     savingsRateHelp: "Usado para as tuas análises da taxa de poupança no Início.",
     currency: "Moeda",
     connectedBanks: "Bancos Ligados",
+    assets: "Patrimônio Líquido",
     notifications: "Notificações",
     security: "Segurança",
     appearance: "Aparência",

@@ -65,9 +65,10 @@ const FREE_GOAL_LIMIT = 2;
 export function useChat() {
   const t = useT();
   const { user } = useAuth();
-  const { profile, transactions, goals, budgets, recurring, currency, monthlyIncome, isPro, refetch } = useAppData();
+  const { profile, transactions, goals, budgets, recurring, manualAssets, currency, monthlyIncome, isPro, refetch } =
+    useAppData();
   const availableToSpend = useAvailableToSpend(transactions, recurring);
-  const netWorth = useNetWorth(transactions);
+  const netWorth = useNetWorth(transactions, manualAssets);
 
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);

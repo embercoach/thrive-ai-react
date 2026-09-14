@@ -217,6 +217,39 @@ export const it: Translations = {
     continueToThrive: "Continua verso Thrive",
   },
 
+  assets: {
+    title: "Patrimonio netto",
+    backAria: "Indietro",
+    totalLabel: "Totale attività",
+    totalHelp: "Aggiunto ai saldi delle tue banche collegate per il patrimonio netto mostrato su Home.",
+    noneMessage: "Aggiungi investimenti, immobili, veicoli o contanti che non hai collegato a una banca.",
+    addFirst: "Aggiungi un bene",
+    addAnother: "Aggiungi un altro bene",
+    footerNote:
+      "I beni manuali sono un'istantanea che aggiorni tu stesso — non si sincronizzano automaticamente come una banca collegata.",
+    deleteAria: "Elimina {name}",
+    deleteModalTitle: "Elimina bene",
+    deleteModalMessage: "Eliminare {name}? Questa azione non può essere annullata.",
+    delete: "Elimina",
+    category: {
+      investment: "Investimento",
+      property: "Immobile",
+      vehicle: "Veicolo",
+      cash: "Contanti",
+      other: "Altro",
+    },
+    addModal: {
+      title: "Aggiungi bene",
+      errorRequired: "Inserisci un nome e un valore.",
+      nameLabel: "Nome",
+      namePlaceholder: "es. Conto di intermediazione",
+      categoryLabel: "Categoria",
+      valueLabel: "Valore attuale",
+      saving: "Salvataggio…",
+      submit: "Aggiungi bene",
+    },
+  },
+
   connectedBanks: {
     title: "Banche collegate",
     backAria: "Indietro",
@@ -286,6 +319,7 @@ export const it: Translations = {
     savingsRateHelp: "Usato per l'analisi del tuo tasso di risparmio in Home.",
     currency: "Valuta",
     connectedBanks: "Banche collegate",
+    assets: "Patrimonio netto",
     notifications: "Notifiche",
     security: "Sicurezza",
     appearance: "Aspetto",

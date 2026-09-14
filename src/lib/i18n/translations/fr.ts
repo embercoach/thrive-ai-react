@@ -217,6 +217,39 @@ export const fr: Translations = {
     continueToThrive: "Continuer vers Thrive",
   },
 
+  assets: {
+    title: "Valeur nette",
+    backAria: "Retour",
+    totalLabel: "Total des actifs",
+    totalHelp: "Ajouté aux soldes de tes banques liées pour la valeur nette affichée sur Accueil.",
+    noneMessage: "Ajoute des investissements, un bien immobilier, un véhicule ou de l'argent liquide que tu n'as pas lié à une banque.",
+    addFirst: "Ajouter un actif",
+    addAnother: "Ajouter un autre actif",
+    footerNote:
+      "Les actifs manuels sont un instantané que tu mets à jour toi-même — ils ne se synchronisent pas automatiquement comme une banque connectée.",
+    deleteAria: "Supprimer {name}",
+    deleteModalTitle: "Supprimer l'actif",
+    deleteModalMessage: "Supprimer {name} ? Cette action est irréversible.",
+    delete: "Supprimer",
+    category: {
+      investment: "Investissement",
+      property: "Bien immobilier",
+      vehicle: "Véhicule",
+      cash: "Liquidités",
+      other: "Autre",
+    },
+    addModal: {
+      title: "Ajouter un actif",
+      errorRequired: "Merci d'indiquer un nom et une valeur.",
+      nameLabel: "Nom",
+      namePlaceholder: "p. ex. Compte de courtage",
+      categoryLabel: "Catégorie",
+      valueLabel: "Valeur actuelle",
+      saving: "Enregistrement en cours…",
+      submit: "Ajouter l'actif",
+    },
+  },
+
   connectedBanks: {
     title: "Banques connectées",
     backAria: "Retour",
@@ -285,6 +318,7 @@ export const fr: Translations = {
     savingsRateHelp: "Utilisé pour tes indicateurs de taux d'épargne sur l'accueil.",
     currency: "Devise",
     connectedBanks: "Banques connectées",
+    assets: "Valeur nette",
     notifications: "Notifications",
     security: "Sécurité",
     appearance: "Apparence",

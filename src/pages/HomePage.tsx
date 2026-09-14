@@ -33,9 +33,10 @@ function greeting(t: Translate, name?: string) {
 export function HomePage() {
   const navigate = useNavigate();
   const t = useT();
-  const { profile, transactions, goals, recurring, budgets, currency, monthlyIncome, isPro, loading } = useAppData();
+  const { profile, transactions, goals, recurring, budgets, manualAssets, currency, monthlyIncome, isPro, loading } =
+    useAppData();
   const availableToSpend = useAvailableToSpend(transactions, recurring);
-  const netWorth = useNetWorth(transactions);
+  const netWorth = useNetWorth(transactions, manualAssets);
   const sparkPoints = useSparklinePoints(transactions);
   const brief = useHomeBrief(transactions, goals, recurring, budgets, monthlyIncome, isPro, currency);
   const { hidden, toggle } = useBalanceVisibility();

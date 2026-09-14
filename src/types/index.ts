@@ -38,6 +38,17 @@ export interface Goal {
   auto_contribute_next_date?: string | null; // YYYY-MM-DD
 }
 
+export type ManualAssetCategory = "investment" | "property" | "vehicle" | "cash" | "other";
+
+export interface ManualAsset {
+  id: string;
+  user_id: string;
+  name: string;
+  category: ManualAssetCategory;
+  value: number;
+  created_at?: string;
+}
+
 export interface Budget {
   category: string;
   amount: number;

@@ -1,5 +1,5 @@
 import { supabase } from "@/services/supabase";
-import type { Transaction, Goal, Budget, RecurringItem, Profile, ChatMessage } from "@/types";
+import type { Transaction, Goal, Budget, RecurringItem, Profile, ChatMessage, ManualAsset } from "@/types";
 import { advanceDate, todayLocalStr } from "@/utils/dates";
 
 export async function fetchProfile(userId: string): Promise<Profile | null> {
@@ -126,6 +126,28 @@ export async function contributeToGoal(id: string, amount: number) {
 
 export async function deleteGoal(userId: string, id: string) {
   return supabase.from("goals").delete().eq("id", id).eq("user_id", userId);
+}
+
+export async function fetchManualAssets(userId: string): Promise<ManualAsset[]> {
+  // See fetchTransactions above — throws rather than silently returning []
+  // on a real error, so a transient failure can't wipe an already-loaded
+  // asset list (and, with it, silently understate net worth on Home/the AI
+  // advisor until the next successful refetch).
+  const { data, error } = await supabase
+    .from("manual_assets")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function addManualAsset(a: Omit<ManualAsset, "id">) {
+  return supabase.from("manual_assets").insert(a);
+}
+
+export async function deleteManualAsset(userId: string, id: string) {
+  return supabase.from("manual_assets").delete().eq("id", id).eq("user_id", userId);
 }
 
 export async function fetchBudgets(userId: string): Promise<Budget[]> {

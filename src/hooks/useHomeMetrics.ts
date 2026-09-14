@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { Transaction, Goal, RecurringItem, Budget } from "@/types";
+import type { Transaction, Goal, RecurringItem, Budget, ManualAsset } from "@/types";
 import { parseLocalDate, todayLocal, daysBetween, isSameMonth, isSameDay, normCategory } from "@/utils/dates";
 import { formatMoney } from "@/lib/currency";
 import { useT } from "@/hooks/useI18n";
@@ -42,8 +42,22 @@ export function useAvailableToSpend(transactions: Transaction[], recurring: Recu
   }, [transactions, recurring]);
 }
 
-export function useNetWorth(transactions: Transaction[]) {
-  return useMemo(() => transactions.reduce((a, t) => a + Number(t.amount), 0), [transactions]);
+/**
+ * Cash-flow balance (every transaction ever recorded) plus manual assets —
+ * investments, property, vehicles, or cash the user has told the app about
+ * directly rather than through a linked bank. `manualAssets` defaults to
+ * an empty array so this stays a drop-in replacement for every existing
+ * call site: without it, net worth was really just "total balance",
+ * understating anyone whose net worth includes more than their linked
+ * accounts.
+ */
+export function useNetWorth(transactions: Transaction[], manualAssets: ManualAsset[] = []) {
+  return useMemo(
+    () =>
+      transactions.reduce((a, t) => a + Number(t.amount), 0) +
+      manualAssets.reduce((a, m) => a + Number(m.value), 0),
+    [transactions, manualAssets]
+  );
 }
 
 /** 7-day running balance, used by both the sparkline and the trend pill. */

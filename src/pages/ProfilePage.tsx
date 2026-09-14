@@ -12,6 +12,7 @@ import {
   Check,
   Sun,
   Moon,
+  TrendingUp,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -288,6 +289,7 @@ export function ProfilePage() {
 
       <Card padding="lg">
         <NavRow icon={Landmark} label={t("profile.connectedBanks")} onClick={() => navigate("/connected-banks")} />
+        <NavRow icon={TrendingUp} label={t("profile.assets")} onClick={() => navigate("/assets")} />
         <NavRow icon={Bell} label={t("profile.notifications")} onClick={() => navigate("/notifications")} />
         <NavRow icon={Shield} label={t("profile.security")} onClick={() => navigate("/security")} />
         <AppearanceRow label={t("profile.appearance")} lightAria={t("profile.lightModeAria")} darkAria={t("profile.darkModeAria")} />

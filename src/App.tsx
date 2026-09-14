@@ -13,6 +13,7 @@ import { ProfilePage } from "@/pages/ProfilePage";
 import { SecurityPage } from "@/pages/SecurityPage";
 import { NotificationsPage } from "@/pages/NotificationsPage";
 import { ConnectedBanksPage } from "@/pages/ConnectedBanksPage";
+import { AssetsPage } from "@/pages/AssetsPage";
 import { AboutPage } from "@/pages/AboutPage";
 import { HelpFeedbackPage } from "@/pages/HelpFeedbackPage";
 import { LoginPage } from "@/pages/LoginPage";
@@ -90,6 +91,7 @@ function App() {
                   <Route path="/security" element={<SecurityPage />} />
                   <Route path="/notifications" element={<NotificationsPage />} />
                   <Route path="/connected-banks" element={<ConnectedBanksPage />} />
+                  <Route path="/assets" element={<AssetsPage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/help" element={<HelpFeedbackPage />} />
                 </Route>
