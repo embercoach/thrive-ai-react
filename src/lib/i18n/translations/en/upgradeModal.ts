@@ -20,4 +20,5 @@ export const upgradeModal = {
   periodMonth: "month",
   periodYear: "year",
   missingPriceId: "Missing Paddle price ID env var — check VITE_PADDLE_PRICE_MONTHLY / VITE_PADDLE_PRICE_ANNUAL.",
+  checkoutUnavailable: "Couldn't open checkout. Please try again in a moment.",
 };

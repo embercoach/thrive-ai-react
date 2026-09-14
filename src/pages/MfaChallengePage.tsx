@@ -41,7 +41,16 @@ export function MfaChallengePage() {
 
   async function handleSignOut() {
     setSigningOut(true);
-    await supabase.auth.signOut();
+    // signOut() resolves with { error } rather than throwing — an expired
+    // session token or a transient network error left this unchecked, so
+    // `signingOut` stayed true forever with no way off the challenge screen
+    // (the only other way out is completing 2FA) and no error shown.
+    const { error: signOutErr } = await supabase.auth.signOut();
+    if (signOutErr) {
+      setError(t("mfa.signOutError"));
+      setSigningOut(false);
+      return;
+    }
     // No need to clear signingOut on success — a successful sign-out
     // unmounts this whole page via the auth gate.
   }

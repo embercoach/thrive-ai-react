@@ -198,6 +198,7 @@ export const hi: Translations = {
     signOutInstead: "इसके बजाय साइन आउट करें",
     signingOut: "साइन आउट हो रहा है…",
     noVerifiedFactor: "इस अकाउंट पर कोई सत्यापित ऑथेंटिकेटर ऐप नहीं मिला।",
+    signOutError: "साइन आउट नहीं हो सका। कृपया फिर से प्रयास करें।",
   },
 
   resetPassword: {
@@ -502,6 +503,7 @@ export const hi: Translations = {
     periodMonth: "माह",
     periodYear: "वर्ष",
     missingPriceId: "Paddle price ID env var गायब है — VITE_PADDLE_PRICE_MONTHLY / VITE_PADDLE_PRICE_ANNUAL जांचें।",
+    checkoutUnavailable: "चेकआउट नहीं खुल सका। कृपया थोड़ी देर में फिर से प्रयास करें।",
   },
 
   misc: {

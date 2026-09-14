@@ -206,6 +206,7 @@ export const en = {
     signOutInstead: "Sign out instead",
     signingOut: "Signing out…",
     noVerifiedFactor: "No verified authenticator app found on this account.",
+    signOutError: "Couldn't sign you out. Please try again.",
   },
 
   resetPassword: {

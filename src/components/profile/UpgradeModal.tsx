@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { IconX, IconCheck, IconLoader2 } from '@tabler/icons-react';
 import { openPaddleCheckout, isPaddleConfigured, fetchPriceLabels } from '@/lib/paddle';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,6 +23,15 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
   const [cycle, setCycle] = useState<BillingCycle>('monthly');
   const [loading, setLoading] = useState(false);
   const [priceLabels, setPriceLabels] = useState<Record<string, string>>({});
+  const [checkoutError, setCheckoutError] = useState(false);
+  // `loading` alone can't guard against a fast double-click/double-tap:
+  // setLoading(true) below doesn't take effect until the next render, and
+  // handleUpgrade runs synchronously up to that point — two clicks close
+  // enough together could both pass the `disabled` check and each open (or
+  // attempt to open) their own Paddle checkout overlay. This ref is set
+  // synchronously on the very first line, closing that window regardless of
+  // render timing.
+  const submittingRef = useRef(false);
 
   // Ask Paddle for the real, localised amounts once the modal is opened.
   // Hooks must run unconditionally, so this sits above the early return.
@@ -64,13 +73,17 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
   const selectedLabel = cycle === 'monthly' ? monthlyLabel : annualLabel;
 
   const handleUpgrade = async () => {
-    if (!user) return;
+    if (!user || submittingRef.current) return;
+    submittingRef.current = true;
+    setCheckoutError(false);
     if (!isPaddleConfigured()) {
       console.error('Paddle is not configured — missing VITE_PADDLE_CLIENT_TOKEN.');
+      setCheckoutError(true);
+      submittingRef.current = false;
       return;
     }
     setLoading(true);
-    await openPaddleCheckout(priceId, user.email ?? undefined, (event) => {
+    const opened = await openPaddleCheckout(priceId, user.email ?? undefined, (event) => {
       if (event?.name === 'checkout.completed') {
         // The webhook that flips `is_pro` in Supabase runs server-side and
         // can lag a moment behind Paddle reporting the checkout as done —
@@ -81,14 +94,30 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
         refetch();
         window.setTimeout(() => refetch(), 3000);
         setLoading(false);
+        submittingRef.current = false;
         onClose();
       } else if (event?.name === 'checkout.closed') {
         setLoading(false);
+        submittingRef.current = false;
       }
     });
-    // Fallback in case Paddle never fires an event (e.g. the overlay failed
-    // to open) — keeps the button from being stuck showing a spinner.
-    window.setTimeout(() => setLoading(false), 1500);
+    if (!opened) {
+      // Paddle.js failed to load or the checkout-token fetch failed (ad-
+      // blocker, network blip, expired session) — previously this only
+      // logged to the console and left the spinner running until the
+      // fallback timeout below silently cleared it with no explanation.
+      setLoading(false);
+      submittingRef.current = false;
+      setCheckoutError(true);
+      return;
+    }
+    // Fallback in case Paddle never fires an event (e.g. the overlay opened
+    // but the user's still deciding) — keeps the button from being stuck
+    // showing a spinner if events never arrive.
+    window.setTimeout(() => {
+      setLoading(false);
+      submittingRef.current = false;
+    }, 1500);
   };
 
   return (
@@ -165,6 +194,9 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
 
         {!priceId && (
           <p className="text-xs text-negative mt-2 text-center">{t('upgradeModal.missingPriceId')}</p>
+        )}
+        {checkoutError && (
+          <p className="text-xs text-negative mt-2 text-center">{t('upgradeModal.checkoutUnavailable')}</p>
         )}
       </div>
     </div>

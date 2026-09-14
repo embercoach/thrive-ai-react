@@ -198,6 +198,7 @@ export const es: Translations = {
     signOutInstead: "Cerrar sesión en su lugar",
     signingOut: "Cerrando sesión…",
     noVerifiedFactor: "No se encontró ninguna app de autenticación verificada en esta cuenta.",
+    signOutError: "No pudimos cerrar tu sesión. Inténtalo de nuevo.",
   },
 
   resetPassword: {
@@ -503,6 +504,7 @@ export const es: Translations = {
     periodMonth: "mes",
     periodYear: "año",
     missingPriceId: "Falta la variable de entorno del ID de precio de Paddle — revisa VITE_PADDLE_PRICE_MONTHLY / VITE_PADDLE_PRICE_ANNUAL.",
+    checkoutUnavailable: "No se pudo abrir el pago. Inténtalo de nuevo en un momento.",
   },
 
   misc: {

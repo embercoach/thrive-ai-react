@@ -96,16 +96,21 @@ export async function openPaddleCheckout(
   priceId: string,
   email?: string,
   onEvent?: (event: PaddleCheckoutEvent) => void,
-) {
+): Promise<boolean> {
+  // Returns whether the checkout overlay actually opened, so the caller can
+  // show an error instead of silently leaving the "Opening checkout…" spinner
+  // to run out its fallback timeout with no explanation — a real, easily hit
+  // path (an ad-blocker on Paddle's CDN, or a network blip on the token
+  // fetch) that previously only logged to the console.
   ensurePaddleInitialized();
   if (!window.Paddle) {
     console.error("Paddle.js failed to load — check network/ad-blocker.");
-    return;
+    return false;
   }
   const token = await fetchCheckoutToken();
   if (!token) {
     console.error("Couldn't get a checkout token — is the user signed in?");
-    return;
+    return false;
   }
   window.Paddle.Checkout.open({
     items: [{ priceId, quantity: 1 }],
@@ -113,6 +118,7 @@ export async function openPaddleCheckout(
     customData: { checkout_token: token },
     eventCallback: onEvent,
   });
+  return true;
 }
 
 /**

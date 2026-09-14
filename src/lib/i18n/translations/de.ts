@@ -201,6 +201,7 @@ export const de: Translations = {
     signOutInstead: "Stattdessen abmelden",
     signingOut: "Abmeldung läuft…",
     noVerifiedFactor: "Für dieses Konto wurde keine verifizierte Authenticator-App gefunden.",
+    signOutError: "Abmeldung fehlgeschlagen. Bitte versuche es erneut.",
   },
 
   resetPassword: {
@@ -509,6 +510,7 @@ export const de: Translations = {
     periodMonth: "Monat",
     periodYear: "Jahr",
     missingPriceId: "Fehlende Paddle-Preis-ID (env var) — prüfe VITE_PADDLE_PRICE_MONTHLY / VITE_PADDLE_PRICE_ANNUAL.",
+    checkoutUnavailable: "Kasse konnte nicht geöffnet werden. Bitte versuche es gleich noch einmal.",
   },
 
   misc: {

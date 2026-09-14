@@ -198,6 +198,7 @@ export const it: Translations = {
     signOutInstead: "Esci invece",
     signingOut: "Uscita in corso…",
     noVerifiedFactor: "Nessuna app di autenticazione verificata trovata su questo account.",
+    signOutError: "Impossibile disconnetterti. Riprova.",
   },
 
   resetPassword: {
@@ -503,6 +504,7 @@ export const it: Translations = {
     periodMonth: "mese",
     periodYear: "anno",
     missingPriceId: "Variabile d'ambiente dell'ID prezzo Paddle mancante — controlla VITE_PADDLE_PRICE_MONTHLY / VITE_PADDLE_PRICE_ANNUAL.",
+    checkoutUnavailable: "Impossibile aprire il pagamento. Riprova tra un momento.",
   },
 
   misc: {

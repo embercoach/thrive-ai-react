@@ -197,6 +197,7 @@ export const zh: Translations = {
     signOutInstead: "改为退出登录",
     signingOut: "退出登录中…",
     noVerifiedFactor: "此账户未找到已验证的身份验证器应用。",
+    signOutError: "无法退出登录,请重试。",
   },
 
   resetPassword: {
@@ -496,6 +497,7 @@ export const zh: Translations = {
     periodMonth: "月",
     periodYear: "年",
     missingPriceId: "缺少 Paddle 价格 ID 环境变量 —— 请检查 VITE_PADDLE_PRICE_MONTHLY / VITE_PADDLE_PRICE_ANNUAL。",
+    checkoutUnavailable: "无法打开结账页面,请稍后重试。",
   },
 
   misc: {

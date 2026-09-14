@@ -198,6 +198,7 @@ export const ar: Translations = {
     signOutInstead: "تسجيل الخروج بدلاً من ذلك",
     signingOut: "جارٍ تسجيل الخروج…",
     noVerifiedFactor: "لم يتم العثور على تطبيق مصادقة موثّق مرتبط بهذا الحساب.",
+    signOutError: "تعذّر تسجيل خروجك. حاول مرة أخرى.",
   },
 
   resetPassword: {
@@ -502,6 +503,7 @@ export const ar: Translations = {
     periodMonth: "شهر",
     periodYear: "سنة",
     missingPriceId: "متغيّر البيئة الخاص بمعرّف سعر Paddle مفقود — تحقّق من VITE_PADDLE_PRICE_MONTHLY / VITE_PADDLE_PRICE_ANNUAL.",
+    checkoutUnavailable: "تعذّر فتح صفحة الدفع. حاول مرة أخرى بعد قليل.",
   },
 
   misc: {

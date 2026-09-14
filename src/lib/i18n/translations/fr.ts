@@ -198,6 +198,7 @@ export const fr: Translations = {
     signOutInstead: "Se déconnecter à la place",
     signingOut: "Déconnexion en cours…",
     noVerifiedFactor: "Aucune application d'authentification vérifiée n'a été trouvée sur ce compte.",
+    signOutError: "Impossible de te déconnecter. Réessaie.",
   },
 
   resetPassword: {
@@ -502,6 +503,7 @@ export const fr: Translations = {
     periodMonth: "mois",
     periodYear: "an",
     missingPriceId: "Variable d'environnement d'identifiant de prix Paddle manquante — vérifie VITE_PADDLE_PRICE_MONTHLY / VITE_PADDLE_PRICE_ANNUAL.",
+    checkoutUnavailable: "Impossible d'ouvrir le paiement. Réessaie dans un instant.",
   },
 
   misc: {
