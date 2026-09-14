@@ -3,10 +3,15 @@ import { ThumbsUp, ThumbsDown, Copy, RotateCcw, Check } from "lucide-react";
 import { useState } from "react";
 import { useT } from "@/hooks/useI18n";
 
-export function UserBubble({ children }: { children: ReactNode }) {
+/** `imageUrl`, when given, shows a thumbnail of a photo the user just sent
+ *  (e.g. a receipt scan) above the text — session-local only, since the
+ *  photo itself is never persisted to chat history (see useChat.ts's
+ *  sendReceipt). */
+export function UserBubble({ children, imageUrl }: { children: ReactNode; imageUrl?: string }) {
   return (
     <div className="flex justify-end">
       <div className="bg-brand text-ink-on-brand rounded-2xl rounded-br-md px-3.5 py-2.5 max-w-[78%] font-semibold text-sm">
+        {imageUrl && <img src={imageUrl} alt="" className="rounded-xl mb-2 max-h-40 w-auto object-cover" />}
         {children}
       </div>
     </div>

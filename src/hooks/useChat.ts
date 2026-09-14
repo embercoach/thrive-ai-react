@@ -5,6 +5,7 @@ import { useT } from "@/hooks/useI18n";
 import { useAvailableToSpend, useNetWorth } from "@/hooks/useHomeMetrics";
 import { parseBreakdown } from "@/lib/parseBreakdown";
 import { parseIntake } from "@/lib/parseIntake";
+import { compressImageForUpload } from "@/lib/imageCompress";
 import * as api from "@/services/api";
 import { supabase } from "@/services/supabase";
 import type { Breakdown, IntakeAction } from "@/types";
@@ -20,6 +21,11 @@ export interface DisplayMessage {
   intake?: IntakeAction[] | null;
   intakeStatus?: IntakeStatus;
   intakeNote?: string;
+  /** Client-only, session-local thumbnail for a receipt photo the user just
+   *  sent (see sendReceipt below) — the photo itself is never persisted,
+   *  only a text placeholder, so this is never set on a message restored
+   *  from chat history. */
+  imagePreviewUrl?: string;
   /** Message came back from history and had an intake block that can no
    *  longer be acted on (confirmation state is session-local). */
   intakeExpired?: boolean;
@@ -223,6 +229,97 @@ export function useChat() {
     [user, sending, limitReached, messages, context, isPro, refetch, t]
   );
 
+  // Scans a receipt photo via /api/scan-receipt and offers the result
+  // through the exact same IntakePreviewCard/confirmIntake flow a normal
+  // chat message's proposed transaction goes through below — this is
+  // deliberately NOT a separate save path, just a different way of
+  // proposing the same kind of THRIVE_INTAKE block. It spends from the
+  // same free-question quota as send() (api/scan-receipt.ts reserves
+  // against the identical use_ai_question pool), not a separate counter.
+  const sendReceipt = useCallback(
+    async (file: File) => {
+      if (!user || sending) return;
+      if (limitReached) {
+        setError(t("advisor.limitReachedError", { limit: FREE_MONTHLY_QUESTIONS }));
+        return;
+      }
+      setError("");
+      setSending(true);
+
+      let compressed;
+      try {
+        compressed = await compressImageForUpload(file);
+      } catch {
+        setError(t("advisor.receiptReadError"));
+        setSending(false);
+        return;
+      }
+
+      // The photo itself is never persisted — chat_messages only ever
+      // stores text, same as every other message. A reloaded conversation
+      // shows this placeholder in its place; the actual thumbnail below is
+      // client-side and session-local only, gone on refresh.
+      const placeholderText = t("advisor.receiptMessagePlaceholder");
+      const userMsg: DisplayMessage = {
+        id: `u-${Date.now()}`,
+        role: "user",
+        text: placeholderText,
+        imagePreviewUrl: compressed.dataUrl,
+      };
+      setMessages((prev) => [...prev, userMsg]);
+      await api.saveChatMessage(user.id, "user", placeholderText);
+
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) {
+          setError(t("common.sessionExpired"));
+          return;
+        }
+
+        const res = await fetch("/api/scan-receipt", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ image: compressed.base64, mediaType: compressed.mediaType, today: todayLocalStr() }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (res.status === 401) throw new Error(t("common.sessionExpired"));
+          if (res.status === 402) await refetch();
+          throw new Error(data.error || t("common.somethingWentWrongRetry"));
+        }
+
+        const { text: textAfterBreakdown, breakdown } = parseBreakdown(data.text as string);
+        const { text, intake } = parseIntake(textAfterBreakdown);
+
+        const assistantMsg: DisplayMessage = {
+          id: `a-${Date.now()}`,
+          role: "assistant",
+          text,
+          breakdown,
+          intake: intake?.actions ?? null,
+          intakeStatus: intake?.actions ? "pending" : undefined,
+        };
+        setMessages((prev) => [...prev, assistantMsg]);
+        await api.saveChatMessage(user.id, "assistant", data.text as string);
+
+        // Same reasoning as send() — the count is reserved server-side
+        // before the response ever came back; this just pulls the
+        // now-authoritative count into this tab's local state.
+        if (!isPro) await refetch();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : t("common.somethingWentWrongRetry"));
+      } finally {
+        setSending(false);
+      }
+    },
+    [user, sending, limitReached, isPro, refetch, t]
+  );
+
   const clear = useCallback(async () => {
     if (!user) return;
     await api.clearChatHistory(user.id);
@@ -387,6 +484,7 @@ export function useChat() {
     sending,
     error,
     send,
+    sendReceipt,
     clear,
     confirmIntake,
     dismissIntake,

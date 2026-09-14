@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, TrendingDown, HelpCircle, BarChart3, UtensilsCrossed, Calendar, PiggyBank, Trash2 } from "lucide-react";
+import { Send, TrendingDown, HelpCircle, BarChart3, UtensilsCrossed, Calendar, PiggyBank, Trash2, Camera } from "lucide-react";
 import { useChat } from "@/hooks/useChat";
 import { UserBubble, AssistantBubble } from "@/components/ai/ChatBubble";
 import { PromptCard } from "@/components/ai/PromptCard";
@@ -27,6 +27,7 @@ export function AdvisorPage() {
     sending,
     error,
     send,
+    sendReceipt,
     clear,
     confirmIntake,
     dismissIntake,
@@ -40,6 +41,16 @@ export function AdvisorPage() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeTrigger, setUpgradeTrigger] = useState("aiQuestions");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const receiptInputRef = useRef<HTMLInputElement>(null);
+
+  function handleReceiptSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    // Reset immediately so choosing the exact same file again still fires
+    // onChange next time — the browser otherwise treats an unchanged value
+    // as a no-op and never re-triggers this handler.
+    e.target.value = "";
+    if (file) sendReceipt(file);
+  }
 
   const SUGGESTIONS = [
     { text: t("advisor.suggestion1"), icon: TrendingDown, color: "var(--color-cat-shopping)" },
@@ -111,7 +122,9 @@ export function AdvisorPage() {
           <div className="flex flex-col gap-4 pt-2">
             {messages.map((m) =>
               m.role === "user" ? (
-                <UserBubble key={m.id}>{m.text}</UserBubble>
+                <UserBubble key={m.id} imageUrl={m.imagePreviewUrl}>
+                  {m.text}
+                </UserBubble>
               ) : (
                 <div key={m.id} className="flex flex-col gap-2">
                   {m.text && <AssistantBubble text={m.text} />}
@@ -182,7 +195,26 @@ export function AdvisorPage() {
             {t("advisor.upgradeToKeepChatting")}
           </button>
         ) : (
-          <div className="flex items-center gap-2 bg-surface border border-border-strong rounded-full pl-4 pr-1.5 py-1.5">
+          <div className="flex items-center gap-2 bg-surface border border-border-strong rounded-full pl-2 pr-1.5 py-1.5">
+            <input
+              ref={receiptInputRef}
+              type="file"
+              accept="image/*"
+              // No `capture` restriction — lets the OS picker offer both
+              // "take a photo" and "choose from library", since a receipt
+              // photographed a moment ago is just as common as one taken
+              // fresh right now.
+              onChange={handleReceiptSelected}
+              className="hidden"
+            />
+            <button
+              onClick={() => receiptInputRef.current?.click()}
+              disabled={sending}
+              aria-label={t("advisor.scanReceiptAria")}
+              className="w-8 h-8 rounded-full text-ink-secondary flex items-center justify-center flex-shrink-0 disabled:opacity-40 cursor-pointer hover:text-ink transition-colors"
+            >
+              <Camera size={17} />
+            </button>
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
