@@ -79,9 +79,23 @@ function lookup(dict: Record<string, unknown>, path: string): string | undefined
   return typeof node === "string" ? node : undefined;
 }
 
+// U+2066 (LRI) / U+2069 (PDI): Unicode's directional isolate marks. Wrapping
+// each interpolated value in them tells the bidi algorithm "this run's
+// direction stands on its own, don't let the surrounding text influence its
+// internal ordering" — invisible and inert in LTR languages, but essential
+// for RTL ones. Without this, a number/currency value embedded in an Arabic
+// sentence (Arabic text on both sides) gets its weak characters (the "$",
+// the "-" sign) reordered based on the *surrounding* Arabic context, not the
+// value's own content — e.g. "$182.51" flips to "182.51$" — even though the
+// exact same value rendered on its own (nothing but LTR context around it,
+// like a standalone balance figure) renders correctly. Isolating the
+// interpolated span removes that surrounding influence entirely.
+const LRI = "⁦";
+const PDI = "⁩";
+
 function interpolate(template: string, vars?: Record<string, string | number>): string {
   if (!vars) return template;
-  return template.replace(/\{(\w+)\}/g, (match, name) => (name in vars ? String(vars[name]) : match));
+  return template.replace(/\{(\w+)\}/g, (match, name) => (name in vars ? `${LRI}${vars[name]}${PDI}` : match));
 }
 
 interface I18nContextValue {
