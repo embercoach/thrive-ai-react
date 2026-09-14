@@ -84,6 +84,9 @@ export interface Profile {
    *  rather than inferring from whether data exists — inference would re-show
    *  onboarding forever to anyone who skipped every step. */
   onboarded?: boolean;
+  /** Push-notification spending digest cadence. Defaults to "off" at the
+   *  database level (see the matching migration). */
+  digest_frequency?: "off" | "weekly" | "monthly";
 }
 
 export type CurrencyCode =

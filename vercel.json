@@ -5,6 +5,7 @@
   "crons": [
     { "path": "/api/plaid-sync", "schedule": "0 6 * * *" },
     { "path": "/api/send-bill-reminders", "schedule": "0 8 * * *" },
-    { "path": "/api/apply-goal-contributions", "schedule": "0 7 * * *" }
+    { "path": "/api/apply-goal-contributions", "schedule": "0 7 * * *" },
+    { "path": "/api/send-spending-digest", "schedule": "0 14 * * *" }
   ]
 }

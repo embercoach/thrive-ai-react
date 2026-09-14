@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Bell, BellOff, Clock, AlertTriangle, CircleCheck } from "lucide-react";
+import { ChevronLeft, Bell, BellOff, Clock, AlertTriangle, CircleCheck, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
 import { useAlerts } from "@/hooks/useAlerts";
@@ -9,18 +9,38 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { formatMoney } from "@/lib/currency";
 import { isPushSupported, getPushPermission, isPushSubscribed, subscribeToPush, unsubscribeFromPush, isPushErrorCode } from "@/lib/push";
+import * as api from "@/services/api";
+
+const DIGEST_FREQUENCIES: Array<"off" | "weekly" | "monthly"> = ["off", "weekly", "monthly"];
 
 export function NotificationsPage() {
   const navigate = useNavigate();
   const t = useT();
   const { user } = useAuth();
-  const { recurring, budgets, transactions, currency, isPro } = useAppData();
+  const { profile, recurring, budgets, transactions, currency, isPro, refetch } = useAppData();
   const alerts = useAlerts(recurring, budgets, transactions, isPro);
 
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [subscribed, setSubscribed] = useState(false);
   const [toggling, setToggling] = useState(false);
   const [pushError, setPushError] = useState("");
+
+  const [savingDigest, setSavingDigest] = useState(false);
+  const [digestError, setDigestError] = useState("");
+  const digestFrequency = profile?.digest_frequency || "off";
+
+  async function handleSetDigestFrequency(freq: "off" | "weekly" | "monthly") {
+    if (!user || freq === digestFrequency) return;
+    setSavingDigest(true);
+    setDigestError("");
+    const { error } = await api.upsertProfile({ id: user.id, digest_frequency: freq });
+    setSavingDigest(false);
+    if (error) {
+      setDigestError(t("notifications.digestError"));
+      return;
+    }
+    await refetch();
+  }
 
   const supported = isPushSupported();
   const permission = getPushPermission();
@@ -104,6 +124,36 @@ export function NotificationsPage() {
             </Button>
           </>
         )}
+      </Card>
+
+      <Card>
+        <div className="flex items-center gap-2 mb-1">
+          <Mail size={16} className="text-ink-secondary" />
+          <h2 className="text-sm font-bold text-ink">{t("notifications.digestTitle")}</h2>
+        </div>
+        <p className="text-xs text-ink-secondary mt-2 mb-3">{t("notifications.digestDescription")}</p>
+        {digestError && (
+          <p className="text-xs text-negative bg-negative/5 border border-negative/20 rounded-xl py-2 px-3 mb-3">
+            {digestError}
+          </p>
+        )}
+        <div className="flex gap-1.5">
+          {DIGEST_FREQUENCIES.map((freq) => (
+            <button
+              key={freq}
+              type="button"
+              onClick={() => handleSetDigestFrequency(freq)}
+              disabled={savingDigest}
+              className={`flex-1 py-2 px-2 rounded-lg border text-xs font-semibold cursor-pointer transition-colors disabled:opacity-60 ${
+                digestFrequency === freq
+                  ? "bg-brand text-ink-on-brand border-brand"
+                  : "bg-surface text-ink-secondary border-border-strong"
+              }`}
+            >
+              {t(`notifications.digestFrequency.${freq}`)}
+            </button>
+          ))}
+        </div>
       </Card>
 
       <Card>
