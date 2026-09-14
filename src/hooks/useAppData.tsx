@@ -57,7 +57,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     // else loads, so every screen sees today's occurrences immediately.
     await api.processRecurring(user.id, profileRef.current?.currency || "USD");
     const [profileData, txns, goalList, budgetList, recurringList] = await Promise.all([
-      api.fetchProfile(user.id),
+      // A transient fetchProfile error must not reject this whole
+      // Promise.all — that would also stall transactions/goals/budgets/
+      // recurring on the same blip, and (via OnboardingGate reading a null
+      // profile as "not onboarded") could even bounce an already-onboarded
+      // user back into onboarding. Fall back to the last known profile and
+      // let the next refetch try again.
+      api.fetchProfile(user.id).catch((err) => {
+        console.error("fetchProfile failed, keeping last known profile:", err);
+        return profileRef.current;
+      }),
       api.fetchTransactions(user.id),
       api.fetchGoals(user.id),
       api.fetchBudgets(user.id),

@@ -63,14 +63,14 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
   const annualLabel = priceLabels[ANNUAL_PRICE_ID];
   const selectedLabel = cycle === 'monthly' ? monthlyLabel : annualLabel;
 
-  const handleUpgrade = () => {
+  const handleUpgrade = async () => {
     if (!user) return;
     if (!isPaddleConfigured()) {
       console.error('Paddle is not configured — missing VITE_PADDLE_CLIENT_TOKEN.');
       return;
     }
     setLoading(true);
-    openPaddleCheckout(priceId, user.id, user.email ?? undefined, (event) => {
+    await openPaddleCheckout(priceId, user.email ?? undefined, (event) => {
       if (event?.name === 'checkout.completed') {
         // The webhook that flips `is_pro` in Supabase runs server-side and
         // can lag a moment behind Paddle reporting the checkout as done —

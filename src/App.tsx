@@ -54,7 +54,13 @@ function Gate({ children }: { children: ReactNode }) {
 function OnboardingGate({ children }: { children: ReactNode }) {
   const { profile, loading } = useAppData();
   if (loading) return <HomeSkeleton />;
-  if (profile && !profile.onboarded) return <OnboardingPage />;
+  // `profile` is only ever null here for a genuinely new signup whose
+  // profile row hasn't been created yet (see fetchProfile's PGRST116
+  // handling) — a transient fetch error is caught inside useAppData's
+  // refetch() and falls back to the last known profile instead of ever
+  // surfacing as null, so this can't mistake "briefly unreachable" for
+  // "not onboarded" and bounce an already-onboarded user back here.
+  if (!profile || !profile.onboarded) return <OnboardingPage />;
   return <>{children}</>;
 }
 

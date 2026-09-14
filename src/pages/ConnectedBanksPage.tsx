@@ -66,14 +66,23 @@ export function ConnectedBanksPage() {
 
   const loadAccounts = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
+    const { data, error: fetchError } = await supabase
       .from("plaid_accounts")
       .select("id, item_id, institution_name, name, mask, type, current_balance, currency")
       .eq("user_id", user.id)
       .order("institution_name", { ascending: true });
+    if (fetchError) {
+      // A transient fetch error must not wipe out accounts already on
+      // screen — overwriting with [] here would make a connected bank
+      // appear to vanish from the UI on a flaky network blip (this runs
+      // after every sync/connect/remove, not just on first load).
+      setError(t("connectedBanks.errorLoad"));
+      setLoading(false);
+      return;
+    }
     setAccounts(data ?? []);
     setLoading(false);
-  }, [user]);
+  }, [user, t]);
 
   useEffect(() => {
     loadAccounts();
@@ -96,12 +105,20 @@ export function ConnectedBanksPage() {
     onSuccess: async (publicToken) => {
       setConnecting(true);
       setError("");
+      let exchanged = false;
       try {
         await authedFetch(t, "/api/plaid-exchange-public-token", { public_token: publicToken });
+        // The bank connection already exists server-side as of this point —
+        // a failure in the sync call below must not skip refreshing the UI,
+        // or the user is left staring at the empty "no banks connected"
+        // state (and, at the free-tier limit, unable to add anything) while
+        // a real connection silently exists underneath them.
+        exchanged = true;
         await authedFetch(t, "/api/plaid-sync");
         await Promise.all([loadAccounts(), refetchAppData()]);
       } catch (err) {
         setError(err instanceof Error ? err.message : t("connectedBanks.errorConnectFinish"));
+        if (exchanged) await Promise.all([loadAccounts(), refetchAppData()]);
       } finally {
         setConnecting(false);
         setLinkToken(null);

@@ -3,7 +3,18 @@ import type { Transaction, Goal, Budget, RecurringItem, Profile, ChatMessage } f
 import { advanceDate, todayLocalStr } from "@/utils/dates";
 
 export async function fetchProfile(userId: string): Promise<Profile | null> {
-  const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
+  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
+  if (error) {
+    // PGRST116 = "no rows" — a genuinely missing profile (e.g. the
+    // post-signup trigger that creates one hasn't run yet), which callers
+    // correctly treat as "not onboarded". Any other error (a dropped
+    // connection, a transient Supabase blip) must NOT be collapsed into the
+    // same `null` result — OnboardingGate reads a null profile as "show
+    // onboarding", so a fully onboarded user hitting a transient fetch
+    // error here would otherwise get bounced back into onboarding.
+    if (error.code === "PGRST116") return null;
+    throw error;
+  }
   return data;
 }
 
@@ -83,6 +94,23 @@ export async function addGoal(g: Omit<Goal, "id">) {
 
 export async function updateGoal(userId: string, id: string, patch: Partial<Goal>) {
   return supabase.from("goals").update(patch).eq("id", id).eq("user_id", userId);
+}
+
+/**
+ * Adds `amount` to a goal's `current` atomically, via the
+ * `increment_goal_current` Postgres function (see the matching migration).
+ * Unlike a plain `updateGoal(userId, id, { current: goal.current + amt })`
+ * — which computes the new value from a `goal` snapshot read earlier, on
+ * the client — this does the read-and-add as a single database statement,
+ * scoped to the caller's own row via `auth.uid()` inside the function
+ * itself. That closes a real lost-update race: two contributions to the
+ * same goal from two devices (or two tabs) in quick succession, each
+ * computing `current + amt` from the same stale snapshot, would otherwise
+ * have the second write silently clobber the first instead of stacking on
+ * top of it.
+ */
+export async function contributeToGoal(id: string, amount: number) {
+  return supabase.rpc("increment_goal_current", { p_goal_id: id, p_amount: amount });
 }
 
 export async function deleteGoal(userId: string, id: string) {
@@ -192,13 +220,18 @@ export async function processRecurring(userId: string, currency: string) {
 }
 
 export async function fetchChatHistory(userId: string): Promise<ChatMessage[]> {
+  // Ordering ascending-then-limit(50) returns the OLDEST 50 messages, not
+  // the most recent ones — a long-running chat would show the very start of
+  // the conversation forever and never surface anything said since. Fetch
+  // the newest 50 (descending) instead, then reverse in JS so the caller
+  // still gets them in chronological (oldest-first) order for rendering.
   const { data } = await supabase
     .from("chat_messages")
     .select("*")
     .eq("user_id", userId)
-    .order("created_at", { ascending: true })
+    .order("created_at", { ascending: false })
     .limit(50);
-  return data ?? [];
+  return (data ?? []).reverse();
 }
 
 export async function saveChatMessage(userId: string, role: "user" | "assistant", content: string) {

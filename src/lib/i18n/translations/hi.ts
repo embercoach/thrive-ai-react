@@ -238,6 +238,7 @@ export const hi: Translations = {
     errorConnectStart: "बैंक कनेक्शन शुरू नहीं हो सका।",
     errorSync: "आपके खाते सिंक नहीं हो सके।",
     errorDisconnect: "इस बैंक को डिस्कनेक्ट नहीं किया जा सका।",
+    errorLoad: "आपके कनेक्टेड बैंक लोड नहीं हो सके।",
   },
 
   notifications: {

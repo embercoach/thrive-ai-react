@@ -95,6 +95,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // there too rather than leaving an orphaned Item this app can never
       // reach again (no local row means no access_token on file for it).
       await plaidClient.itemRemove({ access_token: accessToken }).catch(() => {});
+      // P0001 is the enforce_plaid_item_limit_atomically trigger's own
+      // exception (see that migration) — it's the authoritative check
+      // this endpoint's count-then-insert can otherwise race past (two
+      // concurrent connect attempts both passing the earlier check before
+      // either insert lands), so a rejection here means the free-plan
+      // limit really was hit, not a generic failure.
+      if (itemInsertError?.code === "P0001") {
+        res.status(402).json({ error: "Free plan includes 1 connected bank. Upgrade to Pro to connect more." });
+        return;
+      }
       res.status(500).json({ error: "Couldn't save this bank connection. Please try again." });
       return;
     }

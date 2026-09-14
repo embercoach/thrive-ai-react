@@ -25,6 +25,32 @@ interface AuthContextValue {
   verifyMfaCode: (code: string) => Promise<{ error: string | null }>;
 }
 
+// Survives a page reload within the same tab (never across tabs, devices,
+// or browser restarts — sessionStorage, not localStorage) so a refresh
+// while the reset-password screen is still up doesn't lose the fact that
+// this session came from a recovery link. See the bootstrap effect below
+// for why that matters.
+const RECOVERING_STORAGE_KEY = "thrive-recovering";
+
+function readRecoveringFlag(): boolean {
+  try {
+    return sessionStorage.getItem(RECOVERING_STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeRecoveringFlag(value: boolean) {
+  try {
+    if (value) sessionStorage.setItem(RECOVERING_STORAGE_KEY, "1");
+    else sessionStorage.removeItem(RECOVERING_STORAGE_KEY);
+  } catch {
+    // Best-effort only (private-browsing contexts can throw) — the worst
+    // case is just the original bug (recovering doesn't survive a reload),
+    // not a new one.
+  }
+}
+
 const AuthContext = createContext<AuthContextValue>({
   user: null,
   loading: true,
@@ -52,6 +78,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setUser(session?.user ?? null);
+      // PASSWORD_RECOVERY (below) fires exactly once, right after Supabase
+      // reads the recovery token out of the URL — this bootstrap path never
+      // gets it again. Without restoring it here, reloading the page while
+      // still on the reset-password screen would drop `recovering` back to
+      // false and, since the recovery link already created a real session,
+      // send the user straight into the app having never actually set a new
+      // password. Only trusted if a real session also comes back from
+      // Supabase — the flag alone is never enough on its own.
+      if (session?.user && readRecoveringFlag()) setRecovering(true);
       if (session?.user) await refreshMfaStatus();
       setLoading(false);
     });
@@ -60,7 +95,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       // Supabase fires this once, after it reads the recovery token out of the
       // URL on return from the reset email.
-      if (event === "PASSWORD_RECOVERY") setRecovering(true);
+      if (event === "PASSWORD_RECOVERY") {
+        writeRecoveringFlag(true);
+        setRecovering(true);
+      }
+      // A fresh, ordinary sign-in is never part of a recovery flow — clear
+      // any stale flag left over from an earlier recovery in this tab so it
+      // can never leak into a later, unrelated session.
+      if (event === "SIGNED_IN") writeRecoveringFlag(false);
       if (!session?.user) {
         setMfaRequired(false);
         return;
@@ -92,7 +134,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, recovering, endRecovery: () => setRecovering(false), mfaRequired, verifyMfaCode }}
+      value={{
+        user,
+        loading,
+        recovering,
+        endRecovery: () => {
+          writeRecoveringFlag(false);
+          setRecovering(false);
+        },
+        mfaRequired,
+        verifyMfaCode,
+      }}
     >
       {children}
     </AuthContext.Provider>

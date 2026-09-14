@@ -238,6 +238,7 @@ export const fr: Translations = {
     errorConnectStart: "Impossible de démarrer la connexion bancaire.",
     errorSync: "Impossible de synchroniser tes comptes.",
     errorDisconnect: "Impossible de déconnecter cette banque.",
+    errorLoad: "Impossible de charger vos banques connectées.",
   },
 
   notifications: {

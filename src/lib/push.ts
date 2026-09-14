@@ -127,13 +127,22 @@ export async function unsubscribeFromPush(userId: string): Promise<{ error: stri
     const sub = await reg?.pushManager.getSubscription();
     if (sub) {
       const endpoint = sub.endpoint;
-      await sub.unsubscribe();
+      // Delete the DB row BEFORE unsubscribing at the browser level — not
+      // after, as this used to. If the delete throws or errors, the browser
+      // subscription is still intact and this whole call can just be
+      // retried. Doing it in the old order let a delete failure land after
+      // unsubscribe() had already succeeded: on retry, getSubscription()
+      // then returns null (the browser has nothing left to unsubscribe),
+      // this entire `if (sub)` block is skipped, and the row is orphaned
+      // for good — the server keeps believing this device wants pushes
+      // it can no longer receive.
       const { error } = await supabase
         .from("push_subscriptions")
         .delete()
         .eq("user_id", userId)
         .eq("endpoint", endpoint);
       if (error) return { error: error.message };
+      await sub.unsubscribe();
     }
     return { error: null };
   } catch (err) {

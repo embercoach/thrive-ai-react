@@ -238,6 +238,7 @@ export const ar: Translations = {
     errorConnectStart: "تعذّر بدء الربط المصرفي.",
     errorSync: "تعذّرت مزامنة حساباتك.",
     errorDisconnect: "تعذّر فصل هذا البنك.",
+    errorLoad: "تعذّر تحميل البنوك المتصلة.",
   },
 
   notifications: {

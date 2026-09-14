@@ -236,6 +236,7 @@ export const zh: Translations = {
     errorConnectStart: "无法开始银行连接。",
     errorSync: "无法同步你的账户。",
     errorDisconnect: "无法断开此银行的连接。",
+    errorLoad: "无法加载已连接的银行。",
   },
 
   notifications: {

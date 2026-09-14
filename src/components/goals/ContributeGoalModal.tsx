@@ -30,16 +30,15 @@ export function ContributeGoalModal({ goal, onClose }: ContributeGoalModalProps)
     }
     setSaving(true);
     setError("");
-    // `current + amt` is computed from the goal snapshot this modal was
-    // opened with, not read fresh from the server. If the modal could be
-    // closed and reopened for the same goal while this write is still in
-    // flight, a second contribution would add to that same stale `current`
-    // and silently overwrite the first one instead of stacking on top of
-    // it — the app would show two successful confirmations but only bank
-    // one contribution. The modal stays open (via Modal's `preventClose`)
-    // and refetch() runs before onClose() so the goal data is guaranteed
-    // fresh by the time the user can act on this goal again.
-    const { error: dbError } = await api.updateGoal(user.id, goal.id, { current: goal.current + amt });
+    // contributeToGoal() adds `amt` atomically in the database (see its own
+    // doc comment) rather than computing `current + amt` from this modal's
+    // `goal` snapshot — so two contributions to the same goal racing from
+    // two devices/tabs correctly stack instead of one silently clobbering
+    // the other. Modal's `preventClose` and refetch()-before-onClose still
+    // matter for the same-modal-instance case: they keep the UI honest
+    // about a save in flight, even though the write itself no longer needs
+    // them for correctness.
+    const { error: dbError } = await api.contributeToGoal(goal.id, amt);
     if (dbError) {
       setSaving(false);
       setError(dbError.message);

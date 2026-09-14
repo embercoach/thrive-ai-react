@@ -37,6 +37,30 @@ function formatAmount(amount: number, currency?: string | null): string {
   return symbol + Math.abs(amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+// push_subscriptions.endpoint is written by client code straight from the
+// browser's PushManager.subscribe() result, with no server-side validation
+// on it. web-push's sendNotification() makes an HTTP request to whatever URL
+// it's given, so an endpoint that isn't actually one of the browsers' known
+// push services would let this server be used as an SSRF proxy — a crafted
+// subscription row pointing at an internal-only host, hit once a day by this
+// very cron job with no interaction needed from anyone. Real push endpoints
+// only ever come from these hosts, so anything else is rejected outright
+// rather than ever being handed to sendNotification().
+const ALLOWED_PUSH_ENDPOINT_HOSTS = [
+  /(^|\.)googleapis\.com$/, // Chrome/Edge/Android — FCM
+  /(^|\.)push\.services\.mozilla\.com$/, // Firefox
+  /(^|\.)notify\.windows\.com$/, // Edge legacy / WNS
+  /^web\.push\.apple\.com$/, // Safari
+];
+function isAllowedPushEndpoint(endpoint: string): boolean {
+  try {
+    const url = new URL(endpoint);
+    return url.protocol === "https:" && ALLOWED_PUSH_ENDPOINT_HOSTS.some((re) => re.test(url.hostname));
+  } catch {
+    return false;
+  }
+}
+
 function todayUTCStr(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -69,6 +93,22 @@ async function tryClaim(userId: string, kind: string, dedupeKey: string): Promis
   return true;
 }
 
+/** Undoes a claim made by tryClaim(). Used when a claimed occurrence never
+ *  actually got delivered (see the rollback call site below) — without
+ *  this, a claim that "won" the dedupe race but then failed to send would
+ *  permanently block every future attempt for that exact occurrence, since
+ *  the unique (user_id, kind, dedupe_key) constraint would keep rejecting
+ *  the retry as a duplicate forever. */
+async function undoClaim(userId: string, kind: string, dedupeKey: string): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from("notification_log")
+    .delete()
+    .eq("user_id", userId)
+    .eq("kind", kind)
+    .eq("dedupe_key", dedupeKey);
+  if (error) console.error("notification_log rollback error:", error);
+}
+
 /** Sends one push to every device this user has enabled notifications on.
  *  A subscription the push service reports as gone (404/410 — the user
  *  uninstalled, cleared permissions, etc.) is deleted so this stops trying
@@ -83,6 +123,11 @@ async function pushToUser(userId: string, payload: PushPayload): Promise<boolean
 
   let sentAny = false;
   for (const sub of subs) {
+    if (!isAllowedPushEndpoint(sub.endpoint)) {
+      console.error("Rejected push subscription with disallowed endpoint host:", sub.endpoint);
+      await supabaseAdmin.from("push_subscriptions").delete().eq("id", sub.id);
+      continue;
+    }
     try {
       await webpush.sendNotification(
         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
@@ -142,10 +187,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const dueBills = (dueBillsData ?? []) as DueBill[];
     results.billsChecked = dueBills.length;
 
+    // Claims made below are provisional until pushToUser() actually
+    // delivers them (see the final send loop) — tracked per user here so a
+    // delivery failure can roll every one of that user's claims back rather
+    // than leaving them permanently marked "sent" for nothing.
+    const claimsByUser = new Map<string, { kind: string; dedupeKey: string }[]>();
+    function addClaim(userId: string, kind: string, dedupeKey: string) {
+      const existing = claimsByUser.get(userId) ?? [];
+      existing.push({ kind, dedupeKey });
+      claimsByUser.set(userId, existing);
+    }
+
     const billLinesByUser = new Map<string, string[]>();
     for (const bill of dueBills) {
-      const claimed = await tryClaim(bill.user_id, "bill_due", `${bill.id}:${bill.next_date}`);
+      const dedupeKey = `${bill.id}:${bill.next_date}`;
+      const claimed = await tryClaim(bill.user_id, "bill_due", dedupeKey);
       if (!claimed) continue;
+      addClaim(bill.user_id, "bill_due", dedupeKey);
 
       const when =
         bill.next_date === today ? "due today" : bill.next_date === tomorrow ? "due tomorrow" : "was due — check it hasn't been missed";
@@ -184,8 +242,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const spent = spentByCategory[b.category.trim().toLowerCase()] ?? 0;
         if (spent <= b.amount) continue;
 
-        const claimed = await tryClaim(profile.id, "budget_over", `${b.category.trim().toLowerCase()}:${monthKey}`);
+        const dedupeKey = `${b.category.trim().toLowerCase()}:${monthKey}`;
+        const claimed = await tryClaim(profile.id, "budget_over", dedupeKey);
         if (!claimed) continue;
+        addClaim(profile.id, "budget_over", dedupeKey);
 
         const line = `${b.category} is over budget this month.`;
         const existing = budgetLinesByUser.get(profile.id) ?? [];
@@ -209,6 +269,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (sent) {
         if (billLinesByUser.has(userId)) results.billsSent++;
         if (budgetLinesByUser.has(userId)) results.budgetsSent++;
+      } else {
+        // Nothing actually reached this user — whether because every send
+        // attempt failed or because they simply have no push subscription
+        // (pushToUser returns false either way). Either way, nothing was
+        // delivered, so the claim(s) reserved above must not stand: undo
+        // them so tomorrow's run treats these occurrences as still
+        // unnotified instead of skipping them forever on the dedupe_key.
+        const claims = claimsByUser.get(userId) ?? [];
+        await Promise.all(claims.map((c) => undoClaim(userId, c.kind, c.dedupeKey)));
       }
     }
 

@@ -246,6 +246,7 @@ export const en = {
     errorConnectStart: "Couldn't start bank connection.",
     errorSync: "Couldn't sync your accounts.",
     errorDisconnect: "Couldn't disconnect this bank.",
+    errorLoad: "Couldn't load your connected banks.",
   },
 
   notifications: {

@@ -17,6 +17,74 @@ const supabaseAdmin = createClient(
 
 const PADDLE_WEBHOOK_SECRET = process.env.PADDLE_WEBHOOK_SECRET as string;
 
+// Same "checkout-token:" domain-separated HMAC as
+// api/paddle-create-checkout-token.ts — duplicated rather than imported,
+// matching this project's convention of keeping each api/*.ts function
+// self-contained (see api/chat.ts's own duplicated constants).
+function signCheckoutToken(userId: string, exp: number): string {
+  return crypto.createHmac("sha256", PADDLE_WEBHOOK_SECRET).update(`checkout-token:${userId}:${exp}`).digest("hex");
+}
+
+/**
+ * Verifies a checkout token minted by api/paddle-create-checkout-token.ts
+ * and returns the user id it was signed for, or null if it's missing,
+ * malformed, expired, or doesn't verify.
+ */
+function verifyCheckoutToken(token: unknown): string | null {
+  if (typeof token !== "string") return null;
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  const [userId, expStr, sig] = parts;
+  const exp = Number(expStr);
+  if (!userId || !Number.isFinite(exp)) return null;
+  if (Math.floor(Date.now() / 1000) > exp) return null;
+
+  const expected = signCheckoutToken(userId, exp);
+  const a = Buffer.from(expected, "utf8");
+  const b = Buffer.from(sig, "utf8");
+  if (a.length !== b.length) return null;
+  return crypto.timingSafeEqual(a, b) ? userId : null;
+}
+
+/**
+ * Who this subscription belongs to — the one thing every event handler
+ * below needs, and the one thing that must NEVER come directly from the
+ * client-editable custom_data.user_id (see the migration this depends on,
+ * add_paddle_subscriptions_mapping.sql, for the full story).
+ *
+ * A subscription's identity is settled exactly once, the first time this
+ * function sees its subscription_id: it requires a valid, unexpired
+ * checkout_token minted by api/paddle-create-checkout-token.ts for a real
+ * authenticated user, and stores that verified mapping permanently. Every
+ * later event for the same subscription_id (renewals, cancellations, years
+ * down the line, long after that original token has expired) reads the
+ * stored mapping instead of re-checking the token — so the short token TTL
+ * only ever has to outlive one checkout, never the subscription itself.
+ */
+async function resolveVerifiedUserId(subscriptionId: string | undefined, data: any): Promise<string | null> {
+  if (!subscriptionId) return null;
+
+  const { data: existing } = await supabaseAdmin
+    .from("paddle_subscriptions")
+    .select("user_id")
+    .eq("subscription_id", subscriptionId)
+    .maybeSingle();
+  if (existing?.user_id) return existing.user_id;
+
+  const verifiedUserId = verifyCheckoutToken(data?.custom_data?.checkout_token);
+  if (!verifiedUserId) return null;
+
+  const { error: mapError } = await supabaseAdmin
+    .from("paddle_subscriptions")
+    .insert({ subscription_id: subscriptionId, user_id: verifiedUserId });
+  // 23505 here just means another concurrent event for the same brand-new
+  // subscription already won the insert — not a real failure.
+  if (mapError && mapError.code !== "23505") {
+    console.error("paddle_subscriptions insert error:", mapError);
+  }
+  return verifiedUserId;
+}
+
 async function getRawBody(req: VercelRequest): Promise<Buffer> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
@@ -89,20 +157,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       case "subscription.created":
       case "subscription.activated":
       case "subscription.updated": {
-        const userId = data?.custom_data?.user_id;
+        const userId = await resolveVerifiedUserId(data?.id, data);
         const status = data?.status; // "active" | "trialing" | "past_due" | "paused" | "canceled"
         if (userId) {
           const isPro = status === "active" || status === "trialing";
           await supabaseAdmin.from("profiles").update({ is_pro: isPro }).eq("id", userId);
+        } else {
+          console.error(`Paddle webhook: couldn't verify a user for subscription ${data?.id} on ${eventType}`);
         }
         break;
       }
 
       case "subscription.canceled":
       case "subscription.paused": {
-        const userId = data?.custom_data?.user_id;
+        const userId = await resolveVerifiedUserId(data?.id, data);
         if (userId) {
           await supabaseAdmin.from("profiles").update({ is_pro: false }).eq("id", userId);
+        } else {
+          console.error(`Paddle webhook: couldn't verify a user for subscription ${data?.id} on ${eventType}`);
         }
         break;
       }

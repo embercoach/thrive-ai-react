@@ -241,6 +241,7 @@ export const de: Translations = {
     errorConnectStart: "Die Bankverbindung konnte nicht gestartet werden.",
     errorSync: "Deine Konten konnten nicht synchronisiert werden.",
     errorDisconnect: "Diese Bank konnte nicht getrennt werden.",
+    errorLoad: "Deine verbundenen Banken konnten nicht geladen werden.",
   },
 
   notifications: {

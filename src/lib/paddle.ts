@@ -4,6 +4,8 @@
 // (it can only initiate a checkout, never move money on its own), so it's
 // safe to ship in the bundle via a VITE_ env var.
 
+import { supabase } from "@/services/supabase";
+
 declare global {
   interface Window {
     Paddle?: {
@@ -51,19 +53,47 @@ export function isPaddleConfigured(): boolean {
 }
 
 /**
- * Opens Paddle's hosted checkout overlay for the given price. `userId` is
- * passed through as custom data so the webhook can map the resulting
- * subscription back to a Supabase profile without needing Paddle to know
- * anything about our schema.
+ * Fetches a short-lived, server-signed token binding this checkout to the
+ * currently-authenticated Supabase user — see api/paddle-create-checkout-
+ * token.ts. This is what the webhook trusts to decide whose profile to
+ * update, instead of a raw client-supplied user id: `window.Paddle` is a
+ * public, client-initialized script, so anyone could otherwise open
+ * devtools and call `window.Paddle.Checkout.open()` directly with an
+ * arbitrary `customData.user_id` and have a real (even minimal) purchase
+ * flip `is_pro` on an account they don't control.
+ */
+async function fetchCheckoutToken(): Promise<string | null> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return null;
+  try {
+    const res = await fetch("/api/paddle-create-checkout-token", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return typeof data?.token === "string" ? data.token : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Opens Paddle's hosted checkout overlay for the given price. A signed
+ * checkout token (see fetchCheckoutToken above) is passed through as
+ * custom data so the webhook can map the resulting subscription back to a
+ * Supabase profile it has actually verified, not merely one the client
+ * claimed.
  *
  * `onEvent`, when given, is wired up as Paddle's `eventCallback` so the
  * caller can react to `checkout.completed` (e.g. to refetch the profile —
  * the webhook that actually flips `is_pro` in Supabase runs server-side and
  * has no other way to reach already-mounted React state).
  */
-export function openPaddleCheckout(
+export async function openPaddleCheckout(
   priceId: string,
-  userId: string,
   email?: string,
   onEvent?: (event: PaddleCheckoutEvent) => void,
 ) {
@@ -72,10 +102,15 @@ export function openPaddleCheckout(
     console.error("Paddle.js failed to load — check network/ad-blocker.");
     return;
   }
+  const token = await fetchCheckoutToken();
+  if (!token) {
+    console.error("Couldn't get a checkout token — is the user signed in?");
+    return;
+  }
   window.Paddle.Checkout.open({
     items: [{ priceId, quantity: 1 }],
     customer: email ? { email } : undefined,
-    customData: { user_id: userId },
+    customData: { checkout_token: token },
     eventCallback: onEvent,
   });
 }
