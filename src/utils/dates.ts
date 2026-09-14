@@ -58,10 +58,12 @@ export function normCategory(category?: string | null): string {
  * target month's real last day (naive month-add overflows "Feb 31" into
  * "Mar 3", which is a jarring, wrong-looking jump for month-end bills).
  */
-export function advanceDate(dateStr: string, frequency: "monthly" | "weekly"): string {
+export function advanceDate(dateStr: string, frequency: "monthly" | "weekly" | "biweekly"): string {
   const d = parseLocalDate(dateStr);
   if (frequency === "weekly") {
     d.setDate(d.getDate() + 7);
+  } else if (frequency === "biweekly") {
+    d.setDate(d.getDate() + 14);
   } else {
     const origDay = d.getDate();
     d.setDate(1);

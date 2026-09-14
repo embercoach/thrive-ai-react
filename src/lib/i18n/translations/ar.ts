@@ -468,6 +468,23 @@ export const ar: Translations = {
       submit: "إضافة مدّخرات",
     },
 
+    autoContribute: {
+      sectionTitle: "الادخار التلقائي",
+      offDescription: "أضف أموالاً إلى هذا الهدف تلقائيًا وفق جدول زمني.",
+      amountLabel: "المبلغ لكل مساهمة",
+      frequencyLabel: "عدد مرات التكرار",
+      frequencyWeekly: "أسبوعيًا",
+      frequencyBiweekly: "كل أسبوعين",
+      frequencyMonthly: "شهريًا",
+      errorInvalidAmount: "يرجى إدخال مبلغ صالح.",
+      starting: "جارٍ البدء…",
+      startButton: "بدء الادخار التلقائي",
+      activeDescription: "يتم الادخار {amount} {frequency}. المساهمة التالية في {date}.",
+      stopping: "جارٍ الإيقاف…",
+      stopButton: "إيقاف الادخار التلقائي",
+      error: "تعذّر تحديث الادخار التلقائي. يرجى المحاولة مرة أخرى.",
+    },
+
     goalCard: {
       deleteAria: "حذف الهدف",
       goalComplete: "تم تحقيق الهدف! عمل رائع.",

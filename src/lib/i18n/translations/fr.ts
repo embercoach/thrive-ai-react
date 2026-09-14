@@ -468,6 +468,23 @@ export const fr: Translations = {
       submit: "Ajouter l'épargne",
     },
 
+    autoContribute: {
+      sectionTitle: "Épargne automatique",
+      offDescription: "Ajoute de l'argent à cet objectif automatiquement selon un calendrier.",
+      amountLabel: "Montant par versement",
+      frequencyLabel: "À quelle fréquence",
+      frequencyWeekly: "Chaque semaine",
+      frequencyBiweekly: "Toutes les 2 semaines",
+      frequencyMonthly: "Chaque mois",
+      errorInvalidAmount: "Merci d'indiquer un montant valide.",
+      starting: "Démarrage…",
+      startButton: "Activer l'épargne automatique",
+      activeDescription: "Épargne automatique de {amount} {frequency}. Prochain versement le {date}.",
+      stopping: "Désactivation…",
+      stopButton: "Désactiver l'épargne automatique",
+      error: "Impossible de mettre à jour l'épargne automatique. Réessaie.",
+    },
+
     goalCard: {
       deleteAria: "Supprimer l'objectif",
       goalComplete: "Objectif atteint ! Un travail incroyable.",

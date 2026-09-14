@@ -462,6 +462,23 @@ export const zh: Translations = {
       submit: "添加储蓄",
     },
 
+    autoContribute: {
+      sectionTitle: "自动储蓄",
+      offDescription: "按计划自动向此目标添加资金。",
+      amountLabel: "每次存入金额",
+      frequencyLabel: "频率",
+      frequencyWeekly: "每周",
+      frequencyBiweekly: "每 2 周",
+      frequencyMonthly: "每月",
+      errorInvalidAmount: "请输入有效金额。",
+      starting: "启动中…",
+      startButton: "开启自动储蓄",
+      activeDescription: "正在自动储蓄 {amount},{frequency}。下次存入日期为 {date}。",
+      stopping: "正在关闭…",
+      stopButton: "关闭自动储蓄",
+      error: "无法更新自动储蓄,请重试。",
+    },
+
     goalCard: {
       deleteAria: "删除目标",
       goalComplete: "目标达成!太棒了。",

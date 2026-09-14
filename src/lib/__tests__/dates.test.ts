@@ -45,6 +45,11 @@ describe("local-date handling east of UTC", () => {
     expect(advanceDate("2026-08-27", "weekly")).toBe("2026-09-03");
   });
 
+  it("advances biweekly by exactly fourteen days", () => {
+    expect(advanceDate("2026-08-20", "biweekly")).toBe("2026-09-03");
+    expect(advanceDate("2026-08-27", "biweekly")).toBe("2026-09-10");
+  });
+
   it("clamps month-end instead of overflowing Feb 31 into March", () => {
     expect(advanceDate("2026-01-31", "monthly")).toBe("2026-02-28");
     expect(advanceDate("2026-03-31", "monthly")).toBe("2026-04-30");

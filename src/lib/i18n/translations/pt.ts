@@ -468,6 +468,23 @@ export const pt: Translations = {
       submit: "Adicionar Poupança",
     },
 
+    autoContribute: {
+      sectionTitle: "Poupança automática",
+      offDescription: "Adiciona dinheiro a esta meta automaticamente de acordo com uma agenda.",
+      amountLabel: "Valor por contribuição",
+      frequencyLabel: "Com que frequência",
+      frequencyWeekly: "Semanal",
+      frequencyBiweekly: "A cada 2 semanas",
+      frequencyMonthly: "Mensal",
+      errorInvalidAmount: "Por favor, insira um valor válido.",
+      starting: "Iniciando…",
+      startButton: "Iniciar poupança automática",
+      activeDescription: "Poupando {amount} {frequency}. Próxima contribuição em {date}.",
+      stopping: "Desativando…",
+      stopButton: "Desativar poupança automática",
+      error: "Não foi possível atualizar a poupança automática. Tente novamente.",
+    },
+
     goalCard: {
       deleteAria: "Eliminar objetivo",
       goalComplete: "Objetivo concluído! Um trabalho incrível.",

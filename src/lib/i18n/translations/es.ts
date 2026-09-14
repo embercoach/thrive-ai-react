@@ -469,6 +469,23 @@ export const es: Translations = {
       submit: "Agregar ahorros",
     },
 
+    autoContribute: {
+      sectionTitle: "Ahorro automático",
+      offDescription: "Agrega dinero a esta meta automáticamente según un calendario.",
+      amountLabel: "Monto por aporte",
+      frequencyLabel: "Con qué frecuencia",
+      frequencyWeekly: "Semanal",
+      frequencyBiweekly: "Cada 2 semanas",
+      frequencyMonthly: "Mensual",
+      errorInvalidAmount: "Por favor ingresa un monto válido.",
+      starting: "Iniciando…",
+      startButton: "Iniciar ahorro automático",
+      activeDescription: "Ahorrando {amount} {frequency}. Próximo aporte el {date}.",
+      stopping: "Desactivando…",
+      stopButton: "Desactivar ahorro automático",
+      error: "No se pudo actualizar el ahorro automático. Por favor intenta de nuevo.",
+    },
+
     goalCard: {
       deleteAria: "Eliminar meta",
       goalComplete: "¡Meta cumplida! Un trabajo increíble.",

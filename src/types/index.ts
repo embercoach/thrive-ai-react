@@ -22,6 +22,8 @@ export interface Transaction {
   split_group_id?: string | null;
 }
 
+export type GoalAutoContributeFrequency = "weekly" | "biweekly" | "monthly";
+
 export interface Goal {
   id: string;
   user_id: string;
@@ -30,6 +32,10 @@ export interface Goal {
   current: number;
   deadline?: string | null;
   created_at?: string;
+  /** Auto-contribution schedule — all three are set together or all null. */
+  auto_contribute_amount?: number | null;
+  auto_contribute_frequency?: GoalAutoContributeFrequency | null;
+  auto_contribute_next_date?: string | null; // YYYY-MM-DD
 }
 
 export interface Budget {

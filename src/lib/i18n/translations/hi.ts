@@ -468,6 +468,23 @@ export const hi: Translations = {
       submit: "बचत जोड़ें",
     },
 
+    autoContribute: {
+      sectionTitle: "ऑटो-सेविंग",
+      offDescription: "एक शेड्यूल के अनुसार इस लक्ष्य में अपने आप पैसे जोड़ें।",
+      amountLabel: "प्रति योगदान राशि",
+      frequencyLabel: "कितनी बार",
+      frequencyWeekly: "साप्ताहिक",
+      frequencyBiweekly: "हर 2 हफ्ते में",
+      frequencyMonthly: "मासिक",
+      errorInvalidAmount: "कृपया एक मान्य राशि दर्ज करें।",
+      starting: "शुरू हो रहा है…",
+      startButton: "ऑटो-सेविंग शुरू करें",
+      activeDescription: "{frequency} {amount} की ऑटो-सेविंग जारी है। अगला योगदान {date} को होगा।",
+      stopping: "बंद किया जा रहा है…",
+      stopButton: "ऑटो-सेविंग बंद करें",
+      error: "ऑटो-सेविंग अपडेट नहीं हो सकी। कृपया फिर से प्रयास करें।",
+    },
+
     goalCard: {
       deleteAria: "लक्ष्य हटाएं",
       goalComplete: "लक्ष्य पूरा हुआ! शानदार काम।",

@@ -21,6 +21,23 @@ export const goalsModals = {
     submit: "Add Savings",
   },
 
+  autoContribute: {
+    sectionTitle: "Auto-save",
+    offDescription: "Automatically add money to this goal on a schedule.",
+    amountLabel: "Amount per contribution",
+    frequencyLabel: "How often",
+    frequencyWeekly: "Weekly",
+    frequencyBiweekly: "Every 2 weeks",
+    frequencyMonthly: "Monthly",
+    errorInvalidAmount: "Please enter a valid amount.",
+    starting: "Starting…",
+    startButton: "Start Auto-save",
+    activeDescription: "Auto-saving {amount} {frequency}. Next contribution on {date}.",
+    stopping: "Turning off…",
+    stopButton: "Turn Off Auto-save",
+    error: "Couldn't update auto-save. Please try again.",
+  },
+
   goalCard: {
     deleteAria: "Delete goal",
     goalComplete: "Goal complete! Incredible work.",

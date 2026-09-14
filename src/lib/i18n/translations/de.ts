@@ -475,6 +475,23 @@ export const de: Translations = {
       submit: "Ersparnisse hinzufügen",
     },
 
+    autoContribute: {
+      sectionTitle: "Auto-Sparen",
+      offDescription: "Fügt diesem Ziel automatisch nach einem Zeitplan Geld hinzu.",
+      amountLabel: "Betrag pro Einzahlung",
+      frequencyLabel: "Wie oft",
+      frequencyWeekly: "Wöchentlich",
+      frequencyBiweekly: "Alle 2 Wochen",
+      frequencyMonthly: "Monatlich",
+      errorInvalidAmount: "Bitte gib einen gültigen Betrag ein.",
+      starting: "Wird gestartet…",
+      startButton: "Auto-Sparen starten",
+      activeDescription: "Spart automatisch {amount} {frequency}. Nächste Einzahlung am {date}.",
+      stopping: "Wird deaktiviert…",
+      stopButton: "Auto-Sparen deaktivieren",
+      error: "Auto-Sparen konnte nicht aktualisiert werden. Bitte versuche es erneut.",
+    },
+
     goalCard: {
       deleteAria: "Ziel löschen",
       goalComplete: "Ziel erreicht! Unglaubliche Leistung.",

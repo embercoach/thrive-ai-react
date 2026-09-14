@@ -469,6 +469,23 @@ export const it: Translations = {
       submit: "Aggiungi risparmi",
     },
 
+    autoContribute: {
+      sectionTitle: "Risparmio automatico",
+      offDescription: "Aggiungi denaro a questo obiettivo automaticamente secondo una pianificazione.",
+      amountLabel: "Importo per versamento",
+      frequencyLabel: "Con quale frequenza",
+      frequencyWeekly: "Settimanale",
+      frequencyBiweekly: "Ogni 2 settimane",
+      frequencyMonthly: "Mensile",
+      errorInvalidAmount: "Inserisci un importo valido.",
+      starting: "Avvio…",
+      startButton: "Avvia risparmio automatico",
+      activeDescription: "Risparmio automatico di {amount} {frequency}. Prossimo versamento il {date}.",
+      stopping: "Disattivazione…",
+      stopButton: "Disattiva risparmio automatico",
+      error: "Impossibile aggiornare il risparmio automatico. Riprova.",
+    },
+
     goalCard: {
       deleteAria: "Elimina obiettivo",
       goalComplete: "Obiettivo raggiunto! Un lavoro incredibile.",
