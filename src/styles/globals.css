@@ -109,6 +109,22 @@
   }
 }
 
+/* RTL scripts (Arabic) get right-aligned text WITHOUT flipping the
+   document's overall direction. A full `dir="rtl"` on <html> mirrors the
+   entire layout (bottom nav order, card structure, icon placement) and,
+   worse, reorders numbers/currency embedded in the RTL paragraph — a
+   negative amount's leading "-" visually jumps to the end, e.g.
+   "-$1,296.38" renders as "$1,296.38-". Scoping to `:lang(ar)` (driven by
+   the `lang` attribute useI18n.tsx sets on <html>, which every element
+   inherits) and to plain text tags only — never flex/grid containers —
+   sidesteps both problems: prose right-aligns, layout and numbers don't
+   move. Unicode's bidi algorithm already renders the Arabic letters
+   themselves in correct visual order regardless of this rule; this only
+   changes where the line box sits within its container. */
+:lang(ar) :is(p, h1, h2, h3, h4, h5, h6, li) {
+  text-align: right;
+}
+
 @layer utilities {
   .font-voice {
     font-family: var(--font-voice);

@@ -7,9 +7,14 @@ export interface LanguageOption {
    *  reader who doesn't yet know the app is in English can still recognize
    *  their own language by its native spelling ("Español", not "Spanish"). */
   nativeLabel: string;
-  /** Right-to-left script — flips base text direction. Layout mirroring
-   *  (icons, paddings) is a further pass; this covers correct reading
-   *  order, which matters far more than pixel-perfect mirroring. */
+  /** Right-to-left script. Deliberately does NOT flip document-level
+   *  `dir` — that mirrors the whole layout (nav order, card structure)
+   *  and, worse, reorders numbers and currency embedded in RTL text
+   *  (a leading "-" on a negative amount visually jumps to the end).
+   *  Instead this only right-aligns genuine text blocks via the
+   *  `:lang(ar)` rule in globals.css — see the comment there. Kept here
+   *  so a future language can opt in the same way without touching
+   *  globals.css if its script needs the same treatment. */
   rtl?: boolean;
 }
 
@@ -108,8 +113,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // `lang` drives the `:lang(ar)` CSS rule in globals.css that
+    // right-aligns text blocks for RTL scripts. Deliberately NOT setting
+    // `document.documentElement.dir` here — see the `rtl` field's comment
+    // on LanguageOption above for why a full document-direction flip is
+    // the wrong tool for this.
     document.documentElement.lang = language;
-    document.documentElement.dir = LANGUAGES.find((l) => l.code === language)?.rtl ? "rtl" : "ltr";
   }, [language]);
 
   const t = useCallback(
