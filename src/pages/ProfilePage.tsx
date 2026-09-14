@@ -89,6 +89,7 @@ export function ProfilePage() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState("");
 
   // `profile` is null on the first render while useAppData fetches, so the
   // useState initialiser above always ran with an empty value and never
@@ -152,7 +153,18 @@ export function ProfilePage() {
 
   async function handleSignOut() {
     setSigningOut(true);
-    await supabase.auth.signOut();
+    setSignOutError("");
+    // signOut() resolves with { error } rather than throwing — left
+    // unchecked (as this was), an expired session token or a transient
+    // network error would leave `signingOut` true forever with the confirm
+    // modal's button stuck disabled and no explanation, the same bug fixed
+    // in MfaChallengePage's sign-out button this session.
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      setSignOutError(t("profile.signOutError"));
+      setSigningOut(false);
+      return;
+    }
     // No need to clear signingOut/confirmingSignOut on success — a
     // successful sign-out unmounts this whole page via the auth gate.
   }
@@ -199,6 +211,7 @@ export function ProfilePage() {
             onChange={(e) => setIncome(e.target.value)}
             placeholder="0"
             className="!mb-0 flex-1"
+            disabled={savingIncome}
           />
           <Button size="sm" onClick={handleSaveIncome} disabled={savingIncome}>
             {savingIncome ? "…" : t("profile.save")}
@@ -299,6 +312,7 @@ export function ProfilePage() {
         message={t("profile.signOutConfirmMessage")}
         confirmLabel={t("profile.signOut")}
         loading={signingOut}
+        error={signOutError}
         onConfirm={handleSignOut}
         onCancel={() => setConfirmingSignOut(false)}
       />

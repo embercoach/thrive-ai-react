@@ -304,6 +304,7 @@ export const en = {
     signOut: "Sign Out",
     signOutConfirmTitle: "Sign Out",
     signOutConfirmMessage: "Sign out of Thrive AI?",
+    signOutError: "Couldn't sign you out. Please try again.",
     yourAccount: "Your Account",
   },
 

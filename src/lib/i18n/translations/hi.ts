@@ -296,6 +296,7 @@ export const hi: Translations = {
     signOut: "साइन आउट करें",
     signOutConfirmTitle: "साइन आउट करें",
     signOutConfirmMessage: "क्या आप Thrive AI से साइन आउट करना चाहते हैं?",
+    signOutError: "साइन आउट नहीं हो सका। कृपया फिर से प्रयास करें।",
     yourAccount: "आपका अकाउंट",
   },
 

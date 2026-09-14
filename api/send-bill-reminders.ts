@@ -221,16 +221,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const budgetLinesByUser = new Map<string, string[]>();
     for (const profile of proProfiles ?? []) {
-      const { data: userBudgets } = await supabaseAdmin.from("budgets").select("category, amount").eq("user_id", profile.id);
+      // Both queries below previously discarded `error`, unlike every other
+      // query in this file — a transient failure on either one made a
+      // genuinely over-budget user look either unbudgeted (empty
+      // userBudgets) or under budget (empty txns), silently dropping that
+      // day's reminder with no log line to explain why.
+      const { data: userBudgets, error: budgetsErr } = await supabaseAdmin
+        .from("budgets")
+        .select("category, amount")
+        .eq("user_id", profile.id);
+      if (budgetsErr) {
+        console.error(`budgets query failed for user ${profile.id}:`, budgetsErr);
+        continue;
+      }
       if (!userBudgets?.length) continue;
 
-      const { data: txns } = await supabaseAdmin
+      const { data: txns, error: txnsErr } = await supabaseAdmin
         .from("transactions")
         .select("category, amount")
         .eq("user_id", profile.id)
         .gte("date", monthStart)
         .lte("date", today)
         .lt("amount", 0);
+      if (txnsErr) {
+        console.error(`transactions query failed for user ${profile.id}:`, txnsErr);
+        continue;
+      }
 
       const spentByCategory: Record<string, number> = {};
       for (const t of txns ?? []) {

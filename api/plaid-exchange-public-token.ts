@@ -126,7 +126,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }));
     if (accountRows.length) {
       const { error: accountsInsertError } = await supabaseAdmin.from("plaid_accounts").insert(accountRows);
-      if (accountsInsertError) console.error("plaid_accounts insert error:", accountsInsertError);
+      if (accountsInsertError) {
+        console.error("plaid_accounts insert error:", accountsInsertError);
+        // A plaid_items row with no matching plaid_accounts rows is a
+        // "phantom" connection: ConnectedBanksPage builds its list by
+        // grouping plaid_accounts (never reading plaid_items directly), so
+        // the user would see "no banks connected" and could retry — but the
+        // item row already counts against FREE_BANK_LIMIT, so every retry
+        // gets rejected with a false "limit reached" error and there's
+        // nothing on screen for them to remove. Tear both down (mirroring
+        // the itemInsertError handling above) rather than returning success
+        // for a connection that isn't actually usable.
+        await supabaseAdmin.from("plaid_items").delete().eq("id", itemRow.id);
+        await plaidClient.itemRemove({ access_token: accessToken }).catch(() => {});
+        res.status(500).json({ error: "Couldn't save this bank connection. Please try again." });
+        return;
+      }
     }
 
     res.status(200).json({ success: true, institutionName, accountsAdded: accountRows.length });

@@ -297,6 +297,7 @@ export const it: Translations = {
     signOut: "Esci",
     signOutConfirmTitle: "Esci",
     signOutConfirmMessage: "Uscire da Thrive AI?",
+    signOutError: "Impossibile disconnetterti. Riprova.",
     yourAccount: "Il tuo account",
   },
 

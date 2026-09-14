@@ -301,6 +301,7 @@ export const de: Translations = {
     signOut: "Abmelden",
     signOutConfirmTitle: "Abmelden",
     signOutConfirmMessage: "Von Thrive AI abmelden?",
+    signOutError: "Abmeldung fehlgeschlagen. Bitte versuche es erneut.",
     yourAccount: "Dein Konto",
   },
 

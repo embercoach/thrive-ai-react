@@ -296,6 +296,7 @@ export const pt: Translations = {
     signOut: "Terminar Sessão",
     signOutConfirmTitle: "Terminar Sessão",
     signOutConfirmMessage: "Terminar sessão na Thrive AI?",
+    signOutError: "Não foi possível terminar a sessão. Tenta novamente.",
     yourAccount: "A Tua Conta",
   },
 

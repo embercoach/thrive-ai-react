@@ -292,6 +292,7 @@ export const zh: Translations = {
     signOut: "退出登录",
     signOutConfirmTitle: "退出登录",
     signOutConfirmMessage: "确定要退出 Thrive AI 吗?",
+    signOutError: "无法退出登录,请重试。",
     yourAccount: "你的账户",
   },
 
