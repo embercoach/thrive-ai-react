@@ -23,6 +23,9 @@ export const LANGUAGES: LanguageOption[] = [
   { code: "pt", nativeLabel: "Português" },
   { code: "de", nativeLabel: "Deutsch" },
   { code: "hi", nativeLabel: "हिन्दी" },
+  { code: "ar", nativeLabel: "العربية", rtl: true },
+  { code: "zh", nativeLabel: "简体中文" },
+  { code: "it", nativeLabel: "Italiano" },
 ];
 
 const SUPPORTED_CODES = new Set(LANGUAGES.map((l) => l.code));

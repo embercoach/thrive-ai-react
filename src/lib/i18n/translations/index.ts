@@ -9,3 +9,6 @@ import "./fr";
 import "./pt";
 import "./de";
 import "./hi";
+import "./ar";
+import "./zh";
+import "./it";
