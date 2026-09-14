@@ -73,15 +73,23 @@ export function TransactionForm({
   ]);
 
   const total = parseFloat(amount) || 0;
-  // Math.abs on each leg here matters, not just style: submission (below)
-  // persists every leg as `sign * Math.abs(parseFloat(l.amount))`, so a
-  // negative-typed leg (e.g. "-5") is silently stored as if the user had
-  // typed "5". Summing raw signed values here let a negative leg cancel
-  // part of the total and show "Balanced" for a split whose actual stored
-  // total (all legs sharing the same sign) would come out higher than the
-  // amount the user saw and confirmed — this keeps the live check honest
-  // by matching exactly what will be persisted.
-  const allocated = legs.reduce((sum, l) => sum + Math.abs(parseFloat(l.amount) || 0), 0);
+  // Mirrors exactly what `filled` (below, at submit) will actually persist:
+  // a leg only counts once it has BOTH a category and a positive amount.
+  // Counting every leg's amount here regardless of whether it had a
+  // category — the previous behavior — let an uncategorized leg's amount
+  // count toward "Balanced" on screen while `filled` silently dropped that
+  // same leg at save time. A user could type a 3rd $20 leg, not get around
+  // to naming its category, see the green "Balanced" state, and save —
+  // only to have that $20 vanish from what's actually recorded, with no
+  // error anywhere. Math.abs still matters for the same reason as before:
+  // submission persists every leg as `sign * Math.abs(parseFloat(l.amount))`,
+  // so a negative-typed leg is stored as if positive — summing raw signed
+  // values would let a negative leg cancel part of the total and show
+  // "Balanced" for a split whose real stored total comes out higher.
+  const allocated = legs.reduce(
+    (sum, l) => (l.category.trim() && parseFloat(l.amount) > 0 ? sum + parseFloat(l.amount) : sum),
+    0
+  );
   const remaining = Math.round((total - allocated) * 100) / 100;
 
   function updateLeg(i: number, patch: Partial<SplitLeg>) {

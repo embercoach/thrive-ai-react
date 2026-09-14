@@ -72,7 +72,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // enrolled — nextLevel already reflects that, so this is safe to call
     // for every signed-in user, not just ones known to have MFA on.
     async function refreshMfaStatus() {
-      const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (error) {
+        // This runs on EVERY auth event with a session present, not just at
+        // bootstrap — including a background TOKEN_REFRESHED that fires
+        // periodically while MfaChallengePage is up, unrelated to MFA
+        // itself. Treating a transient failure here the same as "no MFA
+        // enrolled" would silently set mfaRequired to false and let Gate
+        // wave the user straight past the second-factor challenge on
+        // nothing more than a momentary network blip. Leave mfaRequired
+        // exactly as it was; the next successful check corrects it either
+        // way.
+        console.error("getAuthenticatorAssuranceLevel failed:", error);
+        return;
+      }
       setMfaRequired(!!data && data.nextLevel === "aal2" && data.currentLevel !== data.nextLevel);
     }
 

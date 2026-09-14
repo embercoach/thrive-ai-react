@@ -16,11 +16,21 @@ import type { Transaction } from "@/types";
  * validated/computed values and never touch it. A leading apostrophe is
  * Excel's own "force text" marker, so it neutralizes the formula in every
  * spreadsheet app without changing how the field reads in a plain editor.
+ *
+ * The quoting check itself covers `\r` as well as `\n` — a bare carriage
+ * return with neither a comma nor a quote nearby would otherwise slip
+ * through unquoted, and every spreadsheet app treats a standalone `\r` as
+ * a line break just like `\n`, silently splitting that one field's row in
+ * two when the file is reopened. `name` in particular isn't only ever
+ * typed through this app's own `<input>` (which strips `\r`/`\n` itself) —
+ * it can also arrive verbatim from an AI chat/receipt-scan intake action
+ * (see src/hooks/useChat.ts's confirmIntake) or a Plaid-synced merchant
+ * name, neither of which passes through that input stripping.
  */
 function csvField(value: string | number | null | undefined): string {
   const str = value === null || value === undefined ? "" : String(value);
   const safe = /^[=+\-@]/.test(str) ? `'${str}` : str;
-  if (/[",\n]/.test(safe)) {
+  if (/[",\r\n]/.test(safe)) {
     return `"${safe.replace(/"/g, '""')}"`;
   }
   return safe;

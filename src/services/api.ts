@@ -23,12 +23,19 @@ export async function upsertProfile(profile: Partial<Profile> & { id: string }) 
 }
 
 export async function fetchTransactions(userId: string): Promise<Transaction[]> {
-  const { data } = await supabase
+  // Throws on a real fetch error instead of the old `data ?? []` — that
+  // silently treated a transient failure the same as "genuinely zero
+  // transactions", so every refetch (after adding/editing/deleting anything)
+  // could wipe an already-loaded transaction list back to empty on a
+  // network blip. useAppData's refetch() falls back to the last known list
+  // when this throws, the same pattern already used for fetchProfile.
+  const { data, error } = await supabase
     .from("transactions")
     .select("*")
     .eq("user_id", userId)
     .order("date", { ascending: false })
     .order("created_at", { ascending: false });
+  if (error) throw error;
   return data ?? [];
 }
 
@@ -80,11 +87,15 @@ export async function deleteTransaction(userId: string, id: string) {
 }
 
 export async function fetchGoals(userId: string): Promise<Goal[]> {
-  const { data } = await supabase
+  // See fetchTransactions above — throws rather than silently returning []
+  // on a real error, so a transient failure can't wipe an already-loaded
+  // goal list.
+  const { data, error } = await supabase
     .from("goals")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
+  if (error) throw error;
   return data ?? [];
 }
 
@@ -118,7 +129,12 @@ export async function deleteGoal(userId: string, id: string) {
 }
 
 export async function fetchBudgets(userId: string): Promise<Budget[]> {
-  const { data } = await supabase.from("budgets").select("*").eq("user_id", userId);
+  // See fetchTransactions above — throws rather than silently returning []
+  // on a real error, so a transient failure can't wipe already-loaded
+  // budgets (which would also spuriously clear every "over budget"
+  // indicator across Home/Spending/Notifications until the next refetch).
+  const { data, error } = await supabase.from("budgets").select("*").eq("user_id", userId);
+  if (error) throw error;
   return data ?? [];
 }
 
@@ -133,11 +149,16 @@ export async function deleteBudget(userId: string, category: string) {
 }
 
 export async function fetchRecurring(userId: string): Promise<RecurringItem[]> {
-  const { data } = await supabase
+  // See fetchTransactions above — throws rather than silently returning []
+  // on a real error, so a transient failure can't wipe already-loaded
+  // recurring bills (and, with them, the Home page's upcoming-bills list
+  // and the bill-due alerts derived from it).
+  const { data, error } = await supabase
     .from("recurring")
     .select("*")
     .eq("user_id", userId)
     .order("next_date", { ascending: true });
+  if (error) throw error;
   return data ?? [];
 }
 

@@ -540,6 +540,8 @@ export const zh: Translations = {
       updatePassword: "更新密码",
       twoFactorTitle: "两步验证",
       checkingStatus: "正在检查状态…",
+      checkFactorsError: "无法检查你的双重验证状态。",
+      retry: "重试",
       scanInstructions:
         "使用你的身份验证器应用(如 Google Authenticator 或 Authy)扫描此二维码,然后输入它生成的 6 位数验证码。",
       qrAlt: "使用你的身份验证器应用扫描",

@@ -546,6 +546,8 @@ export const ar: Translations = {
       updatePassword: "تحديث كلمة المرور",
       twoFactorTitle: "المصادقة بخطوتين",
       checkingStatus: "جارٍ التحقق من الحالة…",
+      checkFactorsError: "تعذّر التحقق من حالة المصادقة الثنائية.",
+      retry: "إعادة المحاولة",
       scanInstructions:
         "امسح هذا الرمز ضوئيًا باستخدام تطبيق المصادقة الخاص بك (مثل Google Authenticator أو Authy)، ثم أدخل الرمز المكوّن من 6 أرقام الذي يعرضه.",
       qrAlt: "امسح ضوئيًا باستخدام تطبيق المصادقة الخاص بك",

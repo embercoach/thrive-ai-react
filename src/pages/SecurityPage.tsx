@@ -38,10 +38,21 @@ export function SecurityPage() {
   const [confirmingRemove, setConfirmingRemove] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [removeError, setRemoveError] = useState("");
+  const [factorsError, setFactorsError] = useState("");
 
   const loadFactors = useCallback(async () => {
     setLoadingFactors(true);
-    const { data } = await supabase.auth.mfa.listFactors();
+    const { data, error } = await supabase.auth.mfa.listFactors();
+    if (error) {
+      // A failed check must never be shown as "no 2FA enabled" — that's a
+      // materially different, falsely-reassuring state for someone who
+      // actually does have it on. Surface the failure and let them retry
+      // instead of silently defaulting to "off".
+      setFactorsError(error.message);
+      setLoadingFactors(false);
+      return;
+    }
+    setFactorsError("");
     setActiveFactor(data?.totp?.find((f) => f.status === "verified") ?? null);
     setLoadingFactors(false);
   }, []);
@@ -213,6 +224,15 @@ export function SecurityPage() {
 
         {loadingFactors ? (
           <p className="text-xs text-ink-muted mt-2">{t("misc.security.checkingStatus")}</p>
+        ) : factorsError ? (
+          <div className="mt-2">
+            <p className="text-xs text-negative bg-negative/5 border border-negative/20 rounded-xl py-2 px-3 mb-3">
+              {t("misc.security.checkFactorsError")}
+            </p>
+            <Button size="sm" variant="outline" onClick={loadFactors}>
+              {t("misc.security.retry")}
+            </Button>
+          </div>
         ) : enrollment ? (
           <div className="mt-2">
             <p className="text-xs text-ink-secondary mb-3">{t("misc.security.scanInstructions")}</p>

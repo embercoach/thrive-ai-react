@@ -555,6 +555,8 @@ export const de: Translations = {
       updatePassword: "Passwort aktualisieren",
       twoFactorTitle: "Zwei-Faktor-Authentifizierung",
       checkingStatus: "Status wird geprüft…",
+      checkFactorsError: "Dein Zwei-Faktor-Status konnte nicht geprüft werden.",
+      retry: "Erneut versuchen",
       scanInstructions:
         "Scanne diesen Code mit deiner Authenticator-App (z. B. Google Authenticator oder Authy) und gib dann den daraus resultierenden 6-stelligen Code ein.",
       qrAlt: "Mit deiner Authenticator-App scannen",

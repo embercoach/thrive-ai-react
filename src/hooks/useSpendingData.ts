@@ -78,45 +78,60 @@ export function useSpendingData(transactions: Transaction[], budgets: Budget[]) 
   const trendPct =
     period === "this" && lastTotal > 0 ? Math.round(((thisTotal - lastTotal) / lastTotal) * 100) : null;
 
+  // Grouped by normCategory (a case-insensitive key) rather than the raw
+  // category string, with the first-seen casing kept as the display label.
+  // budgetFor already matches case-insensitively, so grouping by the raw
+  // string here used to let "groceries" and "Groceries" show as two separate
+  // rows even though they resolve to the same budget.
   const breakdown: CategoryBreakdown[] = useMemo(() => {
-    const byCat: Record<string, number> = {};
+    const byCat: Record<string, { label: string; amount: number }> = {};
     shownTxns.forEach((t) => {
       const cat = t.category || "Other";
-      byCat[cat] = (byCat[cat] || 0) + Math.abs(t.amount);
+      const key = normCategory(cat);
+      const entry = byCat[key] ?? { label: cat, amount: 0 };
+      entry.amount += Math.abs(t.amount);
+      byCat[key] = entry;
     });
-    return Object.entries(byCat)
-      .sort((a, b) => b[1] - a[1])
-      .map(([category, amount]) => ({
-        category,
+    return Object.values(byCat)
+      .sort((a, b) => b.amount - a.amount)
+      .map(({ label, amount }) => ({
+        category: label,
         amount,
         pct: shownTotal > 0 ? Math.round((amount / shownTotal) * 100) : 0,
-        color: categoryColor(category),
+        color: categoryColor(label),
       }));
   }, [shownTxns, shownTotal]);
 
   // Budget cards always reflect THIS month regardless of the toggle above —
-  // a budget is inherently a current-month concept.
+  // a budget is inherently a current-month concept. Same normalized-grouping
+  // reasoning as breakdown above; the budgets.forEach merge-in step also now
+  // checks the normalized key so it doesn't add a duplicate zero-amount
+  // phantom row for a budget whose casing merely differs from a transaction's.
   const budgetRows: CategoryBudgetRow[] = useMemo(() => {
-    const byCat: Record<string, number> = {};
+    const byCat: Record<string, { label: string; amount: number }> = {};
     thisMonthTxns.forEach((t) => {
       const cat = t.category || "Other";
-      byCat[cat] = (byCat[cat] || 0) + Math.abs(t.amount);
+      const key = normCategory(cat);
+      const entry = byCat[key] ?? { label: cat, amount: 0 };
+      entry.amount += Math.abs(t.amount);
+      byCat[key] = entry;
     });
     budgets.forEach((b) => {
-      if (!(b.category in byCat)) {
-        byCat[b.category] = 0;
+      const key = normCategory(b.category);
+      if (!(key in byCat)) {
+        byCat[key] = { label: b.category, amount: 0 };
       }
     });
-    return Object.entries(byCat)
-      .sort((a, b) => b[1] - a[1])
-      .map(([category, amount]) => {
-        const budget = budgetFor(budgets, category);
+    return Object.values(byCat)
+      .sort((a, b) => b.amount - a.amount)
+      .map(({ label, amount }) => {
+        const budget = budgetFor(budgets, label);
         const budgetPct = budget ? Math.min(Math.round((amount / budget) * 100), 999) : 0;
         return {
-          category,
+          category: label,
           amount,
           pct: thisTotal > 0 ? Math.round((amount / thisTotal) * 100) : 0,
-          color: categoryColor(category),
+          color: categoryColor(label),
           budget,
           budgetPct,
           over: !!budget && amount > budget,

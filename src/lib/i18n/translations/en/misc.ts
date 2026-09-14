@@ -42,6 +42,8 @@ export const misc = {
     updatePassword: "Update password",
     twoFactorTitle: "Two-Factor Authentication",
     checkingStatus: "Checking status…",
+    checkFactorsError: "Couldn't check your two-factor status.",
+    retry: "Retry",
     scanInstructions:
       "Scan this code with your authenticator app (like Google Authenticator or Authy), then enter the 6-digit code it gives you.",
     qrAlt: "Scan with your authenticator app",

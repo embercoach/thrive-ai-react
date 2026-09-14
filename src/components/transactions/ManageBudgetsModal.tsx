@@ -8,6 +8,7 @@ import { categoryIcon } from "@/lib/categories";
 import { currencyConfig } from "@/lib/currency";
 import * as api from "@/services/api";
 import type { CategoryBudgetRow } from "@/hooks/useSpendingData";
+import { normCategory } from "@/utils/dates";
 
 interface ManageBudgetsModalProps {
   open: boolean;
@@ -51,7 +52,19 @@ export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }:
     const raw = drafts[category] ?? "";
     const amt = parseFloat(raw);
     const clearing = raw.trim() === "" || isNaN(amt) || amt <= 0;
-    const alreadyBudgeted = budgets.some((b) => b.category === category);
+    // Resolve to the existing budget row's exact stored casing (if any)
+    // before using it as the write key. `budgets` and `budgetRows` are both
+    // ultimately built from the same source, but `category` here comes from
+    // a `budgetRows` row, whose label can differ in case from what's
+    // actually stored in `budgets` after the useSpendingData normalization
+    // fix — comparing raw strings here would then never recognize a budget
+    // that in fact already exists, wrongly triggering the free-tier upgrade
+    // paywall, or writing a case-variant duplicate row via `upsertBudget`'s
+    // exact-string onConflict match, or silently failing to delete via
+    // `deleteBudget`'s exact-string match.
+    const existing = budgets.find((b) => normCategory(b.category) === normCategory(category));
+    const writeCategory = existing?.category ?? category;
+    const alreadyBudgeted = !!existing;
     if (!clearing && !alreadyBudgeted && !isPro && activeBudgetCount >= FREE_BUDGET_LIMIT) {
       onClose();
       onNeedUpgrade();
@@ -60,8 +73,8 @@ export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }:
     setSaving(true);
     setError("");
     const result = clearing
-      ? await api.deleteBudget(user.id, category)
-      : await api.upsertBudget(user.id, category, amt);
+      ? await api.deleteBudget(user.id, writeCategory)
+      : await api.upsertBudget(user.id, writeCategory, amt);
     if (result.error) {
       setSaving(false);
       setError(result.error.message);
@@ -80,19 +93,25 @@ export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }:
 
   async function handleAddNew() {
     if (!user) return;
-    if (!isPro && activeBudgetCount >= FREE_BUDGET_LIMIT) {
+    const trimmedCategory = newCategory.trim();
+    // Same case-insensitive resolution as handleSaveRow: typing a category
+    // that already has a budget under different casing should update that
+    // existing row (and not count against the free-tier cap), not create a
+    // case-variant duplicate that silently consumes another slot.
+    const existing = budgets.find((b) => normCategory(b.category) === normCategory(trimmedCategory));
+    if (!existing && !isPro && activeBudgetCount >= FREE_BUDGET_LIMIT) {
       onClose();
       onNeedUpgrade();
       return;
     }
     const amt = parseFloat(newAmount);
-    if (!newCategory.trim() || !amt || amt <= 0) {
+    if (!trimmedCategory || !amt || amt <= 0) {
       setError(t("transactions.manageBudgets.enterCategoryAmount"));
       return;
     }
     setSaving(true);
     setError("");
-    const result = await api.upsertBudget(user.id, newCategory.trim(), amt);
+    const result = await api.upsertBudget(user.id, existing?.category ?? trimmedCategory, amt);
     if (result.error) {
       setSaving(false);
       setError(result.error.message);

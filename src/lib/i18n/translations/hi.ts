@@ -546,6 +546,8 @@ export const hi: Translations = {
       updatePassword: "पासवर्ड अपडेट करें",
       twoFactorTitle: "दो-चरणीय प्रमाणीकरण",
       checkingStatus: "स्थिति जांची जा रही है…",
+      checkFactorsError: "आपकी दो-चरणीय सत्यापन स्थिति जांची नहीं जा सकी।",
+      retry: "पुनः प्रयास करें",
       scanInstructions:
         "अपने ऑथेंटिकेटर ऐप (जैसे Google Authenticator या Authy) से इस कोड को स्कैन करें, फिर उसमें मिला 6 अंकों का कोड दर्ज करें।",
       qrAlt: "अपने ऑथेंटिकेटर ऐप से स्कैन करें",

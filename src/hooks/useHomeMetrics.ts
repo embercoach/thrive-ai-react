@@ -24,12 +24,19 @@ export function useAvailableToSpend(transactions: Transaction[], recurring: Recu
   return useMemo(() => {
     const balance = transactions.reduce((a, t) => a + Number(t.amount), 0);
     const today = todayLocal();
-    const in7 = new Date(today.getTime() + 7 * 86400000);
+    // daysBetween divides and rounds rather than doing raw millisecond
+    // arithmetic, so it stays correct across a DST "fall back" that lands
+    // inside the 7-day window — `today.getTime() + 7 * 86400000` (the
+    // previous approach) comes out an hour short in that case, silently
+    // excluding a bill due exactly 7 days out from `upcoming` and
+    // overstating this number by the full bill amount. Matches the
+    // `daysBetween(today, r.due)` pattern already used for `dueSoon` below.
     const upcoming = recurring
       .filter((r) => r.active !== false && r.amount < 0)
       .reduce((sum, r) => {
         const due = parseLocalDate(r.next_date);
-        return due >= today && due <= in7 ? sum + Math.abs(r.amount) : sum;
+        const days = daysBetween(today, due);
+        return days >= 0 && days <= 7 ? sum + Math.abs(r.amount) : sum;
       }, 0);
     return balance - upcoming;
   }, [transactions, recurring]);
@@ -140,21 +147,30 @@ export function useHomeBrief(
     }
 
     if (isPro) {
-      const byCat: Record<string, number> = {};
+      // Grouped by normCategory so a category typed with different casing
+      // (e.g. "groceries" vs "Groceries") is treated as one bucket, matching
+      // how budgetFor above already resolves case-insensitively and how
+      // useAlerts.ts already groups. Grouping by the raw string here used to
+      // let a split-casing overage go unflagged on Home while
+      // useAlerts.ts's Notifications page correctly caught it.
+      const byCat: Record<string, { label: string; amount: number }> = {};
       transactions
         .filter((t) => isSameMonth(parseLocalDate(t.date), today) && t.amount < 0)
         .forEach((t) => {
           const cat = t.category || "Other";
-          byCat[cat] = (byCat[cat] || 0) + Math.abs(t.amount);
+          const key = normCategory(cat);
+          const entry = byCat[key] ?? { label: cat, amount: 0 };
+          entry.amount += Math.abs(t.amount);
+          byCat[key] = entry;
         });
-      const over = Object.entries(byCat).find(([cat, amt]) => {
-        const b = budgetFor(budgets, cat);
-        return b && amt > b;
+      const over = Object.values(byCat).find(({ label, amount }) => {
+        const b = budgetFor(budgets, label);
+        return b && amount > b;
       });
       if (over) {
-        const b = budgetFor(budgets, over[0])!;
+        const b = budgetFor(budgets, over.label)!;
         lines.push({
-          text: t("home.briefOverBudget", { category: over[0], amount: formatMoney(over[1] - b, currency) }),
+          text: t("home.briefOverBudget", { category: over.label, amount: formatMoney(over.amount - b, currency) }),
           icon: AlertTriangle,
           tone: "negative",
         });

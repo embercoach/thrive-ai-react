@@ -18,12 +18,12 @@ const MAX_DIMENSION = 1600;
 const MAX_BASE64_LENGTH = 3_500_000; // stays comfortably under the server's own cap
 const MIN_QUALITY = 0.4;
 
-function loadImage(file: File): Promise<HTMLImageElement> {
+function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error("Couldn't read that image."));
-    img.src = URL.createObjectURL(file);
+    img.src = url;
   });
 }
 
@@ -34,8 +34,17 @@ function loadImage(file: File): Promise<HTMLImageElement> {
  * the smallest version achieved rather than failing outright).
  */
 export async function compressImageForUpload(file: File): Promise<CompressedImage> {
-  const img = await loadImage(file);
+  // Created and revoked here, in a try/finally that wraps the object URL's
+  // entire lifetime — not inside loadImage, whose `await` above used to sit
+  // between creating the URL and entering any try/finally. A rejection from
+  // loadImage (a corrupted file, a non-image the OS picker didn't block)
+  // used to throw before that finally block was ever reached, leaking the
+  // blob URL for the rest of the page session; repeated failed attempts
+  // (plausible — the error message itself invites a retry) leaked more of
+  // them unboundedly.
+  const url = URL.createObjectURL(file);
   try {
+    const img = await loadImage(url);
     const scale = Math.min(1, MAX_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight));
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
@@ -54,6 +63,6 @@ export async function compressImageForUpload(file: File): Promise<CompressedImag
     const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
     return { base64, dataUrl, mediaType: "image/jpeg" };
   } finally {
-    URL.revokeObjectURL(img.src);
+    URL.revokeObjectURL(url);
   }
 }

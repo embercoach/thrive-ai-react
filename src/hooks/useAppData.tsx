@@ -40,6 +40,30 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     profileRef.current = profile;
   }, [profile]);
 
+  // Same reasoning as profileRef above, applied to the other four lists —
+  // fetchTransactions/fetchGoals/fetchBudgets/fetchRecurring now throw on a
+  // real Supabase error instead of silently resolving with `[]`, so a
+  // transient failure on any one of them (a network blip during any
+  // refetch — after adding a transaction, a goal, a budget, anything) can
+  // be caught below and fall back to what's already on screen instead of
+  // wiping it out.
+  const transactionsRef = useRef<Transaction[]>([]);
+  useEffect(() => {
+    transactionsRef.current = transactions;
+  }, [transactions]);
+  const goalsRef = useRef<Goal[]>([]);
+  useEffect(() => {
+    goalsRef.current = goals;
+  }, [goals]);
+  const budgetsRef = useRef<Budget[]>([]);
+  useEffect(() => {
+    budgetsRef.current = budgets;
+  }, [budgets]);
+  const recurringRef = useRef<RecurringItem[]>([]);
+  useEffect(() => {
+    recurringRef.current = recurring;
+  }, [recurring]);
+
   const refetch = useCallback(async () => {
     if (!user) return;
     // `loading` is intentionally NOT set here — it starts true and this is
@@ -67,10 +91,22 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         console.error("fetchProfile failed, keeping last known profile:", err);
         return profileRef.current;
       }),
-      api.fetchTransactions(user.id),
-      api.fetchGoals(user.id),
-      api.fetchBudgets(user.id),
-      api.fetchRecurring(user.id),
+      api.fetchTransactions(user.id).catch((err) => {
+        console.error("fetchTransactions failed, keeping last known transactions:", err);
+        return transactionsRef.current;
+      }),
+      api.fetchGoals(user.id).catch((err) => {
+        console.error("fetchGoals failed, keeping last known goals:", err);
+        return goalsRef.current;
+      }),
+      api.fetchBudgets(user.id).catch((err) => {
+        console.error("fetchBudgets failed, keeping last known budgets:", err);
+        return budgetsRef.current;
+      }),
+      api.fetchRecurring(user.id).catch((err) => {
+        console.error("fetchRecurring failed, keeping last known recurring:", err);
+        return recurringRef.current;
+      }),
     ]);
     setProfile(profileData);
     setTransactions(txns);

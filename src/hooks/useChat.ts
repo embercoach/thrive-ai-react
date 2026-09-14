@@ -296,13 +296,28 @@ export function useChat() {
         const { text: textAfterBreakdown, breakdown } = parseBreakdown(data.text as string);
         const { text, intake } = parseIntake(textAfterBreakdown);
 
+        // Same cap send() applies below to a chat-derived intake block —
+        // api/scan-receipt.ts's prompt asks for exactly one transaction, but
+        // nothing enforces that shape server- or client-side, and
+        // confirmIntake() (which actually writes to Supabase) has no cap of
+        // its own. Applying it here too means a single tap of "Add to my
+        // account" can never turn into an unbounded batch of writes,
+        // whatever a vision model's response ends up containing.
+        let actions = intake?.actions ?? null;
+        let intakeNote: string | undefined;
+        if (actions && actions.length > MAX_INTAKE_ACTIONS_PER_TURN) {
+          actions = actions.slice(0, MAX_INTAKE_ACTIONS_PER_TURN);
+          intakeNote = t("advisor.intakeNoteMore", { max: MAX_INTAKE_ACTIONS_PER_TURN });
+        }
+
         const assistantMsg: DisplayMessage = {
           id: `a-${Date.now()}`,
           role: "assistant",
           text,
           breakdown,
-          intake: intake?.actions ?? null,
-          intakeStatus: intake?.actions ? "pending" : undefined,
+          intake: actions,
+          intakeStatus: actions ? "pending" : undefined,
+          intakeNote,
         };
         setMessages((prev) => [...prev, assistantMsg]);
         await api.saveChatMessage(user.id, "assistant", data.text as string);
@@ -359,7 +374,13 @@ export function useChat() {
               }
               const { error } = await api.addTransaction({
                 user_id: user.id,
-                name: action.name,
+                // Trimmed like `category` on the next line — a model-
+                // proposed name is never typed through an HTML <input>
+                // (which strips this on its own), so it can otherwise carry
+                // leading/trailing whitespace, or a bare \r that would
+                // silently split this row's CSV export line (see
+                // src/lib/csv.ts's csvField).
+                name: action.name.trim(),
                 amount: action.amount,
                 category: action.category?.trim() || "Other",
                 date: safeIntakeDate(action.date, todayStr),
@@ -381,7 +402,7 @@ export function useChat() {
               }
               const { error } = await api.addRecurring({
                 user_id: user.id,
-                name: action.name,
+                name: action.name.trim(),
                 amount: action.amount,
                 category: action.category?.trim() || "Other",
                 currency,
@@ -418,7 +439,7 @@ export function useChat() {
               }
               const { error } = await api.addGoal({
                 user_id: user.id,
-                name: action.name,
+                name: action.name.trim(),
                 target: Math.abs(action.target),
                 current: Math.abs(action.current || 0),
                 deadline: null,
