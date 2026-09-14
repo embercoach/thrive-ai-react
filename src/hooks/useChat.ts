@@ -49,6 +49,16 @@ function safeIntakeDate(proposed: string | undefined, todayStr: string): string 
 }
 
 const MAX_INTAKE_ACTIONS_PER_TURN = 20;
+// Generous upper bound for any single personal transaction/recurring bill/
+// goal/income figure a model should plausibly propose — not a real-world
+// limit, just a backstop against an absurd hallucinated or injected value
+// (e.g. text hidden in a photographed receipt) being offered as a one-tap
+// "Add to my account" with nothing anywhere else in the pipeline checking
+// its magnitude.
+const MAX_SANE_AMOUNT = 10_000_000;
+function isSaneAmount(n: unknown): n is number {
+  return typeof n === "number" && Number.isFinite(n) && Math.abs(n) <= MAX_SANE_AMOUNT;
+}
 const FREE_RECURRING_LIMIT = 2;
 const FREE_GOAL_LIMIT = 2;
 
@@ -149,7 +159,19 @@ export function useChat() {
 
       const userMsg: DisplayMessage = { id: `u-${Date.now()}`, role: "user", text: userText.trim() };
       setMessages((prev) => [...prev, userMsg]);
-      await api.saveChatMessage(user.id, "user", userText.trim());
+      // Persisting the user's own message is best-effort and must never
+      // block or fail the actual send — but sitting outside any try/catch
+      // meant a rejection here (a dropped connection, not just a resolved
+      // {error}) threw before the try block below was ever entered, so the
+      // `finally { setSending(false) }` in that block never ran: the
+      // composer stayed permanently disabled with no error shown, fixable
+      // only by a full page reload.
+      try {
+        const { error: saveErr } = await api.saveChatMessage(user.id, "user", userText.trim());
+        if (saveErr) console.error("Failed to persist user chat message:", saveErr);
+      } catch (err) {
+        console.error("Failed to persist user chat message:", err);
+      }
 
       try {
         // The API route now requires a valid Supabase session (it's a
@@ -210,7 +232,8 @@ export function useChat() {
           intakeNote,
         };
         setMessages((prev) => [...prev, assistantMsg]);
-        await api.saveChatMessage(user.id, "assistant", data.text as string);
+        const { error: saveAssistantErr } = await api.saveChatMessage(user.id, "assistant", data.text as string);
+        if (saveAssistantErr) console.error("Failed to persist assistant chat message:", saveAssistantErr);
 
         // The free-question counter is now reserved atomically server-side
         // (see api/chat.ts's use_ai_question call) before this response
@@ -267,7 +290,15 @@ export function useChat() {
         imagePreviewUrl: compressed.dataUrl,
       };
       setMessages((prev) => [...prev, userMsg]);
-      await api.saveChatMessage(user.id, "user", placeholderText);
+      // Same reasoning as send() above — must not throw out to the outer
+      // scope and skip the try/finally below, or `sending` gets stuck true
+      // forever with no way to recover short of a page reload.
+      try {
+        const { error: saveErr } = await api.saveChatMessage(user.id, "user", placeholderText);
+        if (saveErr) console.error("Failed to persist user chat message:", saveErr);
+      } catch (err) {
+        console.error("Failed to persist user chat message:", err);
+      }
 
       try {
         const {
@@ -320,7 +351,8 @@ export function useChat() {
           intakeNote,
         };
         setMessages((prev) => [...prev, assistantMsg]);
-        await api.saveChatMessage(user.id, "assistant", data.text as string);
+        const { error: saveAssistantErr } = await api.saveChatMessage(user.id, "assistant", data.text as string);
+        if (saveAssistantErr) console.error("Failed to persist assistant chat message:", saveAssistantErr);
 
         // Same reasoning as send() — the count is reserved server-side
         // before the response ever came back; this just pulls the
@@ -368,7 +400,7 @@ export function useChat() {
         try {
           switch (action.type) {
             case "transaction": {
-              if (!action.name || typeof action.amount !== "number") {
+              if (!action.name || !isSaneAmount(action.amount)) {
                 failedCount++;
                 continue;
               }
@@ -391,7 +423,7 @@ export function useChat() {
               break;
             }
             case "recurring": {
-              if (!action.name || typeof action.amount !== "number") {
+              if (!action.name || !isSaneAmount(action.amount)) {
                 failedCount++;
                 continue;
               }
@@ -428,7 +460,14 @@ export function useChat() {
               break;
             }
             case "goal": {
-              if (!action.name || typeof action.target !== "number") {
+              // A target of exactly 0 passed the old `typeof === "number"`
+              // check and got saved as-is — every progress ring/bar reading
+              // current/target (GoalCard, Home, the featured-goal card) then
+              // divides by that zero, rendering a broken "NaN%" with no
+              // error anywhere. A chat-proposed goal is the only creation
+              // path that could reach this: AddGoalModal and OnboardingPage
+              // both already require a positive amount client-side.
+              if (!action.name || !isSaneAmount(action.target) || action.target === 0) {
                 failedCount++;
                 continue;
               }
@@ -453,7 +492,7 @@ export function useChat() {
               break;
             }
             case "monthly_income": {
-              if (typeof action.amount !== "number") {
+              if (!isSaneAmount(action.amount)) {
                 failedCount++;
                 continue;
               }

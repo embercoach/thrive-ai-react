@@ -7,7 +7,7 @@ import { useSpendingData, matchesTypeFilter, type TxnTypeFilter } from "@/hooks/
 import { useT } from "@/hooks/useI18n";
 import { categoryColor } from "@/lib/categories";
 import { transactionsToCsv, downloadCsv } from "@/lib/csv";
-import { todayLocalStr } from "@/utils/dates";
+import { todayLocalStr, normCategory } from "@/utils/dates";
 import { Card } from "@/components/ui/Card";
 import { CardHeader } from "@/components/ui/CardHeader";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
@@ -45,13 +45,22 @@ export function SpendingPage() {
 
   // Every category seen in this account's history, most-used first, so the
   // chip row is stable and relevant regardless of what's currently filtered.
+  // Grouped by normCategory (case-insensitive) rather than the raw string —
+  // "Groceries" and "groceries" used to render as two separate chips, and
+  // selecting one only filtered transactions matching that exact casing,
+  // silently hiding the other casing's transactions from the "filtered" list.
   const availableCategories = useMemo(() => {
-    const counts = new Map<string, number>();
+    const byKey = new Map<string, { label: string; count: number }>();
     transactions.forEach((t) => {
       const cat = t.category || "Other";
-      counts.set(cat, (counts.get(cat) || 0) + 1);
+      const key = normCategory(cat);
+      const entry = byKey.get(key) ?? { label: cat, count: 0 };
+      entry.count++;
+      byKey.set(key, entry);
     });
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([cat]) => cat);
+    return [...byKey.entries()]
+      .sort((a, b) => b[1].count - a[1].count)
+      .map(([key, { label }]) => ({ key, label }));
   }, [transactions]);
 
   const hasSearch = search.trim().length > 0;
@@ -73,7 +82,7 @@ export function SpendingPage() {
       !hasSearch ||
       t.name.toLowerCase().includes(search.toLowerCase()) ||
       (t.category || "").toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = !hasCategoryFilter || activeCategories.has(t.category || "Other");
+    const matchesCategory = !hasCategoryFilter || activeCategories.has(normCategory(t.category || "Other"));
     return matchesSearch && matchesCategory && matchesTypeFilter(t, typeFilter);
   });
 
@@ -201,13 +210,13 @@ export function SpendingPage() {
 
           {availableCategories.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {availableCategories.map((cat) => {
-                const active = activeCategories.has(cat);
-                const color = categoryColor(cat);
+              {availableCategories.map(({ key, label }) => {
+                const active = activeCategories.has(key);
+                const color = categoryColor(label);
                 return (
                   <button
-                    key={cat}
-                    onClick={() => toggleCategory(cat)}
+                    key={key}
+                    onClick={() => toggleCategory(key)}
                     className="px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer border transition-colors"
                     style={
                       active
@@ -215,7 +224,7 @@ export function SpendingPage() {
                         : { borderColor: "var(--color-border-strong)", color: "var(--color-ink-secondary)" }
                     }
                   >
-                    {cat}
+                    {label}
                   </button>
                 );
               })}

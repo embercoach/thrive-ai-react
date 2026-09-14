@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useT } from "@/hooks/useI18n";
@@ -22,6 +22,21 @@ interface ModalProps {
 
 export function Modal({ open, onClose, title, children, preventClose }: ModalProps) {
   const t = useT();
+
+  // Locks the background page from scrolling while the sheet is open.
+  // Without this, a touch/wheel scroll on a long list behind the modal
+  // (e.g. SpendingPage's transaction list) moves the page's scroll position
+  // underneath it, which only becomes visible once the modal closes and
+  // nothing has restored where the page was.
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open]);
+
   if (!open) return null;
 
   const requestClose = () => {

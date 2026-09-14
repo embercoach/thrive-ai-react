@@ -35,7 +35,13 @@ export function formatMoney(amount: number, currency: string = "USD"): string {
  */
 export function formatMoneySigned(amount: number, currency: string = "USD"): string {
   const n = Number(amount) || 0;
-  return (n < 0 ? "−" : "") + formatMoney(n, currency);
+  // Round to cents before checking the sign — summing many transaction
+  // floats (useNetWorth, useAvailableToSpend) can leave a tiny negative
+  // residue like -0.001 that would otherwise pass `n < 0` and print a "−"
+  // in front of an amount that rounds to $0.00, showing a negative-looking
+  // balance for what's effectively zero.
+  const rounded = Math.round(n * 100) / 100;
+  return (rounded < 0 ? "−" : "") + formatMoney(rounded, currency);
 }
 
 /** Compact formatted amount for axis labels, e.g. "$2.4k". */
