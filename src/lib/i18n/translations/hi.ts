@@ -587,6 +587,19 @@ export const hi: Translations = {
       removeModalTitle: "दो-चरणीय प्रमाणीकरण हटाएं",
       removeModalMessage: "अब से साइन इन करने के लिए आपको केवल अपने पासवर्ड की ज़रूरत होगी। इससे आपका अकाउंट कम सुरक्षित हो जाएगा।",
       removeModalConfirm: "हटाएं",
+      dangerZoneTitle: "खतरे का क्षेत्र",
+      deleteAccountDescription: "अपना खाता और सारा डेटा स्थायी रूप से हटाएं। इसे पूर्ववत नहीं किया जा सकता।",
+      deleteAccountButton: "खाता हटाएं",
+      deleteAccountModalTitle: "अपना खाता हटाएं",
+      deleteAccountModalMessage:
+        "इससे आपका खाता और उसमें मौजूद सब कुछ — लेन-देन, लक्ष्य, बजट, जुड़े हुए बैंक और चैट इतिहास — स्थायी रूप से हट जाएगा। इसे पूर्ववत नहीं किया जा सकता।",
+      deleteAccountProWarning:
+        "आपकी एक सक्रिय Pro सदस्यता है। खाता हटाने से स्वचालित बिलिंग रद्द नहीं होगी — भविष्य के शुल्क से बचने के लिए पहले अपनी सदस्यता रद्द करें।",
+      deleteAccountConfirmLabel: "पुष्टि करने के लिए DELETE टाइप करें",
+      deleteAccountConfirmPlaceholder: "DELETE",
+      deleteAccountButtonConfirm: "स्थायी रूप से हटाएं",
+      deleteAccountError: "आपका खाता हटाया नहीं जा सका। कृपया फिर से प्रयास करें।",
+      deleting: "हटाया जा रहा है…",
     },
   },
 };

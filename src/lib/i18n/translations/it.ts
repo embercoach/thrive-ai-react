@@ -588,6 +588,19 @@ export const it: Translations = {
       removeModalTitle: "Rimuovi autenticazione a due fattori",
       removeModalMessage: "D'ora in poi ti servirà solo la password per accedere. Questo rende il tuo account meno sicuro.",
       removeModalConfirm: "Rimuovi",
+      dangerZoneTitle: "Zona pericolosa",
+      deleteAccountDescription: "Elimina definitivamente il tuo account e tutti i tuoi dati. Questa azione non può essere annullata.",
+      deleteAccountButton: "Elimina account",
+      deleteAccountModalTitle: "Elimina il tuo account",
+      deleteAccountModalMessage:
+        "Questo eliminerà definitivamente il tuo account e tutto ciò che contiene: transazioni, obiettivi, budget, banche collegate e cronologia chat. Questa azione non può essere annullata.",
+      deleteAccountProWarning:
+        "Hai un abbonamento Pro attivo. L'eliminazione dell'account non annullerà la fatturazione automatica: annulla prima l'abbonamento per evitare addebiti futuri.",
+      deleteAccountConfirmLabel: "Digita DELETE per confermare",
+      deleteAccountConfirmPlaceholder: "DELETE",
+      deleteAccountButtonConfirm: "Elimina definitivamente",
+      deleteAccountError: "Impossibile eliminare l'account. Riprova.",
+      deleting: "Eliminazione…",
     },
   },
 };

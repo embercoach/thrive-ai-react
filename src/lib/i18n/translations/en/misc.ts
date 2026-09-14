@@ -63,5 +63,18 @@ export const misc = {
     removeModalTitle: "Remove Two-Factor Authentication",
     removeModalMessage: "You'll only need your password to sign in from now on. This makes your account less secure.",
     removeModalConfirm: "Remove",
+    dangerZoneTitle: "Danger Zone",
+    deleteAccountDescription: "Permanently delete your account and all your data. This can't be undone.",
+    deleteAccountButton: "Delete Account",
+    deleteAccountModalTitle: "Delete Your Account",
+    deleteAccountModalMessage:
+      "This permanently deletes your account and everything in it — transactions, goals, budgets, connected banks, and chat history. This cannot be undone.",
+    deleteAccountProWarning:
+      "You have an active Pro subscription. Deleting your account will not cancel automatic billing — please cancel your subscription first to avoid future charges.",
+    deleteAccountConfirmLabel: "Type DELETE to confirm",
+    deleteAccountConfirmPlaceholder: "DELETE",
+    deleteAccountButtonConfirm: "Permanently Delete",
+    deleteAccountError: "Couldn't delete your account. Please try again.",
+    deleting: "Deleting…",
   },
 };

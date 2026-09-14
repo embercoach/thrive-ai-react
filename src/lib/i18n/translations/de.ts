@@ -597,6 +597,19 @@ export const de: Translations = {
       removeModalMessage:
         "Ab jetzt brauchst du nur noch dein Passwort, um dich anzumelden. Dadurch wird dein Konto weniger sicher.",
       removeModalConfirm: "Entfernen",
+      dangerZoneTitle: "Gefahrenzone",
+      deleteAccountDescription: "Löscht dein Konto und alle deine Daten dauerhaft. Dies kann nicht rückgängig gemacht werden.",
+      deleteAccountButton: "Konto löschen",
+      deleteAccountModalTitle: "Konto löschen",
+      deleteAccountModalMessage:
+        "Dies löscht dein Konto und alles darin dauerhaft — Transaktionen, Ziele, Budgets, verbundene Banken und den Chatverlauf. Dies kann nicht rückgängig gemacht werden.",
+      deleteAccountProWarning:
+        "Du hast ein aktives Pro-Abonnement. Das Löschen deines Kontos kündigt die automatische Abrechnung nicht — bitte kündige dein Abonnement zuerst, um zukünftige Kosten zu vermeiden.",
+      deleteAccountConfirmLabel: "Gib DELETE ein, um zu bestätigen",
+      deleteAccountConfirmPlaceholder: "DELETE",
+      deleteAccountButtonConfirm: "Endgültig löschen",
+      deleteAccountError: "Dein Konto konnte nicht gelöscht werden. Bitte versuche es erneut.",
+      deleting: "Wird gelöscht…",
     },
   },
 };

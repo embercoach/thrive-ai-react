@@ -587,6 +587,19 @@ export const pt: Translations = {
       removeModalTitle: "Remover Autenticação de Dois Fatores",
       removeModalMessage: "A partir de agora só precisarás da tua palavra-passe para iniciar sessão. Isto torna a tua conta menos segura.",
       removeModalConfirm: "Remover",
+      dangerZoneTitle: "Zona de perigo",
+      deleteAccountDescription: "Exclui permanentemente sua conta e todos os seus dados. Esta ação não pode ser desfeita.",
+      deleteAccountButton: "Excluir conta",
+      deleteAccountModalTitle: "Excluir sua conta",
+      deleteAccountModalMessage:
+        "Isso exclui permanentemente sua conta e tudo o que ela contém: transações, metas, orçamentos, bancos conectados e histórico de conversas. Esta ação não pode ser desfeita.",
+      deleteAccountProWarning:
+        "Você tem uma assinatura Pro ativa. Excluir sua conta não cancelará a cobrança automática — cancele sua assinatura primeiro para evitar cobranças futuras.",
+      deleteAccountConfirmLabel: "Digite DELETE para confirmar",
+      deleteAccountConfirmPlaceholder: "DELETE",
+      deleteAccountButtonConfirm: "Excluir permanentemente",
+      deleteAccountError: "Não foi possível excluir sua conta. Tente novamente.",
+      deleting: "Excluindo…",
     },
   },
 };

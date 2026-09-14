@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, KeyRound, ShieldCheck, ShieldPlus } from "lucide-react";
+import { ChevronLeft, KeyRound, ShieldCheck, ShieldPlus, TriangleAlert } from "lucide-react";
 import type { Factor } from "@supabase/supabase-js";
 import { supabase } from "@/services/supabase";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { Modal } from "@/components/ui/Modal";
 import { useT } from "@/hooks/useI18n";
+import { useAppData } from "@/hooks/useAppData";
 
 interface EnrollingFactor {
   factorId: string;
@@ -18,6 +20,13 @@ interface EnrollingFactor {
 export function SecurityPage() {
   const navigate = useNavigate();
   const t = useT();
+  const { isPro } = useAppData();
+
+  // --- Delete account ---
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   // --- Change password ---
   const [newPassword, setNewPassword] = useState("");
@@ -161,6 +170,59 @@ export function SecurityPage() {
     await loadFactors();
   }
 
+  function handleOpenDelete() {
+    setDeleteConfirmText("");
+    setDeleteError("");
+    setConfirmingDelete(true);
+  }
+
+  function handleCancelDelete() {
+    // Only closable via this handler, not the modal's own backdrop/X —
+    // preventClose is set below so an accidental tap outside the sheet
+    // can't dismiss it mid-typing, but Cancel always works.
+    setConfirmingDelete(false);
+    setDeleteConfirmText("");
+    setDeleteError("");
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    setDeleteError("");
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      setDeleteError(t("misc.security.deleteAccountError"));
+      setDeleting(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/delete-account", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!res.ok) {
+        setDeleteError(t("misc.security.deleteAccountError"));
+        setDeleting(false);
+        return;
+      }
+    } catch {
+      setDeleteError(t("misc.security.deleteAccountError"));
+      setDeleting(false);
+      return;
+    }
+
+    // The account and every row behind it are gone server-side at this
+    // point. signOut() clears the local session so the auth gate drops
+    // straight to the login screen instead of holding on to now-invalid
+    // tokens — no need to reset `deleting`/close the modal on success,
+    // this unmounts the whole page the same way handleSignOut does.
+    await supabase.auth.signOut();
+    navigate("/login", { replace: true });
+  }
+
   return (
     <div className="px-4 pt-6 pb-4 flex flex-col gap-4">
       <div className="flex items-center gap-2">
@@ -302,6 +364,17 @@ export function SecurityPage() {
         )}
       </Card>
 
+      <Card>
+        <div className="flex items-center gap-2 mb-1">
+          <TriangleAlert size={16} className="text-negative" />
+          <h2 className="text-sm font-bold text-ink">{t("misc.security.dangerZoneTitle")}</h2>
+        </div>
+        <p className="text-xs text-ink-secondary mb-3 mt-2">{t("misc.security.deleteAccountDescription")}</p>
+        <Button variant="danger" size="sm" onClick={handleOpenDelete}>
+          {t("misc.security.deleteAccountButton")}
+        </Button>
+      </Card>
+
       <ConfirmModal
         open={confirmingRemove}
         title={t("misc.security.removeModalTitle")}
@@ -312,6 +385,47 @@ export function SecurityPage() {
         onConfirm={handleRemove}
         onCancel={() => setConfirmingRemove(false)}
       />
+
+      <Modal
+        open={confirmingDelete}
+        onClose={handleCancelDelete}
+        title={t("misc.security.deleteAccountModalTitle")}
+        preventClose={deleting}
+      >
+        <p className="text-sm text-ink-secondary mb-3">{t("misc.security.deleteAccountModalMessage")}</p>
+        {isPro && (
+          <p className="text-xs text-negative bg-negative/5 border border-negative/20 rounded-xl py-2 px-3 mb-3">
+            {t("misc.security.deleteAccountProWarning")}
+          </p>
+        )}
+        {deleteError && (
+          <p className="text-xs text-negative bg-negative/5 border border-negative/20 rounded-xl py-2 px-3 mb-3">
+            {deleteError}
+          </p>
+        )}
+        <Input
+          label={t("misc.security.deleteAccountConfirmLabel")}
+          type="text"
+          autoComplete="off"
+          value={deleteConfirmText}
+          onChange={(e) => setDeleteConfirmText(e.target.value)}
+          placeholder={t("misc.security.deleteAccountConfirmPlaceholder")}
+          disabled={deleting}
+        />
+        <div className="flex gap-2">
+          <Button variant="outline" fullWidth onClick={handleCancelDelete} disabled={deleting}>
+            {t("misc.security.cancel")}
+          </Button>
+          <Button
+            variant="danger"
+            fullWidth
+            onClick={handleDeleteAccount}
+            disabled={deleting || deleteConfirmText.trim().toUpperCase() !== "DELETE"}
+          >
+            {deleting ? t("misc.security.deleting") : t("misc.security.deleteAccountButtonConfirm")}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -587,6 +587,19 @@ export const fr: Translations = {
       removeModalTitle: "Supprimer l'authentification à deux facteurs",
       removeModalMessage: "Tu n'auras plus besoin que de ton mot de passe pour te connecter. Cela rend ton compte moins sécurisé.",
       removeModalConfirm: "Supprimer",
+      dangerZoneTitle: "Zone de danger",
+      deleteAccountDescription: "Supprime définitivement ton compte et toutes tes données. Cette action est irréversible.",
+      deleteAccountButton: "Supprimer le compte",
+      deleteAccountModalTitle: "Supprimer ton compte",
+      deleteAccountModalMessage:
+        "Cette action supprime définitivement ton compte et tout ce qu'il contient : transactions, objectifs, budgets, banques connectées et historique de discussion. Cette action est irréversible.",
+      deleteAccountProWarning:
+        "Tu as un abonnement Pro actif. Supprimer ton compte n'annulera pas la facturation automatique — annule d'abord ton abonnement pour éviter de futurs frais.",
+      deleteAccountConfirmLabel: "Tape DELETE pour confirmer",
+      deleteAccountConfirmPlaceholder: "DELETE",
+      deleteAccountButtonConfirm: "Supprimer définitivement",
+      deleteAccountError: "Impossible de supprimer ton compte. Réessaie.",
+      deleting: "Suppression…",
     },
   },
 };

@@ -588,6 +588,19 @@ export const es: Translations = {
       removeModalTitle: "Quitar autenticación en dos pasos",
       removeModalMessage: "A partir de ahora solo necesitarás tu contraseña para iniciar sesión. Esto hace que tu cuenta sea menos segura.",
       removeModalConfirm: "Quitar",
+      dangerZoneTitle: "Zona de peligro",
+      deleteAccountDescription: "Elimina tu cuenta y todos tus datos de forma permanente. Esta acción no se puede deshacer.",
+      deleteAccountButton: "Eliminar cuenta",
+      deleteAccountModalTitle: "Eliminar tu cuenta",
+      deleteAccountModalMessage:
+        "Esto elimina permanentemente tu cuenta y todo lo que contiene: transacciones, metas, presupuestos, bancos conectados e historial de chat. Esta acción no se puede deshacer.",
+      deleteAccountProWarning:
+        "Tienes una suscripción Pro activa. Eliminar tu cuenta no cancelará la facturación automática; cancela tu suscripción primero para evitar futuros cargos.",
+      deleteAccountConfirmLabel: "Escribe DELETE para confirmar",
+      deleteAccountConfirmPlaceholder: "DELETE",
+      deleteAccountButtonConfirm: "Eliminar permanentemente",
+      deleteAccountError: "No se pudo eliminar tu cuenta. Por favor intenta de nuevo.",
+      deleting: "Eliminando…",
     },
   },
 };

@@ -587,6 +587,19 @@ export const ar: Translations = {
       removeModalTitle: "إزالة المصادقة بخطوتين",
       removeModalMessage: "من الآن فصاعدًا ستحتاج فقط إلى كلمة مرورك لتسجيل الدخول. هذا يجعل حسابك أقل أمانًا.",
       removeModalConfirm: "إزالة",
+      dangerZoneTitle: "منطقة الخطر",
+      deleteAccountDescription: "احذف حسابك وجميع بياناتك بشكل دائم. لا يمكن التراجع عن هذا الإجراء.",
+      deleteAccountButton: "حذف الحساب",
+      deleteAccountModalTitle: "حذف حسابك",
+      deleteAccountModalMessage:
+        "سيؤدي هذا إلى حذف حسابك وكل ما فيه بشكل دائم — المعاملات، الأهداف، الميزانيات، البنوك المتصلة، وسجل المحادثات. لا يمكن التراجع عن هذا الإجراء.",
+      deleteAccountProWarning:
+        "لديك اشتراك Pro نشط. حذف حسابك لن يلغي الفوترة التلقائية — يرجى إلغاء اشتراكك أولاً لتجنب أي رسوم مستقبلية.",
+      deleteAccountConfirmLabel: "اكتب DELETE للتأكيد",
+      deleteAccountConfirmPlaceholder: "DELETE",
+      deleteAccountButtonConfirm: "حذف نهائي",
+      deleteAccountError: "تعذر حذف حسابك. يرجى المحاولة مرة أخرى.",
+      deleting: "جارٍ الحذف…",
     },
   },
 };
