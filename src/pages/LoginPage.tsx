@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/services/supabase";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -232,6 +233,16 @@ export function LoginPage() {
             </>
           )}
         </div>
+
+        <p className="text-center text-xs text-ink-muted mt-5">
+          <Link to="/privacy" className="hover:text-ink-secondary transition-colors">
+            {t("misc.legal.privacyTitle")}
+          </Link>
+          {" · "}
+          <Link to="/terms" className="hover:text-ink-secondary transition-colors">
+            {t("misc.legal.termsTitle")}
+          </Link>
+        </p>
       </div>
     </div>
   );

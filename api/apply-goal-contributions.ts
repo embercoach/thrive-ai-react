@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { captureApiError } from "./_lib/sentry";
 import { createClient } from "@supabase/supabase-js";
 
 // Same pattern as every other cron job in api/: a service-role client that
@@ -100,6 +101,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(200).json(results);
   } catch (err) {
     console.error("apply-goal-contributions error:", err);
+    captureApiError(err, { route: "apply-goal-contributions" });
     res.status(500).json({ error: err instanceof Error ? err.message : "Internal error" });
   }
 }

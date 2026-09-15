@@ -5,6 +5,8 @@ import {
   Crown,
   Bell,
   Shield,
+  ShieldCheck,
+  FileText,
   Palette,
   HelpCircle,
   Info,
@@ -297,6 +299,8 @@ export function ProfilePage() {
       <Card padding="lg">
         <NavRow icon={HelpCircle} label={t("profile.helpFeedback")} onClick={() => navigate("/help")} />
         <NavRow icon={Info} label={t("profile.about")} onClick={() => navigate("/about")} />
+        <NavRow icon={ShieldCheck} label={t("profile.privacyPolicy")} onClick={() => navigate("/privacy")} />
+        <NavRow icon={FileText} label={t("profile.termsOfService")} onClick={() => navigate("/terms")} />
       </Card>
 
       <Button variant="danger" fullWidth onClick={() => setConfirmingSignOut(true)}>

@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { captureApiError } from "./_lib/sentry";
 import { createClient } from "@supabase/supabase-js";
 
 // Verifies the caller's Supabase session server-side before spending a call
@@ -188,6 +189,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const text = data.content?.find((b: { type: string }) => b.type === "text")?.text ?? "";
     res.status(200).json({ text });
   } catch (err) {
+    console.error("chat error:", err);
+    captureApiError(err, { route: "chat" });
     res.status(500).json({ error: "Request failed", detail: err instanceof Error ? err.message : String(err) });
   }
 }

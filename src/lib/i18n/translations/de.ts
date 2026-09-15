@@ -339,6 +339,8 @@ export const de: Translations = {
     darkModeAria: "Dunkler Modus",
     language: "Sprache",
     helpFeedback: "Hilfe & Feedback",
+    privacyPolicy: "Datenschutzerklärung",
+    termsOfService: "Nutzungsbedingungen",
     about: "Über Thrive AI",
     signOut: "Abmelden",
     signOutConfirmTitle: "Abmelden",
@@ -655,6 +657,12 @@ export const de: Translations = {
       deleteAccountButtonConfirm: "Endgültig löschen",
       deleteAccountError: "Dein Konto konnte nicht gelöscht werden. Bitte versuche es erneut.",
       deleting: "Wird gelöscht…",
+    },
+    legal: {
+      backAria: "Zurück",
+      privacyTitle: "Datenschutzerklärung",
+      termsTitle: "Nutzungsbedingungen",
+      draftNotice: "Dies ist ein Entwurf und steht vor dem Start noch zur endgültigen rechtlichen Prüfung aus.",
     },
   },
 };

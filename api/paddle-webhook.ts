@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { captureApiError } from "./_lib/sentry";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 
@@ -187,6 +188,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(200).json({ received: true });
   } catch (err) {
     console.error("Paddle webhook handler error:", err);
+    captureApiError(err, { route: "paddle-webhook" });
     res.status(500).json({ error: "Internal error processing webhook" });
   }
 }

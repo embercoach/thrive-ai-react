@@ -333,6 +333,8 @@ export const hi: Translations = {
     darkModeAria: "डार्क मोड",
     language: "भाषा",
     helpFeedback: "सहायता और फ़ीडबैक",
+    privacyPolicy: "गोपनीयता नीति",
+    termsOfService: "सेवा की शर्तें",
     about: "Thrive AI के बारे में",
     signOut: "साइन आउट करें",
     signOutConfirmTitle: "साइन आउट करें",
@@ -644,6 +646,12 @@ export const hi: Translations = {
       deleteAccountButtonConfirm: "स्थायी रूप से हटाएं",
       deleteAccountError: "आपका खाता हटाया नहीं जा सका। कृपया फिर से प्रयास करें।",
       deleting: "हटाया जा रहा है…",
+    },
+    legal: {
+      backAria: "वापस",
+      privacyTitle: "गोपनीयता नीति",
+      termsTitle: "सेवा की शर्तें",
+      draftNotice: "यह एक ड्राफ्ट है, लॉन्च से पहले अंतिम कानूनी समीक्षा लंबित है।",
     },
   },
 };

@@ -16,6 +16,8 @@ import { ConnectedBanksPage } from "@/pages/ConnectedBanksPage";
 import { AssetsPage } from "@/pages/AssetsPage";
 import { AboutPage } from "@/pages/AboutPage";
 import { HelpFeedbackPage } from "@/pages/HelpFeedbackPage";
+import { PrivacyPolicyPage } from "@/pages/PrivacyPolicyPage";
+import { TermsOfServicePage } from "@/pages/TermsOfServicePage";
 import { LoginPage } from "@/pages/LoginPage";
 import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { MfaChallengePage } from "@/pages/MfaChallengePage";
@@ -65,6 +67,51 @@ function OnboardingGate({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+/**
+ * Everything that must be reachable whether or not anyone is signed in —
+ * currently just the legal pages. Kept as its own small routes block so
+ * it's obvious at a glance which paths intentionally bypass Gate, rather
+ * than that being a fact you have to reconstruct from where each page
+ * happens to sit in the tree.
+ */
+function PublicRoutes() {
+  return (
+    <Routes>
+      <Route path="/privacy" element={<PrivacyPolicyPage />} />
+      <Route path="/terms" element={<TermsOfServicePage />} />
+      <Route
+        path="*"
+        element={
+          <Gate>
+            <AppDataProvider>
+              <LanguageSync />
+              <OnboardingGate>
+                <Routes>
+                  <Route element={<AppLayout />}>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/spending" element={<SpendingPage />} />
+                    <Route path="/spending/:category" element={<CategoryDetailPage />} />
+                    <Route path="/ai" element={<AdvisorPage />} />
+                    <Route path="/goals" element={<GoalsPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/security" element={<SecurityPage />} />
+                    <Route path="/notifications" element={<NotificationsPage />} />
+                    <Route path="/connected-banks" element={<ConnectedBanksPage />} />
+                    <Route path="/assets" element={<AssetsPage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/help" element={<HelpFeedbackPage />} />
+                  </Route>
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </OnboardingGate>
+            </AppDataProvider>
+          </Gate>
+        }
+      />
+    </Routes>
+  );
+}
+
 function App() {
   return (
     // Outermost, alongside AuthProvider — Login, the MFA challenge, and
@@ -73,34 +120,17 @@ function App() {
     // I18nProvider itself has zero auth/profile dependency (device-local
     // detection only). LanguageSync below is the one place that later
     // layers the signed-in user's saved preference on top of that.
+    //
+    // BrowserRouter now wraps Gate (rather than sitting inside it) so that
+    // /privacy and /terms are real, linkable URLs reachable before signing
+    // in — Gate previously short-circuited straight to <LoginPage /> for
+    // every path when signed out, which meant a URL typed into the address
+    // bar, or a link from LoginPage's own footer, had nowhere to go.
     <I18nProvider>
       <AuthProvider>
-        <Gate>
-          <AppDataProvider>
-            <LanguageSync />
-            <OnboardingGate>
-            <BrowserRouter>
-              <Routes>
-                <Route element={<AppLayout />}>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/spending" element={<SpendingPage />} />
-                  <Route path="/spending/:category" element={<CategoryDetailPage />} />
-                  <Route path="/ai" element={<AdvisorPage />} />
-                  <Route path="/goals" element={<GoalsPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/security" element={<SecurityPage />} />
-                  <Route path="/notifications" element={<NotificationsPage />} />
-                  <Route path="/connected-banks" element={<ConnectedBanksPage />} />
-                  <Route path="/assets" element={<AssetsPage />} />
-                  <Route path="/about" element={<AboutPage />} />
-                  <Route path="/help" element={<HelpFeedbackPage />} />
-                </Route>
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </BrowserRouter>
-            </OnboardingGate>
-          </AppDataProvider>
-        </Gate>
+        <BrowserRouter>
+          <PublicRoutes />
+        </BrowserRouter>
       </AuthProvider>
     </I18nProvider>
   );

@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { captureApiError } from "./_lib/sentry";
 import { createClient } from "@supabase/supabase-js";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 
@@ -77,6 +78,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(200).json({ success: true });
   } catch (err) {
     console.error("plaid-remove-item error:", err);
+    captureApiError(err, { route: "plaid-remove-item" });
     res.status(500).json({ error: "Couldn't disconnect this bank. Please try again." });
   }
 }

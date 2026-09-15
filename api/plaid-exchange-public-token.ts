@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { captureApiError } from "./_lib/sentry";
 import { createClient } from "@supabase/supabase-js";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 
@@ -147,6 +148,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(200).json({ success: true, institutionName, accountsAdded: accountRows.length });
   } catch (err) {
     console.error("plaid-exchange-public-token error:", err);
+    captureApiError(err, { route: "plaid-exchange-public-token" });
     res.status(500).json({ error: "Couldn't connect this bank. Please try again." });
   }
 }
