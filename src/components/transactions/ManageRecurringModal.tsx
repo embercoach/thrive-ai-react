@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Trash2, Plus } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
+import { DecimalInput } from "@/components/ui/DecimalInput";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
@@ -202,12 +203,10 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
             onChange={(e) => setName(e.target.value)}
             placeholder={t("transactions.manageRecurring.namePlaceholder")}
           />
-          <Input
+          <DecimalInput
             label={t("transactions.shared.amountLabel")}
-            type="number"
-            step="0.01"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={setAmount}
             placeholder={t("transactions.shared.amountPlaceholder")}
           />
           <div className="mb-3">

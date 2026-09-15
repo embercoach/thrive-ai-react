@@ -21,7 +21,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useI18n, LANGUAGES } from "@/hooks/useI18n";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { DecimalInput } from "@/components/ui/DecimalInput";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { CURRENCIES } from "@/lib/currency";
 import { supabase } from "@/services/supabase";
@@ -206,10 +206,9 @@ export function ProfilePage() {
       <Card>
         <div className="text-xs font-semibold uppercase tracking-wide text-ink-secondary mb-1.5">{t("profile.monthlyIncome")}</div>
         <div className="flex gap-2">
-          <Input
-            type="number"
+          <DecimalInput
             value={income}
-            onChange={(e) => setIncome(e.target.value)}
+            onChange={setIncome}
             placeholder="0"
             className="!mb-0 flex-1"
             disabled={savingIncome}

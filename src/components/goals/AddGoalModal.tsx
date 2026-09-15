@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
+import { DecimalInput } from "@/components/ui/DecimalInput";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
@@ -69,18 +70,16 @@ export function AddGoalModal({ open, onClose, onNeedUpgrade }: AddGoalModalProps
         onChange={(e) => setName(e.target.value)}
         placeholder={t("goalsModals.addGoal.namePlaceholder")}
       />
-      <Input
+      <DecimalInput
         label={t("goalsModals.addGoal.targetLabel")}
-        type="number"
         value={target}
-        onChange={(e) => setTarget(e.target.value)}
+        onChange={setTarget}
         placeholder="5000"
       />
-      <Input
+      <DecimalInput
         label={t("goalsModals.addGoal.currentLabel")}
-        type="number"
         value={current}
-        onChange={(e) => setCurrent(e.target.value)}
+        onChange={setCurrent}
         placeholder="0"
       />
       <Input

@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
 import { useT } from "@/hooks/useI18n";
 import { Input } from "@/components/ui/Input";
+import { DecimalInput } from "@/components/ui/DecimalInput";
 import { Button } from "@/components/ui/Button";
 import { CURRENCIES } from "@/lib/currency";
 import * as api from "@/services/api";
@@ -186,12 +187,10 @@ export function OnboardingPage() {
               <p className="text-ink-secondary text-sm mb-6">
                 {t("onboarding.incomeSubtitle")}
               </p>
-              <Input
+              <DecimalInput
                 label={t("onboarding.incomeLabel", { symbol })}
-                type="number"
-                inputMode="decimal"
                 value={income}
-                onChange={(e) => setIncome(e.target.value)}
+                onChange={setIncome}
                 placeholder="0"
                 autoFocus
               />
@@ -211,12 +210,10 @@ export function OnboardingPage() {
                 placeholder={t("onboarding.goalPlaceholder")}
                 autoFocus
               />
-              <Input
+              <DecimalInput
                 label={t("onboarding.targetLabel", { symbol })}
-                type="number"
-                inputMode="decimal"
                 value={goalTarget}
-                onChange={(e) => setGoalTarget(e.target.value)}
+                onChange={setGoalTarget}
                 placeholder="0"
               />
             </>

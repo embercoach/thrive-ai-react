@@ -142,11 +142,15 @@ export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }:
                 <div className="flex items-center gap-1.5 flex-shrink-0">
                   <span className="text-ink-muted text-sm">{symbol}</span>
                   <input
-                    type="number"
-                    step="0.01"
+                    type="text"
                     inputMode="decimal"
                     value={drafts[row.category] ?? ""}
-                    onChange={(e) => setDrafts((d) => ({ ...d, [row.category]: e.target.value }))}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      if (next === "" || /^\d*\.?\d*$/.test(next)) {
+                        setDrafts((d) => ({ ...d, [row.category]: next }));
+                      }
+                    }}
                     onBlur={() => handleSaveRow(row.category)}
                     placeholder={t("transactions.manageBudgets.noLimitPlaceholder")}
                     disabled={saving}
@@ -171,11 +175,15 @@ export function ManageBudgetsModal({ open, onClose, budgetRows, onNeedUpgrade }:
             className="flex-1 min-w-0 px-3.5 py-3 rounded-xl border border-border-strong bg-surface text-ink text-sm outline-none placeholder:text-ink-muted focus:border-brand transition-colors"
           />
           <input
-            type="number"
-            step="0.01"
+            type="text"
             inputMode="decimal"
             value={newAmount}
-            onChange={(e) => setNewAmount(e.target.value)}
+            onChange={(e) => {
+              const next = e.target.value;
+              if (next === "" || /^\d*\.?\d*$/.test(next)) {
+                setNewAmount(next);
+              }
+            }}
             placeholder={t("transactions.shared.amountPlaceholder")}
             className="w-24 flex-shrink-0 px-3 py-3 rounded-xl border border-border-strong bg-surface text-ink text-sm text-right outline-none placeholder:text-ink-muted focus:border-brand transition-colors"
           />

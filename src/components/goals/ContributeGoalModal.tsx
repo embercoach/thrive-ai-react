@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
-import { Input } from "@/components/ui/Input";
+import { DecimalInput } from "@/components/ui/DecimalInput";
 import { Button } from "@/components/ui/Button";
 import { useAppData } from "@/hooks/useAppData";
 import { useAuth } from "@/hooks/useAuth";
@@ -154,11 +154,10 @@ export function ContributeGoalModal({ goal, onClose }: ContributeGoalModalProps)
       <p className="text-sm text-ink-secondary mb-3">
         {t("goalsModals.contribute.addingSavingsTo", { name: goal?.name ?? "" })}
       </p>
-      <Input
+      <DecimalInput
         label={t("goalsModals.contribute.amountLabel")}
-        type="number"
         value={amount}
-        onChange={(e) => setAmount(e.target.value)}
+        onChange={setAmount}
         placeholder="100"
         autoFocus
       />
@@ -189,11 +188,10 @@ export function ContributeGoalModal({ goal, onClose }: ContributeGoalModalProps)
         ) : (
           <div>
             <p className="text-sm text-ink-secondary mb-3">{t("goalsModals.autoContribute.offDescription")}</p>
-            <Input
+            <DecimalInput
               label={t("goalsModals.autoContribute.amountLabel")}
-              type="number"
               value={autoAmount}
-              onChange={(e) => setAutoAmount(e.target.value)}
+              onChange={setAutoAmount}
               placeholder="50"
             />
             <div className="mb-3">

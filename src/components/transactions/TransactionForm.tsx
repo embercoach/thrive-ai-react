@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Plus, X, SplitSquareHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/Input";
+import { DecimalInput } from "@/components/ui/DecimalInput";
 import { Button } from "@/components/ui/Button";
 import { formatMoney } from "@/lib/currency";
 import { useT } from "@/hooks/useI18n";
@@ -175,13 +176,10 @@ export function TransactionForm({
         onChange={(e) => setName(e.target.value)}
         placeholder={t("transactions.form.merchantPlaceholder")}
       />
-      <Input
+      <DecimalInput
         label={splitting ? t("transactions.form.totalAmountLabel") : t("transactions.shared.amountLabel")}
-        type="number"
-        step="0.01"
-        inputMode="decimal"
         value={amount}
-        onChange={(e) => setAmount(e.target.value)}
+        onChange={setAmount}
         placeholder={t("transactions.shared.amountPlaceholder")}
       />
 
@@ -225,9 +223,13 @@ export function TransactionForm({
                 />
                 <input
                   value={leg.amount}
-                  onChange={(e) => updateLeg(i, { amount: e.target.value })}
-                  type="number"
-                  step="0.01"
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    if (next === "" || /^\d*\.?\d*$/.test(next)) {
+                      updateLeg(i, { amount: next });
+                    }
+                  }}
+                  type="text"
                   inputMode="decimal"
                   placeholder={t("transactions.shared.amountPlaceholder")}
                   className="w-[104px] flex-shrink-0 px-3 py-2.5 rounded-xl border border-border-strong bg-surface text-ink text-sm outline-none placeholder:text-ink-muted focus:border-brand transition-colors tabular-nums"

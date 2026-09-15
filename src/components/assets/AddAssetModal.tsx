@@ -2,6 +2,7 @@ import { useState } from "react";
 import { TrendingUp, Home, Car, Wallet, Package } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
+import { DecimalInput } from "@/components/ui/DecimalInput";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
@@ -105,11 +106,10 @@ export function AddAssetModal({ open, onClose }: AddAssetModalProps) {
           })}
         </div>
       </div>
-      <Input
+      <DecimalInput
         label={t("assets.addModal.valueLabel")}
-        type="number"
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={setValue}
         placeholder="10000"
       />
       <Button fullWidth onClick={handleSave} disabled={saving}>
