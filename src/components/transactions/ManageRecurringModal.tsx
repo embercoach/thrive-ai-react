@@ -26,6 +26,7 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
   const { recurring, currency, isPro, refetch } = useAppData();
   const [showAdd, setShowAdd] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState<RecurringItem | null>(null);
   const [error, setError] = useState("");
 
   const [name, setName] = useState("");
@@ -59,6 +60,7 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
       setError(dbError.message);
       return;
     }
+    setConfirmingDelete(null);
     await refetch();
   }
 
@@ -112,7 +114,32 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
     <Modal open={open} onClose={onClose} title={t("transactions.manageRecurring.title")}>
       {error && <p className="text-negative text-sm mb-3">{error}</p>}
 
-      {sorted.length === 0 && !showAdd ? (
+      {confirmingDelete ? (
+        <div>
+          <p className="text-sm text-ink mb-1.5">{t("transactions.manageRecurring.deleteTitle")}</p>
+          <p className="text-sm text-ink-secondary mb-4">
+            {t("transactions.manageRecurring.deleteMessage", { name: confirmingDelete.name })}
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              fullWidth
+              onClick={() => setConfirmingDelete(null)}
+              disabled={busyId === confirmingDelete.id}
+            >
+              {t("transactions.manageRecurring.cancel")}
+            </Button>
+            <Button
+              variant="danger"
+              fullWidth
+              onClick={() => handleDelete(confirmingDelete)}
+              disabled={busyId === confirmingDelete.id}
+            >
+              {busyId === confirmingDelete.id ? t("transactions.shared.deleting") : t("transactions.shared.delete")}
+            </Button>
+          </div>
+        </div>
+      ) : sorted.length === 0 && !showAdd ? (
         <p className="text-sm text-ink-muted mb-4">{t("transactions.manageRecurring.noneYet")}</p>
       ) : (
         <div className="mb-4 max-h-[36vh] overflow-y-auto">
@@ -154,7 +181,7 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
                   {formatMoney(item.amount, currency)}
                 </span>
                 <button
-                  onClick={() => handleDelete(item)}
+                  onClick={() => setConfirmingDelete(item)}
                   disabled={busyId === item.id}
                   aria-label={t("transactions.shared.delete")}
                   className="text-ink-muted hover:text-negative cursor-pointer flex-shrink-0"
@@ -167,7 +194,7 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
         </div>
       )}
 
-      {showAdd ? (
+      {!confirmingDelete && (showAdd ? (
         <div className="pt-3 border-t border-border">
           <Input
             label={t("transactions.manageRecurring.nameLabel")}
@@ -252,7 +279,7 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
             </p>
           )}
         </>
-      )}
+      ))}
     </Modal>
   );
 }

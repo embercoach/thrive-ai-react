@@ -408,6 +408,9 @@ export const it: Translations = {
     manageRecurring: {
       title: "Gestisci ricorrenti",
       noneYet: "Ancora nessun pagamento o entrata ricorrente configurato.",
+      deleteTitle: "Eliminare questo elemento ricorrente?",
+      deleteMessage:
+        '"{name}" smetterà di creare nuove transazioni. Quelle già create rimarranno nella tua cronologia. Questa azione non può essere annullata.',
       pauseAria: "Metti in pausa",
       resumeAria: "Riprendi",
       monthly: "Mensile",

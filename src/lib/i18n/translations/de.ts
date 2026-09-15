@@ -413,6 +413,9 @@ export const de: Translations = {
     manageRecurring: {
       title: "Wiederkehrende Posten verwalten",
       noneYet: "Noch keine wiederkehrenden Rechnungen oder Einnahmen eingerichtet.",
+      deleteTitle: "Diesen wiederkehrenden Posten löschen?",
+      deleteMessage:
+        "„{name}“ erstellt keine neuen Transaktionen mehr. Bereits erstellte bleiben in deinem Verlauf. Das kann nicht rückgängig gemacht werden.",
       pauseAria: "Pausieren",
       resumeAria: "Fortsetzen",
       monthly: "Monatlich",

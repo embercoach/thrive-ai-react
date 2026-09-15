@@ -67,7 +67,7 @@ export function HomePage() {
 
   return (
     <div>
-      <TopBar greeting={greeting(t, profile?.name)} onBellClick={() => navigate("/profile")} />
+      <TopBar greeting={greeting(t, profile?.name)} onBellClick={() => navigate("/notifications")} />
 
       <div className="px-4 pt-3 flex flex-col gap-3.5 pb-4">
         {/* Hero */}

@@ -407,6 +407,9 @@ export const pt: Translations = {
     manageRecurring: {
       title: "Gerir Recorrentes",
       noneYet: "Ainda não há contas ou receitas recorrentes configuradas.",
+      deleteTitle: "Eliminar este item recorrente?",
+      deleteMessage:
+        '"{name}" deixará de criar novas transações. As que já criou permanecerão no teu histórico. Esta ação não pode ser desfeita.',
       pauseAria: "Pausar",
       resumeAria: "Retomar",
       monthly: "Mensal",

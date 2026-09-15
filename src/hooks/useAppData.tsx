@@ -84,8 +84,18 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     // background, since the underlying values just update in place.
     //
     // Recurring bills are materialized into real transactions before anything
-    // else loads, so every screen sees today's occurrences immediately.
-    await api.processRecurring(user.id, profileRef.current?.currency || "USD");
+    // else loads, so every screen sees today's occurrences immediately. This
+    // was previously un-guarded — unlike every fetch below, a throw here
+    // (a network blip, a malformed recurring row) aborted the whole function
+    // before the Promise.all ever ran, so a save elsewhere in the app (add a
+    // transaction, delete an asset, etc.) that triggers this same refetch
+    // could silently leave transactions/goals/budgets/recurring/manualAssets
+    // all stuck on stale state — looking like the save "didn't take" until a
+    // full page reload happened to hit a refetch that didn't race this bug.
+    // Falling back to a no-op keeps the rest of refetch running regardless.
+    await api.processRecurring(user.id, profileRef.current?.currency || "USD").catch((err) => {
+      console.error("processRecurring failed, continuing refetch without it:", err);
+    });
     const [profileData, txns, goalList, budgetList, recurringList, manualAssetList] = await Promise.all([
       // A transient fetchProfile error must not reject this whole
       // Promise.all — that would also stall transactions/goals/budgets/

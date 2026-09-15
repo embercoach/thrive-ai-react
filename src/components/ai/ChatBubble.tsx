@@ -3,6 +3,27 @@ import { ThumbsUp, ThumbsDown, Copy, RotateCcw, Check } from "lucide-react";
 import { useState } from "react";
 import { useT } from "@/hooks/useI18n";
 
+// The model's replies are plain text, but it (like most LLMs) reaches for
+// **bold** and *italic* markdown for emphasis regardless of instructions —
+// rendering that raw left the literal asterisks on screen, which read as a
+// formatting bug rather than emphasis. This only ever runs on the AI's own
+// reply text (never on user input echoed back), so there's no injection
+// surface; it splits into plain-text and emphasis segments and renders each
+// as its own text node rather than using dangerouslySetInnerHTML.
+const EMPHASIS_RE = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*)/g;
+
+function renderEmphasis(text: string): ReactNode[] {
+  return text.split(EMPHASIS_RE).map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith("*") && part.endsWith("*")) {
+      return <em key={i}>{part.slice(1, -1)}</em>;
+    }
+    return part;
+  });
+}
+
 /** `imageUrl`, when given, shows a thumbnail of a photo the user just sent
  *  (e.g. a receipt scan) above the text — session-local only, since the
  *  photo itself is never persisted to chat history (see useChat.ts's
@@ -45,7 +66,9 @@ export function AssistantBubble({ text, onRetry }: AssistantBubbleProps) {
       <div className="max-w-[82%]">
         <div className="bg-surface border border-border rounded-2xl rounded-tl-md px-3.5 py-2.5 shadow-card">
           <div className="text-[9px] font-bold uppercase tracking-wide text-ink-muted mb-1">{t("aiComponents.chatBubble.aiLabel")}</div>
-          <div className="font-voice text-[15px] text-ink leading-relaxed whitespace-pre-line">{text}</div>
+          <div className="font-voice text-[15px] text-ink leading-relaxed whitespace-pre-line">
+            {renderEmphasis(text)}
+          </div>
         </div>
         <div className="flex gap-3.5 mt-2 pl-0.5 text-ink-muted">
           <button

@@ -408,6 +408,9 @@ export const es: Translations = {
     manageRecurring: {
       title: "Gestionar recurrentes",
       noneYet: "Aún no hay facturas ni ingresos recurrentes configurados.",
+      deleteTitle: "¿Eliminar este elemento recurrente?",
+      deleteMessage:
+        '"{name}" dejará de generar nuevas transacciones. Las que ya creó se mantendrán en tu historial. Esto no se puede deshacer.',
       pauseAria: "Pausar",
       resumeAria: "Reanudar",
       monthly: "Mensual",

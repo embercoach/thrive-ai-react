@@ -70,6 +70,9 @@ export const transactions = {
   manageRecurring: {
     title: "Manage Recurring",
     noneYet: "No recurring bills or income set up yet.",
+    deleteTitle: "Delete this recurring item?",
+    deleteMessage:
+      '"{name}" will stop creating new transactions. Any it already made will stay in your history. This can\'t be undone.',
     pauseAria: "Pause",
     resumeAria: "Resume",
     monthly: "Monthly",

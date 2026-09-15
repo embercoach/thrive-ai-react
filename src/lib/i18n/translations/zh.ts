@@ -400,6 +400,8 @@ export const zh: Translations = {
     manageRecurring: {
       title: "管理定期收支",
       noneYet: "还没有设置任何定期账单或收入。",
+      deleteTitle: "删除此定期项目?",
+      deleteMessage: "“{name}”将不再生成新交易。它已生成的交易仍会保留在你的记录中。此操作无法撤销。",
       pauseAria: "暂停",
       resumeAria: "恢复",
       monthly: "每月",
