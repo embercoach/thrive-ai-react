@@ -77,4 +77,11 @@ export const misc = {
     deleteAccountError: "Couldn't delete your account. Please try again.",
     deleting: "Deleting…",
   },
+  legal: {
+    backAria: "Back",
+    privacyTitle: "Privacy Policy",
+    termsTitle: "Terms of Service",
+    draftNotice:
+      "This is a draft — pending final legal review before launch.",
+  },
 };

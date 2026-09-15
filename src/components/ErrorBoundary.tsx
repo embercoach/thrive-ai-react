@@ -2,6 +2,7 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useT } from "@/hooks/useI18n";
+import { captureException } from "@/lib/sentry";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -61,6 +62,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   componentDidCatch(error: Error, info: ErrorInfo) {
     // eslint-disable-next-line no-console
     console.error("ErrorBoundary caught a render error:", error, info.componentStack);
+    captureException(error, { componentStack: info.componentStack });
   }
 
   reset = () => {

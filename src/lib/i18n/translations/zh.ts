@@ -329,6 +329,8 @@ export const zh: Translations = {
     darkModeAria: "深色模式",
     language: "语言",
     helpFeedback: "帮助与反馈",
+    privacyPolicy: "隐私政策",
+    termsOfService: "服务条款",
     about: "关于 Thrive AI",
     signOut: "退出登录",
     signOutConfirmTitle: "退出登录",
@@ -635,6 +637,12 @@ export const zh: Translations = {
       deleteAccountButtonConfirm: "永久删除",
       deleteAccountError: "无法删除您的账户,请重试。",
       deleting: "正在删除…",
+    },
+    legal: {
+      backAria: "返回",
+      privacyTitle: "隐私政策",
+      termsTitle: "服务条款",
+      draftNotice: "这是一份草案,发布前仍需完成最终法律审核。",
     },
   },
 };

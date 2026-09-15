@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { captureApiError } from "./_lib/sentry";
 import { createClient } from "@supabase/supabase-js";
 import { Configuration, PlaidApi, PlaidEnvironments, CountryCode, Products } from "plaid";
 
@@ -100,6 +101,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(200).json({ link_token: response.data.link_token });
   } catch (err) {
     console.error("plaid-create-link-token error:", err);
+    captureApiError(err, { route: "plaid-create-link-token" });
     res.status(500).json({ error: "Couldn't start bank connection. Please try again." });
   }
 }

@@ -4,10 +4,15 @@ import './styles/globals.css'
 import App from './App.tsx'
 import { ThemeProvider } from './hooks/useTheme'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { initSentry } from './lib/sentry'
 // Side-effect only: registers every non-English language with useI18n
 // before anything renders. Must run before <App /> mounts and reads the
 // user's detected/stored language.
 import './lib/i18n/translations'
+
+// No-op until VITE_SENTRY_DSN is set (see src/lib/sentry.ts) — safe to
+// always call.
+initSentry()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

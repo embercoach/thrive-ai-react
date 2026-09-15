@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { captureApiError } from "./_lib/sentry";
 import { createClient } from "@supabase/supabase-js";
 import webpush from "web-push";
 
@@ -279,6 +280,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(200).json(results);
   } catch (err) {
     console.error("send-spending-digest error:", err);
+    captureApiError(err, { route: "send-spending-digest" });
     res.status(500).json({ error: err instanceof Error ? err.message : "Internal error" });
   }
 }

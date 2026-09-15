@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { captureApiError } from "./_lib/sentry";
 import { createClient } from "@supabase/supabase-js";
 
 // Same pattern as api/chat.ts throughout this file — verifies the caller's
@@ -169,6 +170,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const text = data.content?.find((b: { type: string }) => b.type === "text")?.text ?? "";
     res.status(200).json({ text });
   } catch (err) {
+    console.error("scan-receipt error:", err);
+    captureApiError(err, { route: "scan-receipt" });
     res.status(500).json({ error: "Request failed", detail: err instanceof Error ? err.message : String(err) });
   }
 }

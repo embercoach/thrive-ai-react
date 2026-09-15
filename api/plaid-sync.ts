@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { captureApiError } from "./_lib/sentry";
 import { createClient } from "@supabase/supabase-js";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 
@@ -219,6 +220,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(200).json(totals);
   } catch (err) {
     console.error("plaid-sync error:", err);
+    captureApiError(err, { route: "plaid-sync" });
     res.status(500).json({ error: err instanceof Error ? err.message : "Internal error" });
   }
 }

@@ -342,6 +342,8 @@ export const en = {
     language: "Language",
     helpFeedback: "Help & Feedback",
     about: "About Thrive AI",
+    privacyPolicy: "Privacy Policy",
+    termsOfService: "Terms of Service",
     signOut: "Sign Out",
     signOutConfirmTitle: "Sign Out",
     signOutConfirmMessage: "Sign out of Thrive AI?",
