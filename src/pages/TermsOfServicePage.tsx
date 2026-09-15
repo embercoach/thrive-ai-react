@@ -4,9 +4,9 @@ import { useT } from "@/hooks/useI18n";
 import { LegalDocument, LegalSection, LegalParagraph, LegalList } from "@/components/legal/LegalDocument";
 
 /**
- * DRAFT TEMPLATE — see the same note at the top of PrivacyPolicyPage.tsx.
- * Not legal advice; needs real entity/contact/jurisdiction details and a
- * lawyer's review before publishing.
+ * DRAFT — real entity/contact/jurisdiction details filled in, but see the
+ * same note at the top of PrivacyPolicyPage.tsx: still not legal advice,
+ * and still needs an actual lawyer's review before this is final.
  */
 export function TermsOfServicePage() {
   const navigate = useNavigate();
@@ -25,11 +25,11 @@ export function TermsOfServicePage() {
         <h1 className="text-xl font-bold text-ink">{t("misc.legal.termsTitle")}</h1>
       </div>
 
-      <LegalDocument draftNotice={t("misc.legal.draftNotice")} effectiveDate="[Effective Date]">
+      <LegalDocument draftNotice={t("misc.legal.draftNotice")} effectiveDate="Effective September 15, 2026">
         <LegalSection title="1. Agreement to these terms">
           <LegalParagraph>
-            These Terms of Service ("Terms") are an agreement between you and [Legal Entity Name] ("Thrive AI",
-            "we", "us") governing your use of the Thrive AI application (the "Service"). By creating an account or
+            These Terms of Service ("Terms") are an agreement between you and Thrive AI ("we", "us") governing
+            your use of the Thrive AI application (the "Service"). By creating an account or
             using the Service, you agree to these Terms. If you don't agree, please don't use the Service.
           </LegalParagraph>
         </LegalSection>
@@ -48,7 +48,7 @@ export function TermsOfServicePage() {
           <LegalParagraph>
             You must be at least 18 years old to use Thrive AI. You're responsible for keeping your login
             credentials confidential and for everything that happens under your account. Tell us right away at
-            [Contact Email] if you suspect unauthorized access to your account.
+            ember.pty.ltd@gmail.com if you suspect unauthorized access to your account.
           </LegalParagraph>
         </LegalSection>
 
@@ -68,8 +68,8 @@ export function TermsOfServicePage() {
             processed by Paddle, our payment provider and merchant of record, on a recurring basis (monthly or
             annual, as selected at checkout) until cancelled. You can cancel anytime from the Profile page or
             through Paddle's own billing portal; cancellation takes effect at the end of the current billing
-            period. [Refund policy — e.g. "Refunds are handled case-by-case; contact us at [Contact Email]" or
-            link to Paddle's buyer terms.]
+            period. All sales are final — we don't offer refunds for partial billing periods. If you cancel, you'll
+            keep Pro access through the end of the period you've already paid for, and you won't be charged again.
           </LegalParagraph>
         </LegalSection>
 
@@ -98,7 +98,7 @@ export function TermsOfServicePage() {
           <LegalParagraph>
             The Service is provided "as is," without warranties of any kind, to the fullest extent permitted by
             law. We do not warrant that the Service will be uninterrupted, error-free, or that any AI-generated
-            content will be accurate. To the fullest extent permitted by law, [Legal Entity Name] will not be
+            content will be accurate. To the fullest extent permitted by law, Thrive AI will not be
             liable for any indirect, incidental, or consequential damages arising from your use of the Service,
             including financial decisions made based on information in the app.
           </LegalParagraph>
@@ -113,7 +113,7 @@ export function TermsOfServicePage() {
 
         <LegalSection title="10. Governing law">
           <LegalParagraph>
-            These Terms are governed by the laws of [Governing Jurisdiction], without regard to its conflict-of-law
+            These Terms are governed by the laws of South Africa, without regard to its conflict-of-law
             provisions.
           </LegalParagraph>
         </LegalSection>
@@ -127,7 +127,7 @@ export function TermsOfServicePage() {
         </LegalSection>
 
         <LegalSection title="12. Contact us">
-          <LegalParagraph>Questions about these Terms? Contact us at [Contact Email].</LegalParagraph>
+          <LegalParagraph>Questions about these Terms? Contact us at ember.pty.ltd@gmail.com.</LegalParagraph>
         </LegalSection>
       </LegalDocument>
     </div>

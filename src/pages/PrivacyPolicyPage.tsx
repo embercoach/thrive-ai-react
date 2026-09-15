@@ -4,16 +4,17 @@ import { useT } from "@/hooks/useI18n";
 import { LegalDocument, LegalSection, LegalParagraph, LegalList } from "@/components/legal/LegalDocument";
 
 /**
- * DRAFT TEMPLATE — not legal advice, not ready to publish as-is.
+ * DRAFT — real entity/contact details filled in, but still not legal
+ * advice and not yet reviewed by a lawyer.
  *
- * Every bracketed [placeholder] below (legal entity name, registered
- * address, governing jurisdiction, contact email) must be filled in with
- * real details, and the whole document reviewed by a lawyer familiar with
- * your jurisdiction and with fintech/PCI-adjacent data-handling rules,
- * before this is relied on as an actual privacy policy. The in-app banner
- * (LegalDocument's `draft` prop) makes that status visible to anyone who
- * opens this page in the meantime — remove it only once the document is
- * final and dated.
+ * Placeholders (legal entity name, contact email, effective date) have
+ * been replaced with real details, but the whole document still needs
+ * review by a lawyer familiar with your jurisdiction and with
+ * fintech/PCI-adjacent data-handling rules before this is relied on as an
+ * actual privacy policy. The in-app banner (LegalDocument's `draftNotice`
+ * prop, via misc.legal.draftNotice) makes that status visible to anyone
+ * who opens this page in the meantime — remove it only once the document
+ * has actually been reviewed and is final.
  *
  * The sections below reflect what the app, as built, actually does: which
  * third parties see what data (Plaid, Paddle, Anthropic, Supabase, Vercel,
@@ -38,10 +39,10 @@ export function PrivacyPolicyPage() {
         <h1 className="text-xl font-bold text-ink">{t("misc.legal.privacyTitle")}</h1>
       </div>
 
-      <LegalDocument draftNotice={t("misc.legal.draftNotice")} effectiveDate="[Effective Date]">
+      <LegalDocument draftNotice={t("misc.legal.draftNotice")} effectiveDate="Effective September 15, 2026">
         <LegalSection title="1. Who this policy covers">
           <LegalParagraph>
-            This Privacy Policy explains how [Legal Entity Name] ("Thrive AI", "we", "us") collects, uses, and
+            This Privacy Policy explains how Thrive AI ("we", "us") collects, uses, and
             shares information when you use the Thrive AI application (the "Service"). It applies to anyone who
             creates a Thrive AI account.
           </LegalParagraph>
@@ -95,7 +96,7 @@ export function PrivacyPolicyPage() {
               "Anthropic — to generate AI Advisor responses and read receipt photos you choose to scan.",
               "Supabase — our database and authentication provider; this is where your account and app data is stored.",
               "Vercel — our application hosting provider.",
-              "[Email provider name, e.g. Resend] — to deliver account emails (sign-up confirmation, password resets, bill reminders, and spending digests).",
+              "Our email delivery provider — currently Supabase's built-in email service, used to send account emails (sign-up confirmation, password resets, bill reminders, and spending digests). We plan to move this to a dedicated provider (Resend) once set up.",
             ]}
           />
           <LegalParagraph>
@@ -117,7 +118,7 @@ export function PrivacyPolicyPage() {
           <LegalParagraph>
             Depending on where you live, you may have the right to access, correct, export, or delete your
             personal information, and to object to or restrict certain processing. You can exercise most of these
-            rights directly in the app (Profile page), or by contacting us at [Contact Email].
+            rights directly in the app (Profile page), or by contacting us at ember.pty.ltd@gmail.com.
           </LegalParagraph>
         </LegalSection>
 
@@ -153,7 +154,7 @@ export function PrivacyPolicyPage() {
 
         <LegalSection title="12. Contact us">
           <LegalParagraph>
-            Questions about this policy, or about your information? Contact us at [Contact Email].
+            Questions about this policy, or about your information? Contact us at ember.pty.ltd@gmail.com.
           </LegalParagraph>
         </LegalSection>
       </LegalDocument>
