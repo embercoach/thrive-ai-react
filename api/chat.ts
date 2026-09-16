@@ -18,6 +18,14 @@ const supabaseAdmin = createClient(
 // lock_down_privileged_profile_columns migration).
 const FREE_MONTHLY_QUESTIONS = 3;
 
+// A soft ceiling on Pro usage — not a real product limit (Pro is sold and
+// shown in the UI as unlimited), just a backstop against unbounded Anthropic
+// spend from a single account (compromised session, or a script hammering
+// this endpoint). Deliberately generous: a real person having real advisor
+// conversations should never get anywhere close to this in a day. See the
+// add_pro_daily_ai_cap migration for the DB side.
+const PRO_DAILY_QUESTIONS = 200;
+
 /**
  * "YYYY-MM" from THIS SERVER's own clock, deliberately not from anything
  * the client sent. `context.today` further down is fine to trust for the
@@ -31,6 +39,11 @@ const FREE_MONTHLY_QUESTIONS = 3;
  */
 function currentMonthKeyUTC(): string {
   return new Date().toISOString().slice(0, 7);
+}
+
+/** Same reasoning as currentMonthKeyUTC, for the Pro daily cap's boundary. */
+function currentDayKeyUTC(): string {
+  return new Date().toISOString().slice(0, 10);
 }
 
 interface ChatRequestBody {
@@ -135,6 +148,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(400).json({ error: "Missing messages" });
     return;
   }
+  // Sanity bounds, not a product limit — the client sends the full visible
+  // conversation history on every turn (see useChat.ts's `history`) and a
+  // real conversation comes nowhere near these numbers. This exists purely
+  // to reject a wildly oversized payload (a scripted request faking a huge
+  // history, not a real user) before it reaches Anthropic and gets billed.
+  const MAX_MESSAGES = 200;
+  const MAX_MESSAGE_LENGTH = 8_000;
+  if (body.messages.length > MAX_MESSAGES || body.messages.some((m) => (m.content?.length ?? 0) > MAX_MESSAGE_LENGTH)) {
+    res.status(400).json({ error: "Message or conversation too large" });
+    return;
+  }
 
   // Atomically checks-and-reserves this question against the free-tier
   // limit BEFORE spending a call on Anthropic — reserving first (rather
@@ -148,17 +172,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     p_user_id: authData.user.id,
     p_month: currentMonthKeyUTC(),
     p_limit: FREE_MONTHLY_QUESTIONS,
+    p_day: currentDayKeyUTC(),
+    p_day_limit: PRO_DAILY_QUESTIONS,
   });
   if (quotaError) {
     console.error("use_ai_question RPC error:", quotaError);
     res.status(500).json({ error: "Could not verify your question limit. Please try again." });
     return;
   }
-  const allowed = Array.isArray(quota) ? quota[0]?.allowed : quota?.allowed;
-  if (!allowed) {
-    res
-      .status(402)
-      .json({ error: `You've used your ${FREE_MONTHLY_QUESTIONS} free questions this month. Upgrade to Pro for unlimited access.` });
+  const quotaRow = Array.isArray(quota) ? quota[0] : quota;
+  if (!quotaRow?.allowed) {
+    // reason disambiguates which cap was hit — a Pro account hitting the
+    // generous daily backstop should never be told it ran out of "free
+    // questions this month", which is the free tier's own limit.
+    const message =
+      quotaRow?.reason === "pro_daily_limit"
+        ? "You've hit today's usage limit for the AI Advisor. It resets tomorrow — please try again then."
+        : `You've used your ${FREE_MONTHLY_QUESTIONS} free questions this month. Upgrade to Pro for unlimited access.`;
+    res.status(402).json({ error: message });
     return;
   }
 

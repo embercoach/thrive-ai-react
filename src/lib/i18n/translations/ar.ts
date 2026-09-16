@@ -111,6 +111,10 @@ export const ar: Translations = {
   advisor: {
     title: "Thrive AI",
     clearAria: "مسح المحادثة",
+    clearChatTitle: "مسح المحادثة",
+    clearChatMessage: "سيؤدي هذا إلى حذف محادثتك بالكامل مع Thrive AI. لا يمكن التراجع عن هذا.",
+    clearChatConfirm: "مسح",
+    clearChatError: "تعذر مسح المحادثة. حاول مرة أخرى.",
     loading: "جارٍ التحميل…",
     whatWouldYouLike: "ما الذي تود معرفته؟",
     suggestion1: "أين أنفقت أكثر هذا الشهر؟",

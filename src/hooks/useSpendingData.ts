@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import type { Transaction, Budget } from "@/types";
 import { parseLocalDate, normCategory } from "@/utils/dates";
 import { categoryColor } from "@/lib/categories";
+import { isOverBudget } from "@/lib/currency";
 
 export type SpendPeriod = "this" | "last";
 export type TxnTypeFilter = "expense" | "income" | "all";
@@ -134,7 +135,7 @@ export function useSpendingData(transactions: Transaction[], budgets: Budget[]) 
           color: categoryColor(label),
           budget,
           budgetPct,
-          over: !!budget && amount > budget,
+          over: !!budget && isOverBudget(amount, budget),
         };
       });
   }, [thisMonthTxns, thisTotal, budgets]);

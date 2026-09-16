@@ -111,6 +111,10 @@ export const it: Translations = {
   advisor: {
     title: "Thrive AI",
     clearAria: "Cancella conversazione",
+    clearChatTitle: "Cancella conversazione",
+    clearChatMessage: "Questo eliminerà l'intera conversazione con Thrive AI. Non può essere annullato.",
+    clearChatConfirm: "Cancella",
+    clearChatError: "Impossibile cancellare la conversazione. Riprova.",
     loading: "Caricamento…",
     whatWouldYouLike: "Cosa vorresti sapere?",
     suggestion1: "Dove ho speso di più questo mese?",

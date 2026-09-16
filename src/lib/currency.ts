@@ -15,6 +15,19 @@ export function currencyConfig(code: string): CurrencyConfig {
   return CURRENCIES[code as CurrencyCode] ?? CURRENCIES.USD;
 }
 
+/**
+ * Whether `amount` exceeds `budget`, rounding both to cents first — same
+ * technique as formatMoneySigned's sign check. Summing many transaction
+ * floats can leave a tiny residue like 300.0000000001 that would otherwise
+ * fail a strict `amount > budget` for a user who spent exactly their limit,
+ * showing a "$0.00 over budget" alert/banner for spending that isn't
+ * actually over. Centralized here so every budget-over check (Home banner,
+ * spending breakdown, alerts) rounds the same way.
+ */
+export function isOverBudget(amount: number, budget: number): boolean {
+  return Math.round(amount * 100) > Math.round(budget * 100);
+}
+
 /** Full formatted amount, e.g. "$1,302.76" — always positive/absolute. */
 export function formatMoney(amount: number, currency: string = "USD"): string {
   const c = currencyConfig(currency);

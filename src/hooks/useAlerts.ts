@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import type { RecurringItem, Budget, Transaction } from "@/types";
 import { parseLocalDate, todayLocal, daysBetween, isSameMonth, normCategory } from "@/utils/dates";
+import { isOverBudget } from "@/lib/currency";
 
 export interface BillAlert {
   kind: "bill_due";
@@ -74,7 +75,7 @@ export function computeAlerts(
 
     budgets.forEach((b) => {
       const spent = spentByCategory[normCategory(b.category)] ?? 0;
-      if (spent > b.amount) {
+      if (isOverBudget(spent, b.amount)) {
         alerts.push({ kind: "budget_over", category: b.category, spent, budget: b.amount });
       }
     });

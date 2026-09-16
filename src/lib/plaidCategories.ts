@@ -32,7 +32,7 @@ export function mapPlaidCategory(primary: string | null | undefined): string {
     case "GENERAL_MERCHANDISE":
       return "Shopping";
     case "HOME_IMPROVEMENT":
-      return "Home";
+      return "Housing";
     case "MEDICAL":
       return "Health";
     case "PERSONAL_CARE":

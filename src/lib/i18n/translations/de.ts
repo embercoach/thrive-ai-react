@@ -114,6 +114,10 @@ export const de: Translations = {
   advisor: {
     title: "Thrive AI",
     clearAria: "Chat löschen",
+    clearChatTitle: "Unterhaltung löschen",
+    clearChatMessage: "Damit wird deine gesamte Unterhaltung mit Thrive AI gelöscht. Das kann nicht rückgängig gemacht werden.",
+    clearChatConfirm: "Löschen",
+    clearChatError: "Die Unterhaltung konnte nicht gelöscht werden. Bitte versuche es erneut.",
     loading: "Wird geladen…",
     whatWouldYouLike: "Was möchtest du wissen?",
     suggestion1: "Wofür habe ich diesen Monat am meisten ausgegeben?",

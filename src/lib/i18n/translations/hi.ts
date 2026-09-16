@@ -111,6 +111,10 @@ export const hi: Translations = {
   advisor: {
     title: "Thrive AI",
     clearAria: "चैट साफ़ करें",
+    clearChatTitle: "बातचीत साफ़ करें",
+    clearChatMessage: "इससे Thrive AI के साथ आपकी पूरी बातचीत मिट जाएगी। इसे पूर्ववत नहीं किया जा सकता।",
+    clearChatConfirm: "साफ़ करें",
+    clearChatError: "बातचीत साफ़ नहीं हो सकी। कृपया फिर से कोशिश करें।",
     loading: "लोड हो रहा है…",
     whatWouldYouLike: "आप क्या जानना चाहेंगे?",
     suggestion1: "इस महीने मैंने सबसे ज़्यादा खर्च कहां किया?",

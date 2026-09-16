@@ -60,7 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const today = todayUTCStr();
-  const results = { checked: 0, applied: 0, failed: 0 };
+  const results = { checked: 0, applied: 0, skipped: 0, failed: 0 };
 
   try {
     // A stale next_date from someone who hasn't opened the app in a while
@@ -82,17 +82,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     for (const goal of dueGoals) {
       const nextDate = advanceDateUTC(today, goal.auto_contribute_frequency);
       // apply_goal_auto_contribution bumps `current` and advances
-      // auto_contribute_next_date in one atomic UPDATE (see the migration)
-      // so this can never race a manual contribution made from the app at
-      // the same moment into a lost update.
-      const { error: applyError } = await supabaseAdmin.rpc("apply_goal_auto_contribution", {
+      // auto_contribute_next_date in one atomic, conditional UPDATE (see the
+      // migration) so this can never race a manual contribution made from
+      // the app at the same moment into a lost update, AND can't double-
+      // apply this same occurrence if this cron invocation itself runs
+      // twice (Vercel retry, or the endpoint getting hit again mid-run).
+      // Passing the goal's own auto_contribute_next_date back as
+      // p_expected_prev_date is what makes a duplicate run's UPDATE match
+      // zero rows instead of crediting `current` a second time.
+      const { data: applied, error: applyError } = await supabaseAdmin.rpc("apply_goal_auto_contribution", {
         p_goal_id: goal.id,
         p_amount: goal.auto_contribute_amount,
+        p_expected_prev_date: goal.auto_contribute_next_date,
         p_next_date: nextDate,
       });
       if (applyError) {
         console.error(`apply-goal-contributions: failed for goal ${goal.id}:`, applyError);
         results.failed++;
+        continue;
+      }
+      if (!applied?.id) {
+        // Already applied by another invocation of this same run (see the
+        // migration comment) — not a failure, just nothing left to do.
+        results.skipped++;
         continue;
       }
       results.applied++;

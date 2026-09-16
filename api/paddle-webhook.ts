@@ -164,7 +164,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const isPro = status === "active" || status === "trialing";
           await supabaseAdmin.from("profiles").update({ is_pro: isPro }).eq("id", userId);
         } else {
-          console.error(`Paddle webhook: couldn't verify a user for subscription ${data?.id} on ${eventType}`);
+          // Most commonly: this is the first event for a brand-new
+          // subscription and it arrived more than an hour after checkout
+          // (CHECKOUT_TOKEN_TTL_SECONDS in paddle-create-checkout-token.ts),
+          // so the token has expired and there's no stored mapping yet
+          // either. The user has paid but is_pro never gets set — reported
+          // to Sentry (not just console.error, unlike every other error path
+          // in this file) so it's actually noticed instead of silently
+          // requiring someone to go looking through raw Vercel logs.
+          const msg = `Paddle webhook: couldn't verify a user for subscription ${data?.id} on ${eventType}`;
+          console.error(msg);
+          captureApiError(new Error(msg), { route: "paddle-webhook", eventType, subscriptionId: data?.id });
         }
         break;
       }
@@ -175,7 +185,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (userId) {
           await supabaseAdmin.from("profiles").update({ is_pro: false }).eq("id", userId);
         } else {
-          console.error(`Paddle webhook: couldn't verify a user for subscription ${data?.id} on ${eventType}`);
+          const msg = `Paddle webhook: couldn't verify a user for subscription ${data?.id} on ${eventType}`;
+          console.error(msg);
+          captureApiError(new Error(msg), { route: "paddle-webhook", eventType, subscriptionId: data?.id });
         }
         break;
       }

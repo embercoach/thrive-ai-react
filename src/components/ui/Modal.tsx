@@ -50,7 +50,7 @@ export function Modal({ open, onClose, title, children, preventClose }: ModalPro
     >
       <div
         className={cn(
-          "w-full max-w-[430px] bg-surface border-t border-border rounded-t-3xl p-6 pb-9 animate-sheet-up"
+          "w-full max-w-[430px] max-h-[85vh] overflow-y-auto bg-surface border-t border-border rounded-t-3xl p-6 pb-9 animate-sheet-up"
         )}
       >
         <div className="flex items-center justify-between mb-4">

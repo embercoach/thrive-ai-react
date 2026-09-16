@@ -29,6 +29,20 @@ alter table public.goals add constraint goals_auto_contribute_frequency_check
 -- cron run landing at the same moment as a manual contribution from the
 -- app can never have one silently clobber the other.
 --
+-- p_expected_prev_date guards against double-applying the SAME occurrence:
+-- api/apply-goal-contributions.ts selects every goal whose
+-- auto_contribute_next_date is due, then calls this once per goal. If that
+-- cron invocation runs twice concurrently (a Vercel retry after a timeout,
+-- or the endpoint getting hit again while a run is still in flight - there
+-- was previously no protection against this at all), both invocations
+-- would select the same due goal before either UPDATE lands, and without
+-- this check both would apply the contribution, silently crediting the
+-- goal's `current` balance twice for one real occurrence. Requiring
+-- auto_contribute_next_date to still equal the value that made the goal
+-- "due" when it was selected means the second invocation's UPDATE matches
+-- zero rows - it lands after the first already advanced the date - so it
+-- becomes a no-op instead of a duplicate credit.
+--
 -- Deliberately NOT scoped by auth.uid() (unlike increment_goal_current) -
 -- this is only ever called by api/apply-goal-contributions.ts using the
 -- service-role key, which has already selected the exact due rows it's
@@ -36,7 +50,20 @@ alter table public.goals add constraint goals_auto_contribute_frequency_check
 -- reject every call. This function is intentionally not granted to the
 -- `authenticated` role for that same reason - see the note by the grant
 -- statement below.
-create or replace function public.apply_goal_auto_contribution(p_goal_id uuid, p_amount numeric, p_next_date date)
+-- Postgres treats a different parameter list as a different overload, not
+-- a replacement - `create or replace function` below would otherwise leave
+-- the old 3-arg version (p_goal_id, p_amount, p_next_date) sitting
+-- alongside this new 4-arg one on any database that already ran this
+-- migration before p_expected_prev_date was added, instead of actually
+-- replacing it.
+drop function if exists public.apply_goal_auto_contribution(uuid, numeric, date);
+
+create or replace function public.apply_goal_auto_contribution(
+  p_goal_id uuid,
+  p_amount numeric,
+  p_expected_prev_date date,
+  p_next_date date
+)
 returns public.goals
 language plpgsql
 set search_path = public
@@ -48,12 +75,15 @@ begin
   set current = current + p_amount,
       auto_contribute_next_date = p_next_date
   where id = p_goal_id
+    and auto_contribute_next_date = p_expected_prev_date
   returning * into v_goal;
 
-  if v_goal.id is null then
-    raise exception 'Goal not found' using errcode = 'P0002';
-  end if;
-
+  -- A null id here means either the goal no longer exists, or (the far more
+  -- common case) auto_contribute_next_date had already moved past
+  -- p_expected_prev_date because another invocation applied this same
+  -- occurrence first. Either way there's nothing left to apply, so this
+  -- returns a null row rather than raising - the caller (service-role only)
+  -- treats a null id as "already applied / not found", not as a failure.
   return v_goal;
 end;
 $$;

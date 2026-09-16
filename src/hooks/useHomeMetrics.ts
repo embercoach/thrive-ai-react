@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { Transaction, Goal, RecurringItem, Budget, ManualAsset } from "@/types";
 import { parseLocalDate, todayLocal, daysBetween, isSameMonth, isSameDay, normCategory } from "@/utils/dates";
-import { formatMoney } from "@/lib/currency";
+import { formatMoney, isOverBudget } from "@/lib/currency";
 import { useT } from "@/hooks/useI18n";
 import type { LucideIcon } from "lucide-react";
 import { Clock, TrendingDown, TrendingUp, AlertTriangle, PiggyBank, Trophy, Target } from "lucide-react";
@@ -179,7 +179,7 @@ export function useHomeBrief(
         });
       const over = Object.values(byCat).find(({ label, amount }) => {
         const b = budgetFor(budgets, label);
-        return b && amount > b;
+        return b !== undefined && isOverBudget(amount, b);
       });
       if (over) {
         const b = budgetFor(budgets, over.label)!;

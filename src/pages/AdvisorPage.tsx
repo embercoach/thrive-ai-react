@@ -9,6 +9,7 @@ import { useAppData } from "@/hooks/useAppData";
 import { useT } from "@/hooks/useI18n";
 import { useNavigate, useLocation } from "react-router-dom";
 import UpgradeModal from "@/components/profile/UpgradeModal";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 function greeting(t: (key: string, vars?: Record<string, string | number>) => string, name?: string) {
   const h = new Date().getHours();
@@ -29,6 +30,7 @@ export function AdvisorPage() {
     send,
     sendReceipt,
     clear,
+    rateMessage,
     confirmIntake,
     dismissIntake,
     questionsUsedThisMonth,
@@ -40,6 +42,9 @@ export function AdvisorPage() {
   const [input, setInput] = useState("");
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeTrigger, setUpgradeTrigger] = useState("aiQuestions");
+  const [confirmingClear, setConfirmingClear] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [clearError, setClearError] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const receiptInputRef = useRef<HTMLInputElement>(null);
 
@@ -71,6 +76,22 @@ export function AdvisorPage() {
     setInput("");
   }
 
+  // Clearing wipes the whole conversation with no way back, so — like every
+  // other destructive action in the app (delete goal, delete asset,
+  // disconnect bank) — this goes through a confirm step instead of firing
+  // straight off the trash-icon tap.
+  async function handleClear() {
+    setClearing(true);
+    setClearError("");
+    const { error } = await clear();
+    setClearing(false);
+    if (error) {
+      setClearError(t("advisor.clearChatError"));
+      return;
+    }
+    setConfirmingClear(false);
+  }
+
   // Screens like CategoryDetailPage's "Ask Thrive about this" link here via
   // navigate("/ai", { state: { prompt } }) so the question is asked
   // immediately instead of just prefilling the input. This used to be
@@ -99,7 +120,11 @@ export function AdvisorPage() {
           {t("advisor.title")} <span className="text-brand">✦</span>
         </h1>
         {messages.length > 0 && (
-          <button onClick={clear} aria-label={t("advisor.clearAria")} className="text-ink-muted cursor-pointer">
+          <button
+            onClick={() => setConfirmingClear(true)}
+            aria-label={t("advisor.clearAria")}
+            className="text-ink-muted cursor-pointer"
+          >
             <Trash2 size={17} />
           </button>
         )}
@@ -127,7 +152,7 @@ export function AdvisorPage() {
                 </UserBubble>
               ) : (
                 <div key={m.id} className="flex flex-col gap-2">
-                  {m.text && <AssistantBubble text={m.text} />}
+                  {m.text && <AssistantBubble text={m.text} onRate={(rating) => rateMessage(m.text, rating)} />}
                   {m.breakdown && (
                     <BreakdownCard
                       breakdown={m.breakdown}
@@ -239,6 +264,20 @@ export function AdvisorPage() {
         open={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
         triggeredBy={upgradeTrigger}
+      />
+
+      <ConfirmModal
+        open={confirmingClear}
+        title={t("advisor.clearChatTitle")}
+        message={t("advisor.clearChatMessage")}
+        confirmLabel={t("advisor.clearChatConfirm")}
+        loading={clearing}
+        error={clearError}
+        onConfirm={handleClear}
+        onCancel={() => {
+          setConfirmingClear(false);
+          setClearError("");
+        }}
       />
     </div>
   );

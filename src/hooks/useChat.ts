@@ -9,7 +9,7 @@ import { compressImageForUpload } from "@/lib/imageCompress";
 import * as api from "@/services/api";
 import { supabase } from "@/services/supabase";
 import type { Breakdown, IntakeAction } from "@/types";
-import { parseLocalDate, todayLocal, todayLocalStr, advanceDate, isSameMonth } from "@/utils/dates";
+import { parseLocalDate, todayLocal, todayLocalStr, advanceDate, isSameMonth, normCategory } from "@/utils/dates";
 
 export type IntakeStatus = "pending" | "confirming" | "confirmed" | "partial" | "dismissed";
 
@@ -112,17 +112,27 @@ export function useChat() {
 
   const context = useMemo(() => {
     const today = todayLocal();
-    const byCat: Record<string, number> = {};
+    // Grouped by normCategory (case-insensitive) rather than the raw string,
+    // and matched against budgets the same way — same reasoning as
+    // useSpendingData.ts/useHomeMetrics.ts: a Plaid-synced "groceries"
+    // transaction and a manually-typed "Groceries" budget are the same
+    // category to a user, and without this the AI advisor's own view of
+    // spending would show that category as unbudgeted (or split into two
+    // separate rows) even though the rest of the app correctly matches them.
+    const byCat: Record<string, { label: string; amount: number }> = {};
     transactions
       .filter((t) => isSameMonth(parseLocalDate(t.date), today) && t.amount < 0)
       .forEach((t) => {
         const cat = t.category || "Other";
-        byCat[cat] = (byCat[cat] || 0) + Math.abs(t.amount);
+        const key = normCategory(cat);
+        const entry = byCat[key] ?? { label: cat, amount: 0 };
+        entry.amount += Math.abs(t.amount);
+        byCat[key] = entry;
       });
-    const spendingByCategory = Object.entries(byCat).map(([category, amount]) => ({
-      category,
+    const spendingByCategory = Object.entries(byCat).map(([key, { label, amount }]) => ({
+      category: label,
       amount,
-      budget: budgets.find((b) => b.category === category)?.amount,
+      budget: budgets.find((b) => normCategory(b.category) === key)?.amount,
     }));
 
     return {
@@ -369,10 +379,30 @@ export function useChat() {
   );
 
   const clear = useCallback(async () => {
-    if (!user) return;
-    await api.clearChatHistory(user.id);
+    if (!user) return { error: null };
+    // Only wipe local state once the delete actually lands. Previously this
+    // ignored the response's `error` entirely and always cleared local
+    // state, so a failed delete (network blip, RLS issue) showed an empty
+    // conversation while the messages were still in Supabase — a reload
+    // later brought the "cleared" history back, reading as confusing
+    // un-deletion on top of the original data loss.
+    const { error } = await api.clearChatHistory(user.id);
+    if (error) return { error: error.message };
     setMessages([]);
+    return { error: null };
   }, [user]);
+
+  // Best-effort: a thumbs up/down is a nice-to-have quality signal, not
+  // something that should ever interrupt or error out the conversation the
+  // user is actually having. Silently drops on failure (network blip, RLS)
+  // rather than surfacing an error for what's essentially a passive rating.
+  const rateMessage = useCallback(
+    (messageText: string, rating: "up" | "down") => {
+      if (!user) return;
+      api.submitChatFeedback(user.id, messageText, rating).catch(() => {});
+    },
+    [user]
+  );
 
   // Confirms a proposed THRIVE_INTAKE batch by actually writing it to
   // Supabase, via the exact same client-side api.* calls (and the same
@@ -547,6 +577,7 @@ export function useChat() {
     send,
     sendReceipt,
     clear,
+    rateMessage,
     confirmIntake,
     dismissIntake,
     questionsUsedThisMonth,

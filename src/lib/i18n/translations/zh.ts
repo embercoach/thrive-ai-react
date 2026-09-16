@@ -111,6 +111,10 @@ export const zh: Translations = {
   advisor: {
     title: "Thrive AI",
     clearAria: "清除对话",
+    clearChatTitle: "清除对话",
+    clearChatMessage: "这将删除你与 Thrive AI 的全部对话记录,且无法撤销。",
+    clearChatConfirm: "清除",
+    clearChatError: "无法清除对话,请重试。",
     loading: "加载中…",
     whatWouldYouLike: "你想了解什么?",
     suggestion1: "这个月我在哪方面花费最多?",

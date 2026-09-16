@@ -15,6 +15,9 @@ const supabaseAdmin = createClient(
 // quota as an Advisor question (shares one pool, not a separate limit).
 const FREE_MONTHLY_QUESTIONS = 3;
 
+// Must match api/chat.ts's own copy — see its comment for why this exists.
+const PRO_DAILY_QUESTIONS = 200;
+
 // Vercel serverless functions reject request bodies over ~4.5MB outright
 // (platform limit, not something bodyParser config can raise) — the client
 // already downscales/compresses the photo before sending (see
@@ -27,6 +30,10 @@ const ALLOWED_MEDIA_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 function currentMonthKeyUTC(): string {
   return new Date().toISOString().slice(0, 7);
+}
+
+function currentDayKeyUTC(): string {
+  return new Date().toISOString().slice(0, 10);
 }
 
 interface ScanReceiptRequestBody {
@@ -121,17 +128,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     p_user_id: authData.user.id,
     p_month: currentMonthKeyUTC(),
     p_limit: FREE_MONTHLY_QUESTIONS,
+    p_day: currentDayKeyUTC(),
+    p_day_limit: PRO_DAILY_QUESTIONS,
   });
   if (quotaError) {
     console.error("use_ai_question RPC error:", quotaError);
     res.status(500).json({ error: "Could not verify your question limit. Please try again." });
     return;
   }
-  const allowed = Array.isArray(quota) ? quota[0]?.allowed : quota?.allowed;
-  if (!allowed) {
-    res
-      .status(402)
-      .json({ error: `You've used your ${FREE_MONTHLY_QUESTIONS} free questions this month. Upgrade to Pro for unlimited access.` });
+  const quotaRow = Array.isArray(quota) ? quota[0] : quota;
+  if (!quotaRow?.allowed) {
+    const message =
+      quotaRow?.reason === "pro_daily_limit"
+        ? "You've hit today's usage limit for the AI Advisor. It resets tomorrow — please try again then."
+        : `You've used your ${FREE_MONTHLY_QUESTIONS} free questions this month. Upgrade to Pro for unlimited access.`;
+    res.status(402).json({ error: message });
     return;
   }
 

@@ -42,11 +42,15 @@ export function UserBubble({ children, imageUrl }: { children: ReactNode; imageU
 interface AssistantBubbleProps {
   text: string;
   onRetry?: () => void;
+  /** Called when the user taps thumbs up/down. Left unset, the buttons
+   *  still show a tap locally but nothing is recorded anywhere — AdvisorPage
+   *  wires this to actually persist the rating. */
+  onRate?: (rating: "up" | "down") => void;
 }
 
 /** The AI's voice — Lora, not Inter, mirroring how Claude.ai itself
  * separates "the interface talking" from "the AI talking." */
-export function AssistantBubble({ text, onRetry }: AssistantBubbleProps) {
+export function AssistantBubble({ text, onRetry, onRate }: AssistantBubbleProps) {
   const t = useT();
   const [copied, setCopied] = useState(false);
   const [rating, setRating] = useState<"up" | "down" | null>(null);
@@ -56,6 +60,14 @@ export function AssistantBubble({ text, onRetry }: AssistantBubbleProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
     });
+  }
+
+  function handleRate(next: "up" | "down") {
+    // A rating is a one-time signal, not a toggle you take back — tapping
+    // the same one again, or switching between them, doesn't re-fire.
+    if (rating === next) return;
+    setRating(next);
+    onRate?.(next);
   }
 
   return (
@@ -72,14 +84,14 @@ export function AssistantBubble({ text, onRetry }: AssistantBubbleProps) {
         </div>
         <div className="flex gap-3.5 mt-2 pl-0.5 text-ink-muted">
           <button
-            onClick={() => setRating("up")}
+            onClick={() => handleRate("up")}
             aria-label={t("aiComponents.chatBubble.goodResponse")}
             className={`cursor-pointer transition-colors ${rating === "up" ? "text-brand" : "hover:text-ink-secondary"}`}
           >
             <ThumbsUp size={14} />
           </button>
           <button
-            onClick={() => setRating("down")}
+            onClick={() => handleRate("down")}
             aria-label={t("aiComponents.chatBubble.badResponse")}
             className={`cursor-pointer transition-colors ${rating === "down" ? "text-brand" : "hover:text-ink-secondary"}`}
           >

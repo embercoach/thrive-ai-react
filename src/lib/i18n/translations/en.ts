@@ -119,6 +119,10 @@ export const en = {
   advisor: {
     title: "Thrive AI",
     clearAria: "Clear chat",
+    clearChatTitle: "Clear conversation",
+    clearChatMessage: "This deletes your whole conversation with Thrive AI. This can't be undone.",
+    clearChatConfirm: "Clear",
+    clearChatError: "Couldn't clear the conversation. Please try again.",
     loading: "Loading…",
     whatWouldYouLike: "What would you like to know?",
     suggestion1: "Where did I spend the most this month?",

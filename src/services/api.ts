@@ -288,3 +288,10 @@ export async function clearChatHistory(userId: string) {
 export async function submitFeedback(userId: string, email: string, message: string) {
   return supabase.from("feedback").insert({ user_id: userId, email, message });
 }
+
+/** Records a thumbs up/down on one AI Advisor reply — see the
+ *  add_chat_feedback migration for why this stores the reply's own text
+ *  rather than joining against chat_messages. */
+export async function submitChatFeedback(userId: string, messageText: string, rating: "up" | "down") {
+  return supabase.from("chat_feedback").insert({ user_id: userId, message_text: messageText, rating });
+}

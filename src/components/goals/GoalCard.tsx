@@ -46,7 +46,7 @@ export function FeaturedGoalCard({ goal, currency = "USD", onAddSavings, onAskAI
           size={88}
           strokeWidth={6}
           color="var(--color-positive)"
-          label={`${pct}%`}
+          label={`${Math.min(pct, 100)}%`}
           labelSize={19}
         />
         <div className="flex-1 min-w-0">
@@ -122,7 +122,7 @@ export function CompactGoalRow({ goal, onClick, onDelete }: CompactGoalRowProps)
         <ProgressBar percent={pct} className="mt-1.5" />
       </div>
       <div className="text-sm font-bold text-ink flex-shrink-0 cursor-pointer" onClick={onClick}>
-        {pct}%
+        {Math.min(pct, 100)}%
       </div>
       {onDelete && (
         <button
