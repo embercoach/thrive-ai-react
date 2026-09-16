@@ -16,6 +16,14 @@ export const zh: Translations = {
     somethingWentWrongRetry: "出错了,请重试。",
   },
 
+  cookieConsent: {
+    title: "Cookie 与隐私提示",
+    message:
+      "我们使用本地存储让你保持登录状态并记住你的设置——这是必需的,始终启用。在你同意后,我们还会使用 Sentry 来捕获应用错误并更快修复问题。我们不会将 cookie 用于广告或追踪。",
+    accept: "接受",
+    decline: "拒绝",
+  },
+
   nav: {
     home: "首页",
     spending: "支出",

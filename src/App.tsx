@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { AppDataProvider, useAppData } from "@/hooks/useAppData";
 import { I18nProvider } from "@/hooks/useI18n";
 import { LanguageSync } from "@/components/LanguageSync";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { AppLayout } from "@/layouts/AppLayout";
 import { HomePage } from "@/pages/HomePage";
 import { SpendingPage } from "@/pages/SpendingPage";
@@ -127,6 +128,11 @@ function App() {
     // every path when signed out, which meant a URL typed into the address
     // bar, or a link from LoginPage's own footer, had nowhere to go.
     <I18nProvider>
+      {/* Outside AuthProvider/BrowserRouter on purpose — the consent choice
+          it gates (Sentry error reporting, see src/lib/consent.ts) applies
+          to every visitor, signed in or not, on the login screen and the
+          public legal pages alike. */}
+      <CookieConsentBanner />
       <AuthProvider>
         <BrowserRouter>
           <PublicRoutes />

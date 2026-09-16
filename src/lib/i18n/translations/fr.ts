@@ -16,6 +16,14 @@ export const fr: Translations = {
     somethingWentWrongRetry: "Une erreur est survenue. Merci de réessayer.",
   },
 
+  cookieConsent: {
+    title: "Avis sur les cookies et la confidentialité",
+    message:
+      "Nous utilisons le stockage local pour te garder connecté(e) et mémoriser tes préférences — c'est nécessaire et toujours actif. Avec ton accord, nous utiliserons aussi Sentry pour détecter les erreurs de l'appli et les corriger plus vite. Nous n'utilisons pas de cookies publicitaires ni de traçage.",
+    accept: "Accepter",
+    decline: "Refuser",
+  },
+
   nav: {
     home: "Accueil",
     spending: "Dépenses",

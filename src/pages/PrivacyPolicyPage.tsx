@@ -152,7 +152,24 @@ export function PrivacyPolicyPage() {
           </LegalParagraph>
         </LegalSection>
 
-        <LegalSection title="12. Contact us">
+        <LegalSection title="12. Cookies and local storage">
+          <LegalParagraph>
+            Thrive AI does not use cookies for advertising or tracking, and we don't run any analytics or
+            tracking scripts. The app stores a small amount of information directly in your browser's local
+            storage — your theme and language preference, and the choice you make on the banner below — purely
+            to remember your settings between visits. This is strictly necessary for the app to work and is
+            never used to track you across other sites.
+          </LegalParagraph>
+          <LegalParagraph>
+            With your consent (shown as a banner on your first visit), we use Sentry to automatically capture
+            crash and error reports — including basic device and network information such as your IP address —
+            so we can find and fix bugs. You can decline this, and the app works exactly the same either way;
+            you can also change your mind at any time by clearing this site's data in your browser settings,
+            which will show the banner again.
+          </LegalParagraph>
+        </LegalSection>
+
+        <LegalSection title="13. Contact us">
           <LegalParagraph>
             Questions about this policy, or about your information? Contact us at ember.pty.ltd@gmail.com.
           </LegalParagraph>

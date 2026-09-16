@@ -19,6 +19,14 @@ export const de: Translations = {
     somethingWentWrongRetry: "Etwas ist schiefgelaufen. Bitte versuch es erneut.",
   },
 
+  cookieConsent: {
+    title: "Cookie- und Datenschutzhinweis",
+    message:
+      "Wir verwenden lokalen Speicher, um dich angemeldet zu halten und deine Einstellungen zu merken — das ist notwendig und immer aktiv. Mit deiner Zustimmung nutzen wir außerdem Sentry, um App-Fehler zu erkennen und schneller zu beheben. Wir verwenden keine Cookies für Werbung oder Tracking.",
+    accept: "Akzeptieren",
+    decline: "Ablehnen",
+  },
+
   nav: {
     home: "Start",
     spending: "Ausgaben",

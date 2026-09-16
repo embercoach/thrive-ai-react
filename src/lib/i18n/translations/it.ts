@@ -16,6 +16,14 @@ export const it: Translations = {
     somethingWentWrongRetry: "Qualcosa è andato storto. Riprova.",
   },
 
+  cookieConsent: {
+    title: "Informativa su cookie e privacy",
+    message:
+      "Usiamo l'archiviazione locale per mantenerti connesso e ricordare le tue preferenze — è necessario ed è sempre attivo. Con il tuo consenso, useremo anche Sentry per rilevare gli errori dell'app e risolverli più rapidamente. Non usiamo cookie per pubblicità o tracciamento.",
+    accept: "Accetta",
+    decline: "Rifiuta",
+  },
+
   nav: {
     home: "Home",
     spending: "Spese",

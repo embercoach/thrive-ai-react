@@ -24,6 +24,14 @@ export const en = {
     somethingWentWrongRetry: "Something went wrong. Please try again.",
   },
 
+  cookieConsent: {
+    title: "Cookie & privacy notice",
+    message:
+      "We use local storage to keep you signed in and remember your settings — that's required and always on. With your OK, we'll also use Sentry to catch app errors so we can fix them faster. We don't use cookies for ads or tracking.",
+    accept: "Accept",
+    decline: "Decline",
+  },
+
   nav: {
     home: "Home",
     spending: "Spending",

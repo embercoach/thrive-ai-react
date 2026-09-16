@@ -16,6 +16,14 @@ export const pt: Translations = {
     somethingWentWrongRetry: "Algo correu mal. Tenta novamente.",
   },
 
+  cookieConsent: {
+    title: "Aviso de cookies e privacidade",
+    message:
+      "Usamos armazenamento local para te manter sessão iniciada e memorizar as tuas preferências — isto é necessário e está sempre ativo. Com a tua autorização, também usaremos o Sentry para detetar erros da app e corrigi-los mais depressa. Não usamos cookies para publicidade nem rastreio.",
+    accept: "Aceitar",
+    decline: "Recusar",
+  },
+
   nav: {
     home: "Início",
     spending: "Gastos",
