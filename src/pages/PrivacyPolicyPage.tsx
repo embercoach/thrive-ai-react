@@ -156,8 +156,8 @@ export function PrivacyPolicyPage() {
           <LegalParagraph>
             Thrive AI does not use cookies for advertising or tracking, and we don't run any analytics or
             tracking scripts. The app stores a small amount of information directly in your browser's local
-            storage — your theme and language preference, and the choice you make on the banner below — purely
-            to remember your settings between visits. This is strictly necessary for the app to work and is
+            storage — your theme and language preference, and the choice you make on the banner shown on your
+            first visit — purely to remember your settings between visits. This is strictly necessary for the app to work and is
             never used to track you across other sites.
           </LegalParagraph>
           <LegalParagraph>

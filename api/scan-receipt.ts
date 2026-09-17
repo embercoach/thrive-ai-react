@@ -138,6 +138,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   const quotaRow = Array.isArray(quota) ? quota[0] : quota;
   if (!quotaRow?.allowed) {
+    if (quotaRow?.reason === "not_found") {
+      // See api/chat.ts's identical check — no profiles row for this user
+      // is a data-integrity problem, not a quota state, and must never be
+      // reported as "you've used your free questions".
+      console.error("use_ai_question: no profile row for user", authData.user.id);
+      res.status(500).json({ error: "Something went wrong checking your account. Please try again." });
+      return;
+    }
     const message =
       quotaRow?.reason === "pro_daily_limit"
         ? "You've hit today's usage limit for the AI Advisor. It resets tomorrow — please try again then."

@@ -122,7 +122,12 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm"
+      // z-[61]: one above CookieConsentBanner's z-[60] — on a short/wide
+      // viewport (e.g. phone in landscape) the banner's fixed top-0 card
+      // can otherwise land visually on top of this modal's centered close
+      // button while a consent choice is still undecided. A user-initiated
+      // modal should always win over a passive notice banner.
+      className="fixed inset-0 z-[61] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm"
       onClick={onClose}
     >
       <div

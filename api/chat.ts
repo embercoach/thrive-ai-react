@@ -182,6 +182,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   const quotaRow = Array.isArray(quota) ? quota[0] : quota;
   if (!quotaRow?.allowed) {
+    if (quotaRow?.reason === "not_found") {
+      // use_ai_question returns this when there's no profiles row for this
+      // user at all (post-signup trigger hasn't run yet, or the row was
+      // otherwise never created) — a data-integrity problem, not a quota
+      // state, so it must never fall through to the free-tier message
+      // below and tell someone they've "used their free questions" when
+      // they may not have asked any.
+      console.error("use_ai_question: no profile row for user", authData.user.id);
+      res.status(500).json({ error: "Something went wrong checking your account. Please try again." });
+      return;
+    }
     // reason disambiguates which cap was hit — a Pro account hitting the
     // generous daily backstop should never be told it ran out of "free
     // questions this month", which is the free tier's own limit.

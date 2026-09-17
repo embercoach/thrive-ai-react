@@ -291,7 +291,15 @@ export async function submitFeedback(userId: string, email: string, message: str
 
 /** Records a thumbs up/down on one AI Advisor reply — see the
  *  add_chat_feedback migration for why this stores the reply's own text
- *  rather than joining against chat_messages. */
+ *  rather than joining against chat_messages.
+ *
+ *  upsert (not insert) against the (user_id, message_hash) constraint
+ *  added in add_chat_feedback_dedup.sql: re-rating the same reply — up
+ *  then down, or just re-tapping after the bubble remounts and its local
+ *  "already rated" state resets — updates the existing row in place
+ *  instead of piling up duplicate/contradictory rows for one message. */
 export async function submitChatFeedback(userId: string, messageText: string, rating: "up" | "down") {
-  return supabase.from("chat_feedback").insert({ user_id: userId, message_text: messageText, rating });
+  return supabase
+    .from("chat_feedback")
+    .upsert({ user_id: userId, message_text: messageText, rating }, { onConflict: "user_id,message_hash" });
 }
