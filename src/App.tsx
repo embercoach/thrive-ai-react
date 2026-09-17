@@ -1,3 +1,4 @@
+import { lazy, Suspense, type ReactNode } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { AppDataProvider, useAppData } from "@/hooks/useAppData";
@@ -7,24 +8,46 @@ import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { AppLayout } from "@/layouts/AppLayout";
 import { HomePage } from "@/pages/HomePage";
 import { SpendingPage } from "@/pages/SpendingPage";
-import { CategoryDetailPage } from "@/pages/CategoryDetailPage";
 import { GoalsPage } from "@/pages/GoalsPage";
 import { AdvisorPage } from "@/pages/AdvisorPage";
 import { ProfilePage } from "@/pages/ProfilePage";
-import { SecurityPage } from "@/pages/SecurityPage";
-import { NotificationsPage } from "@/pages/NotificationsPage";
-import { ConnectedBanksPage } from "@/pages/ConnectedBanksPage";
-import { AssetsPage } from "@/pages/AssetsPage";
-import { AboutPage } from "@/pages/AboutPage";
-import { HelpFeedbackPage } from "@/pages/HelpFeedbackPage";
-import { PrivacyPolicyPage } from "@/pages/PrivacyPolicyPage";
-import { TermsOfServicePage } from "@/pages/TermsOfServicePage";
 import { LoginPage } from "@/pages/LoginPage";
-import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
-import { MfaChallengePage } from "@/pages/MfaChallengePage";
-import { OnboardingPage } from "@/pages/OnboardingPage";
 import { HomeSkeleton } from "@/components/ui/HomeSkeleton";
-import type { ReactNode } from "react";
+
+// Lazy-loaded: everything reachable only after navigating away from the
+// five bottom-nav tabs (Home/Spending/AI/Goals/Profile, imported above),
+// or only before sign-in completes (Reset/MFA/Onboarding). None of these
+// are needed for first paint, so splitting them into their own chunks
+// shrinks the initial bundle without touching the pages every session
+// hits immediately. See the top-level <Suspense> in App() below.
+const CategoryDetailPage = lazy(() =>
+  import("@/pages/CategoryDetailPage").then((m) => ({ default: m.CategoryDetailPage }))
+);
+const SecurityPage = lazy(() => import("@/pages/SecurityPage").then((m) => ({ default: m.SecurityPage })));
+const NotificationsPage = lazy(() =>
+  import("@/pages/NotificationsPage").then((m) => ({ default: m.NotificationsPage }))
+);
+const ConnectedBanksPage = lazy(() =>
+  import("@/pages/ConnectedBanksPage").then((m) => ({ default: m.ConnectedBanksPage }))
+);
+const AssetsPage = lazy(() => import("@/pages/AssetsPage").then((m) => ({ default: m.AssetsPage })));
+const AboutPage = lazy(() => import("@/pages/AboutPage").then((m) => ({ default: m.AboutPage })));
+const HelpFeedbackPage = lazy(() =>
+  import("@/pages/HelpFeedbackPage").then((m) => ({ default: m.HelpFeedbackPage }))
+);
+const PrivacyPolicyPage = lazy(() =>
+  import("@/pages/PrivacyPolicyPage").then((m) => ({ default: m.PrivacyPolicyPage }))
+);
+const TermsOfServicePage = lazy(() =>
+  import("@/pages/TermsOfServicePage").then((m) => ({ default: m.TermsOfServicePage }))
+);
+const ResetPasswordPage = lazy(() =>
+  import("@/pages/ResetPasswordPage").then((m) => ({ default: m.ResetPasswordPage }))
+);
+const MfaChallengePage = lazy(() =>
+  import("@/pages/MfaChallengePage").then((m) => ({ default: m.MfaChallengePage }))
+);
+const OnboardingPage = lazy(() => import("@/pages/OnboardingPage").then((m) => ({ default: m.OnboardingPage })));
 
 /** Brief, layout-free spinner for the one moment there's genuinely no page
  *  to sketch a skeleton of yet — before we even know if anyone's logged in. */
@@ -135,7 +158,16 @@ function App() {
       <CookieConsentBanner />
       <AuthProvider>
         <BrowserRouter>
-          <PublicRoutes />
+          {/* Covers every lazy page declared above, wherever it's rendered —
+              Route elements inside PublicRoutes's nested <Routes>, and the
+              handful (ResetPasswordPage, MfaChallengePage, OnboardingPage)
+              that Gate/OnboardingGate render directly as plain JSX rather
+              than through a <Route>. One boundary is simpler than threading
+              a Suspense around each and gives a consistent loading flash
+              (AuthSpinner) the first time any of them is visited. */}
+          <Suspense fallback={<AuthSpinner />}>
+            <PublicRoutes />
+          </Suspense>
         </BrowserRouter>
       </AuthProvider>
     </I18nProvider>

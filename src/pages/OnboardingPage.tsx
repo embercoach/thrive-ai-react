@@ -112,12 +112,18 @@ export function OnboardingPage() {
               <button
                 onClick={back}
                 aria-label={t("onboarding.backAria")}
-                className="text-ink-muted hover:text-ink transition-colors -ml-1"
+                // p-1, matching the back-button pattern used on every other
+                // page (NotificationsPage, AboutPage, etc.) — this one had
+                // no padding at all, the smallest tap target in the app.
+                className="text-ink-muted hover:text-ink transition-colors -ml-1 p-1"
               >
                 <ChevronLeft size={20} />
               </button>
             ) : (
-              <span className="w-[19px]" />
+              // Matches the back button's new flow width (20px icon + 2x4px
+              // padding - 4px negative margin = 24px) so the progress bar
+              // lines up the same whether or not a back button is showing.
+              <span className="w-6" />
             )}
             <div className="flex-1 flex gap-1.5">
               {STEPS.map((s, i) => (

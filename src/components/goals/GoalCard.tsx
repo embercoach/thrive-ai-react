@@ -34,7 +34,9 @@ export function FeaturedGoalCard({ goal, currency = "USD", onAddSavings, onAskAI
           <button
             onClick={onDelete}
             aria-label={t("goalsModals.goalCard.deleteAria")}
-            className="text-ink-muted cursor-pointer"
+            // p-2 -m-2 grows a ~15px icon to a ~36px tap target without
+            // shifting its visual position or the surrounding flex layout.
+            className="text-ink-muted cursor-pointer p-2 -m-2"
           >
             <X size={15} />
           </button>
@@ -111,24 +113,35 @@ export function CompactGoalRow({ goal, onClick, onDelete }: CompactGoalRowProps)
 
   return (
     <div className="flex items-center gap-3 py-3">
+      {/* One real <button> for the whole row's primary action, rather than
+          three separate div+onClick pieces (icon, name+bar, percent) that
+          only worked for mouse/touch — a keyboard/screen-reader user could
+          previously reach the small icon button but not the rest of the
+          row's (much larger) clickable area, and the row wasn't announced
+          as one coherent action. Delete stays a separate sibling button
+          rather than nesting inside this one, since a <button> can't
+          contain another interactive element. */}
       <button
+        type="button"
         onClick={onClick}
-        className="w-9 h-9 rounded-[11px] bg-surface-sunken flex items-center justify-center flex-shrink-0 text-ink-secondary cursor-pointer"
+        className="flex items-center gap-3 flex-1 min-w-0 text-left bg-transparent cursor-pointer"
       >
-        <Icon size={16} />
+        <span className="w-9 h-9 rounded-[11px] bg-surface-sunken flex items-center justify-center flex-shrink-0 text-ink-secondary">
+          <Icon size={16} />
+        </span>
+        <span className="flex-1 min-w-0">
+          <span className="block text-sm font-semibold text-ink">{goal.name}</span>
+          <ProgressBar percent={pct} className="mt-1.5" />
+        </span>
+        <span className="text-sm font-bold text-ink flex-shrink-0">{Math.min(pct, 100)}%</span>
       </button>
-      <div className="flex-1 min-w-0 cursor-pointer" onClick={onClick}>
-        <div className="text-sm font-semibold text-ink">{goal.name}</div>
-        <ProgressBar percent={pct} className="mt-1.5" />
-      </div>
-      <div className="text-sm font-bold text-ink flex-shrink-0 cursor-pointer" onClick={onClick}>
-        {Math.min(pct, 100)}%
-      </div>
       {onDelete && (
         <button
           onClick={onDelete}
           aria-label={t("goalsModals.goalCard.deleteAria")}
-          className="text-ink-muted p-0.5 cursor-pointer flex-shrink-0"
+          // p-2 -m-2 grows the tap target without shifting the icon's
+          // visual position or the row's spacing.
+          className="text-ink-muted p-2 -m-2 cursor-pointer flex-shrink-0"
         >
           <X size={14} />
         </button>

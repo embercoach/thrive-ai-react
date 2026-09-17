@@ -152,12 +152,18 @@ export function LoginPage() {
           </p>
 
           {error && (
-            <p className="text-negative text-sm mb-4 text-center bg-negative/5 border border-negative/20 rounded-xl py-2 px-3">
+            <p
+              role="alert"
+              className="text-negative text-sm mb-4 text-center bg-negative/5 border border-negative/20 rounded-xl py-2 px-3"
+            >
               {error}
             </p>
           )}
           {info && (
-            <p className="text-brand text-sm mb-4 text-center bg-brand/5 border border-brand/20 rounded-xl py-2 px-3">
+            <p
+              role="status"
+              className="text-brand text-sm mb-4 text-center bg-brand/5 border border-brand/20 rounded-xl py-2 px-3"
+            >
               {info}
             </p>
           )}

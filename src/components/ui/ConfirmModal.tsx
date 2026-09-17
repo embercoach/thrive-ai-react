@@ -38,7 +38,11 @@ export function ConfirmModal({
   return (
     <Modal open={open} onClose={onCancel} title={title}>
       <p className="text-sm text-ink-secondary mb-4">{message}</p>
-      {error && <p className="text-negative text-sm mb-3">{error}</p>}
+      {error && (
+        <p role="alert" className="text-negative text-sm mb-3">
+          {error}
+        </p>
+      )}
       <div className="flex gap-2">
         <Button variant="outline" fullWidth onClick={onCancel} disabled={loading}>
           {cancelLabel}

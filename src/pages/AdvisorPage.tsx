@@ -185,7 +185,7 @@ export function AdvisorPage() {
               )
             )}
             {sending && (
-              <div className="flex gap-2 items-center pl-8">
+              <div role="status" className="flex gap-2 items-center pl-8">
                 <span className="text-ink-muted text-xs">{t("advisor.thinking")}</span>
               </div>
             )}
@@ -195,7 +195,7 @@ export function AdvisorPage() {
       </div>
 
       {error && (
-        <div className="px-5 pb-2 flex-shrink-0">
+        <div role="alert" className="px-5 pb-2 flex-shrink-0">
           <p className="text-negative text-xs text-center">{error}</p>
         </div>
       )}

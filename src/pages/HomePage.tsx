@@ -200,7 +200,11 @@ function FeaturedGoalRing({ goal, currency, onClick }: { goal: Goal; currency: s
       : t("home.goalEveryContribution");
 
   return (
-    <div className="flex items-center gap-4 w-full cursor-pointer" onClick={onClick}>
+    // A real <button>, not a div+onClick — previously unreachable by Tab
+    // and unannounced to screen readers despite being a core Home action
+    // (opening the featured savings goal). No nested interactive elements
+    // inside (ProgressRing is presentational), so this is safe.
+    <button type="button" className="flex items-center gap-4 w-full cursor-pointer text-left bg-transparent" onClick={onClick}>
       <ProgressRing percent={pct} size={66} strokeWidth={5} label={`${pct}%`} labelSize={15} />
       <div className="flex-1 min-w-0">
         <div className="text-sm font-bold text-ink">{goal.name}</div>
@@ -209,6 +213,6 @@ function FeaturedGoalRing({ goal, currency, onClick }: { goal: Goal; currency: s
         </div>
         <div className="text-xs text-positive mt-0.5">{encourage}</div>
       </div>
-    </div>
+    </button>
   );
 }

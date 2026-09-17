@@ -17,15 +17,16 @@ export function TransactionRow({ transaction, currency = "USD", showDate = true,
   const Icon = categoryIcon(transaction.category);
   const isIncome = transaction.amount > 0;
 
-  return (
-    <div
-      onClick={onClick}
-      className="flex items-center gap-2.5 py-2.5 border-b border-border last:border-0 first:pt-0 last:pb-0"
-      style={{ cursor: onClick ? "pointer" : undefined }}
-    >
-      <div
-        className="w-8 h-8 rounded-[9px] flex items-center justify-center flex-shrink-0 bg-surface-sunken"
-      >
+  // Shared between the two branches below so a row with no onClick renders
+  // as a plain, non-interactive div (unchanged from before), while a row
+  // that IS clickable renders as a real <button> — previously this was
+  // always a div with an onClick handler, which a keyboard-only or
+  // screen-reader user has no way to reach or activate at all (no Tab
+  // stop, no announced role). No nested interactive elements live inside
+  // this content (icons only), so wrapping it in a button is safe.
+  const content = (
+    <>
+      <div className="w-8 h-8 rounded-[9px] flex items-center justify-center flex-shrink-0 bg-surface-sunken">
         <Icon size={15} color={categoryColor(transaction.category)} />
       </div>
       <div className="flex-1 min-w-0">
@@ -54,6 +55,24 @@ export function TransactionRow({ transaction, currency = "USD", showDate = true,
         {isIncome ? "+" : "−"}
         {formatMoney(transaction.amount, currency)}
       </div>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex items-center gap-2.5 py-2.5 border-b border-border last:border-0 first:pt-0 last:pb-0 w-full text-left bg-transparent cursor-pointer"
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2.5 py-2.5 border-b border-border last:border-0 first:pt-0 last:pb-0">
+      {content}
     </div>
   );
 }

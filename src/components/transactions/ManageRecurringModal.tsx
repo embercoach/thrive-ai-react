@@ -154,15 +154,24 @@ export function ManageRecurringModal({ open, onClose, onNeedUpgrade }: ManageRec
                   aria-label={
                     item.active ? t("transactions.manageRecurring.pauseAria") : t("transactions.manageRecurring.resumeAria")
                   }
-                  className={`w-9 h-5 rounded-full flex-shrink-0 relative transition-colors cursor-pointer ${
-                    item.active ? "bg-brand" : "bg-surface-sunken border border-border-strong"
-                  }`}
+                  // p-2 -m-2 grows the tap target from the switch's own
+                  // 36x20px to ~52x36px without changing its visual size or
+                  // this row's spacing — this list scrolls in a tight
+                  // max-h-[36vh] space, and a mis-tap here silently
+                  // pauses/resumes the wrong recurring transaction.
+                  className="p-2 -m-2 flex-shrink-0 cursor-pointer disabled:cursor-not-allowed"
                 >
                   <span
-                    className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                      item.active ? "translate-x-4" : "translate-x-0"
+                    className={`block w-9 h-5 rounded-full relative transition-colors ${
+                      item.active ? "bg-brand" : "bg-surface-sunken border border-border-strong"
                     }`}
-                  />
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                        item.active ? "translate-x-4" : "translate-x-0"
+                      }`}
+                    />
+                  </span>
                 </button>
                 <Icon size={14} className="flex-shrink-0 text-ink-secondary" />
                 <div className={`flex-1 min-w-0 ${item.active ? "" : "opacity-50"}`}>

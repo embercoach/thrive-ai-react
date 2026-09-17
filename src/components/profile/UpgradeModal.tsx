@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useId, useRef } from 'react';
 import { IconX, IconCheck, IconLoader2 } from '@tabler/icons-react';
 import { openPaddleCheckout, isPaddleConfigured, fetchPriceLabels } from '@/lib/paddle';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppData } from '@/hooks/useAppData';
 import { useT } from '@/hooks/useI18n';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 const MONTHLY_PRICE_ID = import.meta.env.VITE_PADDLE_PRICE_MONTHLY as string;
 const ANNUAL_PRICE_ID = import.meta.env.VITE_PADDLE_PRICE_ANNUAL as string;
@@ -32,6 +33,8 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
   // synchronously on the very first line, closing that window regardless of
   // render timing.
   const submittingRef = useRef(false);
+  const titleId = useId();
+  const panelRef = useFocusTrap(open);
 
   // Ask Paddle for the real, localised amounts once the modal is opened.
   // Hooks must run unconditionally, so this sits above the early return.
@@ -131,18 +134,29 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
       onClick={onClose}
     >
       <div
-        className="w-full sm:max-w-md bg-surface border border-border rounded-t-2xl sm:rounded-2xl shadow-xl p-6 relative"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="w-full sm:max-w-md bg-surface border border-border rounded-t-2xl sm:rounded-2xl shadow-xl p-6 relative outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
           aria-label={t('upgradeModal.closeAria')}
-          className="absolute top-4 right-4 text-ink-muted hover:text-ink transition-colors"
+          // top-2/right-2 + p-2 (vs. the old top-4/right-4 with no padding)
+          // grows the tap target from ~20px to ~36px while landing the icon
+          // itself in the same visual spot: the extra padding offsets the
+          // tighter top/right position exactly.
+          className="absolute top-2 right-2 p-2 text-ink-muted hover:text-ink transition-colors rounded-full"
         >
           <IconX size={20} />
         </button>
 
-        <h2 className="font-serif text-2xl text-ink mb-1">{t('upgradeModal.title')}</h2>
+        <h2 id={titleId} className="font-serif text-2xl text-ink mb-1">
+          {t('upgradeModal.title')}
+        </h2>
         {triggerLabel ? (
           <p className="text-sm text-ink-secondary mb-4">
             {t('upgradeModal.triggeredMessage', { trigger: triggerLabel })}
@@ -198,10 +212,14 @@ export default function UpgradeModal({ open, onClose, triggeredBy }: UpgradeModa
         </button>
 
         {!priceId && (
-          <p className="text-xs text-negative mt-2 text-center">{t('upgradeModal.missingPriceId')}</p>
+          <p role="alert" className="text-xs text-negative mt-2 text-center">
+            {t('upgradeModal.missingPriceId')}
+          </p>
         )}
         {checkoutError && (
-          <p className="text-xs text-negative mt-2 text-center">{t('upgradeModal.checkoutUnavailable')}</p>
+          <p role="alert" className="text-xs text-negative mt-2 text-center">
+            {t('upgradeModal.checkoutUnavailable')}
+          </p>
         )}
       </div>
     </div>
